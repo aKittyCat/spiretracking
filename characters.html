@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>ตัวละครของฉัน</title>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+      <h1 class="text-2xl font-bold text-gray-800">ตัวละครของฉัน</h1>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-700 font-medium">สมาชิก: <span id="userEmail">...</span></span>
+        <button onclick="auth.signOut().then(() => location.href='index.html')" 
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
+          ออกจากระบบ
+        </button>
+      </div>
+    </div>
+    <!-- ปุ่ม Admin + ปุ่มนำทางทั้งหมด -->
+    <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" class="mb-4 bg-purple-500 text-white px-3 py-1 rounded">Admin Dashboard</button>
+
+    <!-- แบบฟอร์มเพิ่มตัวละคร -->
+    <div class="bg-white p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-2">เพิ่มตัวละครใหม่</h2>
+      <input id="charName" placeholder="ชื่อตัวละคร" class="w-full p-2 mb-2 border rounded"/>
+      <input id="charLevel" type="number" min="1" max="20" placeholder="เลเวลเริ่มต้นที่ 3" class="w-full p-2 mb-2 border rounded"/>
+      <input id="charClass" placeholder="อาชีพ" class="w-full p-2 mb-2 border rounded"/>
+      <input id="charRace" placeholder="เผ่า" class="w-full p-2 mb-2 border rounded"/>
+      <input id="charGold" type="number" placeholder="ทองเริ่มต้น" class="w-full p-2 mb-2 border rounded"/>
+      <input id="sheetLink" placeholder="ลิงก์ Character Sheet" class="w-full p-2 mb-2 border rounded"/>
+      <button onclick="addCharacter()" class="bg-green-500 text-white px-4 py-2 rounded mt-2">บันทึกตัวละคร</button>
+    </div>
+
+    <div id="charactersList" class="space-y-4"></div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script>
+    let currentUser = null;
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return window.location.href = 'index.html';
+      document.getElementById('userEmail').textContent = user.email;
+      
+      currentUser = user;
+      console.log("✅ ล็อกอินสำเร็จด้วยอีเมล:", user.email);
+      
+      // โหลดตัวละครก่อน
+      await loadCharacters();
+      
+      // ตรวจสอบสิทธิ์ admin แบบละเอียด
+      await checkAdmin();
+    });
+
+    async function checkAdmin() {
+      try {
+        console.log("🔍 เริ่มตรวจสอบสิทธิ์ admin...");
+        
+        const doc = await db.collection('settings').doc('admin').get();
+        
+        if (!doc.exists) {
+          console.error("❌ ไม่พบเอกสาร settings/admin");
+          return;
+        }
+        
+        const data = doc.data();
+        // ✅ ตรวจสอบว่าเป็น array
+        const adminEmails = data.adminEmails || [];
+        const currentEmail = currentUser.email?.trim().toLowerCase();
+        
+        console.log("📧 อีเมลผู้ใช้:", currentEmail);
+        console.log("📧 รายชื่อ admin:", adminEmails.map(e => e.trim().toLowerCase()));
+        
+        // ✅ ตรวจสอบว่าอีเมลผู้ใช้อยู่ในรายการ admin
+        const isAdmin = adminEmails
+          .map(e => e.trim().toLowerCase())
+          .includes(currentEmail);
+        
+        if (isAdmin) {
+          console.log("✅ คุณเป็น admin!");
+          document.getElementById('adminBtn').style.display = 'inline-block';
+        } else {
+          console.log("❌ ไม่ใช่ admin");
+        }
+      } catch (error) {
+        console.error("💥 เกิดข้อผิดพลาดตอนตรวจสอบ admin:", error);
+        alert("ตรวจสอบสิทธิ์ล้มเหลว: " + error.message);
+      }
+    }
+
+    // เพิ่มตัวละครใหม่
+    async function addCharacter() {
+      const name = document.getElementById('charName').value.trim();
+      if (!name) return alert('กรุณาใส่ชื่อตัวละคร');
+
+      const char = {
+        name,
+        level: parseInt(document.getElementById('charLevel').value) || 1,
+        class: document.getElementById('charClass').value.trim() || 'None',
+        race: document.getElementById('charRace').value.trim() || 'None',
+        gold: parseInt(document.getElementById('charGold').value) || 0,
+        sheetLink: document.getElementById('sheetLink').value || '',
+        userId: currentUser.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection('characters').add(char);
+        alert('เพิ่มตัวละครสำเร็จ!');
+        loadCharacters();
+        // ล้างฟอร์ม
+        document.getElementById('charName').value = '';
+        document.getElementById('charLevel').value = '';
+        document.getElementById('charClass').value = '';
+        document.getElementById('charRace').value = '';
+        document.getElementById('charGold').value = '';
+        document.getElementById('sheetLink').value = '';
+      } catch (error) {
+        console.error('Error adding character:', error);
+        alert('เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถบันทึกได้'));
+      }
+    }
+
+    // โหลดตัวละคร
+    async function loadCharacters() {
+      try {
+        const snap = await db.collection('characters').where('userId', '==', currentUser.uid).get();
+        const list = document.getElementById('charactersList');
+        list.innerHTML = '';
+        snap.forEach(doc => {
+          const c = doc.data();
+          const div = document.createElement('div');
+          div.className = 'bg-white p-4 rounded border';
+          div.innerHTML = `
+            <h3 class="font-bold text-lg">${c.name} (Lv. ${c.level})</h3>
+            <p><strong>อาชีพ:</strong> ${c.class} | <strong>เผ่า:</strong> ${c.race} | <strong>ทอง:</strong> ${c.gold}</p>
+            ${c.sheetLink ? `<a href="${c.sheetLink}" target="_blank" class="text-blue-500">ดู Sheet</a>` : ''}
+            <a href="character-detail.html?charId=${doc.id}" class="ml-2 text-blue-500 text-sm">ดูรายละเอียด</a>
+            <button onclick="deleteChar('${doc.id}')" class="ml-2 text-red-500 text-sm">ลบ</button>
+          `;
+          list.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading characters:', error);
+        document.getElementById('charactersList').innerHTML = '<p class="text-red-500">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
+      }
+    }
+
+    async function deleteChar(charId) {
+      if (!confirm('⚠️ ลบตัวละครนี้จริงหรือ? ข้อมูลทั้งหมดจะหายไป!')) return;
+      
+      const result = await deleteCharacterAndData(charId, true);
+      if (result.success) {
+        alert(result.message);
+        loadCharacters();
+      } else {
+        alert('❌ ' + result.message);
+      }
+    }
+  </script>
+</body>
+</html>

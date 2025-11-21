@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>The Spire Tracking - เข้าสู่ระบบ</title>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow-md w-96">
+    <h2 class="text-2xl font-bold mb-6 text-center">Character Tracking Sheet</h2>
+
+    <div id="login-form">
+      <input id="email" type="email" placeholder="อีเมล" class="w-full p-2 mb-3 border rounded"/>
+      <input id="password" type="password" placeholder="รหัสผ่าน" class="w-full p-2 mb-3 border rounded"/>
+      <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded">เข้าสู่ระบบ</button>
+      <p class="text-center mt-3">
+        ยังไม่มีบัญชี? <button onclick="showRegister()" class="text-blue-500">สมัครเลย</button>
+      </p>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <input id="reg-email" type="email" placeholder="อีเมล" class="w-full p-2 mb-3 border rounded"/>
+      <input id="reg-password" type="password" placeholder="รหัสผ่าน" class="w-full p-2 mb-3 border rounded"/>
+      <button onclick="register()" class="w-full bg-green-500 text-white p-2 rounded">สมัครสมาชิก</button>
+      <p class="text-center mt-3">
+        มีบัญชีแล้ว? <button onclick="showLogin()" class="text-blue-500">เข้าสู่ระบบ</button>
+      </p>
+    </div>
+
+    <div class="mt-8 border-t pt-2">
+      <p class="text-xs text-gray-400 text-right">
+        &copy;🏰 The Spire Tracking<br>
+        aKittyCat🐈. All rights reserved.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function showRegister() { document.getElementById('register-form').style.display = 'block'; document.getElementById('login-form').style.display = 'none'; }
+    function showLogin() { document.getElementById('login-form').style.display = 'block'; document.getElementById('register-form').style.display = 'none'; }
+
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => window.location.href = 'characters.html')
+        .catch(e => alert('เกิดข้อผิดพลาด: ' + e.message));
+    }
+
+    function register() {
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => window.location.href = 'characters.html')
+        .catch(e => alert('เกิดข้อผิดพลาด: ' + e.message));
+    }
+  </script>
+</body>
+</html>
