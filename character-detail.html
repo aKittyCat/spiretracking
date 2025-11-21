@@ -867,7 +867,7 @@
         characterId: currentCharId,
         sessionName,
         date: document.getElementById('dmSessionDate').value,
-        hours: finalHours, // ✅ บันทึกชั่วโมง × 1.5 (หรือ × 3 ถ้า x2)
+        hours: finalHours,
         soloQuest,
         doubleReward,
         autoGold,    
@@ -1367,5 +1367,10 @@
     document.getElementById('dmAutoFavor').textContent = autoFavor;
     document.getElementById('dmAutoHours').textContent = finalHours.toFixed(1);
   }
+
+  // ตั้งค่าให้ Session เป็น active โดยอัตโนมัติเมื่อโหลดหน้า
+  document.addEventListener('DOMContentLoaded', () => {
+    openTab('session');
+  });
 </script>
 </html>
