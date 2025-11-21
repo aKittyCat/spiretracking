@@ -11,230 +11,243 @@
   <title>รายละเอียดตัวละคร</title>
   <style>
     .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Custom Scrollbar for Dark Theme */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
   </style>
 </head>
-<body class="bg-gray-100 p-6">
-  <!-- Header -->
-  <div class="flex justify-between items-center mb-6 pb-4 border-b">
-    <h1 class="text-2xl font-bold text-gray-800">รายละเอียดตัวละคร</h1>
-    <div class="flex items-center space-x-4">
-      <span class="text-gray-700 font-medium">สมาชิก: <span id="userEmail">...</span></span>
-      <button onclick="auth.signOut().then(() => location.href='index.html')" 
-              class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
-        ออกจากระบบ
-      </button>
-    </div>
-  </div>
-
-  <!-- ข้อมูลตัวละคร -->
-  <div id="charInfo" class="bg-white p-4 rounded mb-6">
-    <div class="mb-3">
-      <span id="charTier" class="inline-block px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full text-sm"></span>
-    </div>
-    <h2 class="text-2xl font-bold mb-2" id="charName">...</h2>
-    <p><strong>เลเวลที่ตั้งไว้:</strong> <span id="charLevel">...</span></p>
-    <p><strong>เลเวลปัจจุบัน:</strong> <span id="charCurrentLevel">...</span></p>
-    <p><strong>ชั่วโมงที่เล่นทั้งหมด:</strong> <span id="charTotalHours">0</span> ชม.</p>
-    <p><strong>เลเวลอัปอีก:</strong> <span id="charHoursToLevelUp">...</span></p>
-    <p><strong>อาชีพ:</strong> <span id="charClass">...</span></p>
-    <p><strong>เผ่า:</strong> <span id="charRace">...</span></p>
-    <p><strong>ทองเริ่มต้น:</strong> <span id="charGoldStart">...</span> GP</p>
-    <p><strong>ยอดทองรวม:</strong> <span id="charTotalGold">...</span> GP</p>
-    <p><strong>ยอด Favor รวม:</strong> <span id="charTotalFavor">0</span> Favor</p>
-    <p><strong>Sheet Link:</strong> <a id="sheetLink" href="#" target="_blank" class="text-blue-500">ดู Sheet</a></p>
-    <button onclick="editCharacter()" class="mt-2 bg-yellow-500 text-white px-3 py-1 rounded">แก้ไขข้อมูลตัวละคร</button>
-  </div>
-
-  <!-- Tab Navigation -->
-  <div class="flex mb-4 border-b">
-    <button onclick="openTab('session')" id="tab-session" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">บันทึก Session</button>
-    <button onclick="openTab('gold')" id="tab-gold" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">บันทึกทอง</button>
-    <button onclick="openTab('favor')" id="tab-favor" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">บันทึก Favor</button>
-    <button onclick="openTab('dm')" id="tab-dm" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">บันทึก DM</button>
-  </div>
-
-  <!-- Session Tab -->
-  <div id="session" class="tab-content active">
-    <!-- ฟอร์มบันทึก session -->
-    <div class="bg-white p-4 rounded mb-6">
-      <h2 class="text-xl font-semibold mb-2">เพิ่มบันทึก Session</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input id="sessionName" placeholder="ชื่อเซสชั่น" class="p-2 border rounded"/>
-        <input id="dmName" placeholder="ชื่อ DM" class="p-2 border rounded"/>
-        <input id="sessionDate" type="date" class="p-2 border rounded"/>
-        <input id="hours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2 border rounded" onchange="calculateAutoGold()"/>
-      </div>
-      <textarea id="notes" placeholder="Notes" class="w-full p-2 mb-2 border rounded" rows="2"></textarea>
-      <div class="flex items-center mb-2">
-        <input id="noGold" type="checkbox" class="mr-2" onchange="calculateAutoGold()"/>
-        <label>ไม่ได้รับทอง</label>
-      </div>
-      <input id="gotItems" placeholder="ของที่ได้รับ (เช่น ดาบ, เหรียญ)" class="w-full p-2 mb-2 border rounded"/>
-      <div class="bg-gray-100 p-3 rounded mb-2">
-        <strong>ทองที่ได้รับ (อัตโนมัติ):</strong> 
-        <span id="autoGoldAmount">0</span> GP
-      </div>
-      <button onclick="addSession()" class="bg-blue-500 text-white px-4 py-2 rounded">บันทึก Session</button>
-    </div>
-
-    <!-- ประวัติ Session -->
-    <div class="bg-white p-4 rounded">
-      <h3 class="text-lg font-semibold mb-2">ประวัติ Session</h3>
-      <div id="sessionsTable" class="overflow-x-auto">
-        <table class="min-w-full bg-white">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="py-2 px-4">ชื่อ Session</th>
-              <th class="py-2 px-4">DM</th>
-              <th class="py-2 px-4">วันที่</th>
-              <th class="py-2 px-4">ชั่วโมง</th>
-              <th class="py-2 px-4">Notes</th>
-              <th class="py-2 px-4">ไม่ได้ทอง</th>
-              <th class="py-2 px-4">ของที่ได้รับ</th>
-              <th class="py-2 px-4">ทองอัตโนมัติ</th>
-              <th class="py-2 px-4">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="sessionsBody">
-            <!-- จะถูกเติมโดย JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      <div id="sessionPagination" class="mt-4 flex justify-center space-x-2"></div>
-    </div>
-  </div>
-
-  <!-- Gold Tab -->
-  <div id="gold" class="tab-content">
-    <!-- ฟอร์มบันทึกทอง -->
-    <div class="bg-white p-4 rounded mb-6">
-      <h2 class="text-xl font-semibold mb-2">บันทึกได้รับ/การใช้ทอง</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input id="goldDesc" placeholder="ใช้ไปกับ" class="p-2 border rounded"/>
-        <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวนทอง" class="p-2 border rounded"/>
-      </div>
-      <button onclick="addGoldEntry()" class="bg-yellow-500 text-white px-4 py-2 rounded">บันทึก</button>
-    </div>
-
-    <!-- ประวัติทอง -->
-    <div class="bg-white p-4 rounded">
-      <h3 class="text-lg font-semibold mb-2">ประวัติการใช้/ได้รับทอง</h3>
-      <div id="goldTable" class="overflow-x-auto">
-        <table class="min-w-full bg-white">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="py-2 px-4">คำอธิบาย</th>
-              <th class="py-2 px-4">จำนวน</th>
-              <th class="py-2 px-4">ประเภท</th>
-              <th class="py-2 px-4">วันที่</th>
-              <th class="py-2 px-4">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="goldBody">
-            <!-- จะถูกเติมโดย JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      <div id="goldPagination" class="mt-4 flex justify-center space-x-2"></div>
-    </div>
-  </div>
-
-  <!-- Favor Tab -->
-  <div id="favor" class="tab-content">
-    <!-- ฟอร์มบันทึก favor -->
-    <div class="bg-white p-4 rounded mb-6">
-      <h2 class="text-xl font-semibold mb-2">บันทึก Favor</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input id="favorDesc" placeholder="ใช้ไปกับ" class="p-2 border rounded"/>
-        <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="p-2 border rounded"/>
-      </div>
-      <button onclick="addFavorEntry()" class="bg-indigo-500 text-white px-4 py-2 rounded">บันทึก</button>
-    </div>
-
-    <!-- ประวัติ favor -->
-    <div class="bg-white p-4 rounded">
-      <h3 class="text-lg font-semibold mb-2">ประวัติ Favor</h3>
-      <div id="favorTable" class="overflow-x-auto">
-        <table class="min-w-full bg-white">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="py-2 px-4">คำอธิบาย</th>
-              <th class="py-2 px-4">จำนวน</th>
-              <th class="py-2 px-4">วันที่</th>
-              <th class="py-2 px-4">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="favorBody">
-            <!-- จะถูกเติมโดย JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      <div id="favorPagination" class="mt-4 flex justify-center space-x-2"></div>
-    </div>
-  </div>
+<body class="bg-gray-900 text-gray-200 p-4 sm:p-6 font-sans min-h-screen">
   
-  <!-- DM Tab -->
-  <div id="dm" class="tab-content">
-    <!-- ฟอร์มบันทึก DM -->
-    <div class="bg-white p-4 rounded mb-6">
-      <h2 class="text-xl font-semibold mb-2">บันทึก DM Session</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2 border rounded"/>
-        <input id="dmSessionDate" type="date" class="p-2 border rounded"/>
-        <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2 border rounded" onchange="calculateDmRewards()"/>
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-700 gap-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white">รายละเอียดตัวละคร</h1>
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <span class="text-gray-400 font-medium text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
+        <button onclick="auth.signOut().then(() => location.href='index.html')" 
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
+          ออกจากระบบ
+        </button>
       </div>
-      <div class="flex items-center mb-2">
-        <input id="soloQuest" type="checkbox" class="mr-2" onchange="calculateDmRewards()"/>
-        <label>ภารกิจเดี่ยว</label>
-      </div>
-      <div class="flex items-center mb-4">
-        <input id="doubleReward" type="checkbox" class="mr-2" onchange="calculateDmRewards()"/>
-        <label>รางวัล x2</label>
-      </div>
-      <div class="bg-gray-100 p-3 rounded mb-2">
-        <strong>ทองที่ได้รับ (อัตโนมัติ):</strong> 
-        <span id="dmAutoGold">0</span> GP
-      </div>
-      <div class="bg-gray-100 p-3 rounded mb-2">
-        <strong>Favor ที่ได้รับ:</strong> 
-        <span id="dmAutoFavor">0</span> Favor
-      </div>
-      <div class="bg-gray-100 p-3 rounded mb-2">
-        <strong>ชั่วโมงที่ได้รับ:</strong> 
-        <span id="dmAutoHours">0</span> ชม.
-      </div>
-      <button onclick="addDmLog()" class="bg-purple-500 text-white px-4 py-2 rounded">บันทึก DM Session</button>
     </div>
 
-    <!-- ประวัติ DM -->
-    <div class="bg-white p-4 rounded">
-      <h3 class="text-lg font-semibold mb-2">ประวัติ DM Session</h3>
-      <div id="dmTable" class="overflow-x-auto">
-        <table class="min-w-full bg-white">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="py-2 px-4">ชื่อเซสชั่น</th>
-              <th class="py-2 px-4">วันที่</th>
-              <th class="py-2 px-4">ชั่วโมง</th>
-              <th class="py-2 px-4">ทองที่ได้รับ</th>
-              <th class="py-2 px-4">Favor ที่ได้รับ</th>
-              <th class="py-2 px-4">ภารกิจเดี่ยว</th>
-              <th class="py-2 px-4">รางวัล x2</th>
-              <th class="py-2 px-4">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="dmBody">
-            <!-- จะถูกเติมโดย JavaScript -->
-          </tbody>
-        </table>
+    <div id="charInfo" class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
+      <div class="mb-4 flex justify-between items-start">
+        <span id="charTier" class="inline-block px-3 py-1 bg-blue-900/50 text-blue-200 border border-blue-700/50 font-bold rounded-full text-xs sm:text-sm uppercase tracking-wider">Tier ...</span>
+        <button onclick="editCharacter()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 rounded text-sm shadow transition flex items-center gap-1">
+          <span>✏️</span> แก้ไข
+        </button>
       </div>
-      <div id="dmPagination" class="mt-4 flex justify-center space-x-2"></div>
+      
+      <h2 class="text-3xl font-bold mb-4 text-white" id="charName">...</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm sm:text-base text-gray-300">
+        <p><strong class="text-gray-500 block text-xs uppercase">เลเวลที่ตั้งไว้</strong> <span id="charLevel" class="text-white">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">เลเวลปัจจุบัน</strong> <span id="charCurrentLevel" class="text-green-400 font-bold">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">ชั่วโมงที่เล่นทั้งหมด</strong> <span id="charTotalHours" class="text-white">0</span> ชม.</p>
+        <p><strong class="text-gray-500 block text-xs uppercase">เลเวลอัปอีก</strong> <span id="charHoursToLevelUp" class="text-yellow-400">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">อาชีพ</strong> <span id="charClass" class="text-white">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">เผ่า</strong> <span id="charRace" class="text-white">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">ทองเริ่มต้น</strong> <span id="charGoldStart" class="text-white">...</span> GP</p>
+        <p><strong class="text-gray-500 block text-xs uppercase">ยอดทองรวม</strong> <span id="charTotalGold" class="text-yellow-400 font-bold text-lg">...</span> GP</p>
+        <p><strong class="text-gray-500 block text-xs uppercase">ยอด Favor รวม</strong> <span id="charTotalFavor" class="text-indigo-400 font-bold text-lg">0</span> Favor</p>
+      </div>
+      
+      <div class="mt-4 pt-4 border-t border-gray-700">
+        <p><strong class="text-gray-500 text-xs uppercase mr-2">Sheet Link:</strong> <a id="sheetLink" href="#" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted">ดู Sheet</a></p>
+      </div>
     </div>
+
+    <div class="flex mb-6 border-b border-gray-700 overflow-x-auto pb-1 scrollbar-hide">
+      <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-yellow-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก Session</button>
+      <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-green-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึกทอง</button>
+      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-orange-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก Favor</button>
+      <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-rose-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก DM</button>
+    </div>
+
+    <div id="session" class="tab-content active">
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 เพิ่มบันทึก Session</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input id="sessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+          <input id="dmName" placeholder="ชื่อ DM" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+          <input id="sessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+          <input id="hours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="calculateAutoGold()"/>
+        </div>
+        
+        <textarea id="notes" placeholder="Notes (บันทึกเพิ่มเติม)" class="w-full p-2.5 mb-4 border rounded bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="2"></textarea>
+        
+        <div class="flex items-center mb-4 bg-gray-700/50 p-2 rounded border border-gray-700 w-fit">
+          <input id="noGold" type="checkbox" class="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-blue-600 ring-offset-gray-800" onchange="calculateAutoGold()"/>
+          <label class="text-gray-300 select-none cursor-pointer" for="noGold">ไม่ได้รับทอง</label>
+        </div>
+        
+        <input id="gotItems" placeholder="ของที่ได้รับ (เช่น ดาบ, เหรียญ)" class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        
+        <div class="bg-gray-700/50 p-3 rounded mb-4 border border-gray-700 text-gray-300 flex items-center gap-2">
+          <span>💰 ทองที่ได้รับ (อัตโนมัติ):</span> 
+          <span id="autoGoldAmount" class="text-yellow-400 font-bold text-lg">0</span> 
+          <span class="text-yellow-400">GP</span>
+        </div>
+        
+        <button onclick="addSession()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก Session</button>
+      </div>
+
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-white">📜 ประวัติ Session</h3>
+        <div id="sessionsTable" class="overflow-x-auto rounded-lg border border-gray-700">
+          <table class="min-w-full bg-gray-800 text-left text-sm text-gray-300">
+            <thead class="bg-gray-700 text-gray-200 uppercase text-xs font-bold tracking-wider">
+              <tr>
+                <th class="py-3 px-4">ชื่อ Session</th>
+                <th class="py-3 px-4">DM</th>
+                <th class="py-3 px-4">วันที่</th>
+                <th class="py-3 px-4">ชั่วโมง</th>
+                <th class="py-3 px-4">Notes</th>
+                <th class="py-3 px-4">ไม่ได้ทอง</th>
+                <th class="py-3 px-4">ของที่ได้รับ</th>
+                <th class="py-3 px-4">ทอง</th>
+                <th class="py-3 px-4">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="sessionsBody" class="divide-y divide-gray-700">
+              </tbody>
+          </table>
+        </div>
+        <div id="sessionPagination" class="mt-4 flex justify-center space-x-2"></div>
+      </div>
+    </div>
+
+    <div id="gold" class="tab-content">
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">💰 บันทึกได้รับ/การใช้ทอง</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input id="goldDesc" placeholder="ใช้ไปกับ..." class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
+          <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวนทอง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
+        </div>
+        <button onclick="addGoldEntry()" class="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
+      </div>
+
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-white">ประวัติการใช้/ได้รับทอง</h3>
+        <div id="goldTable" class="overflow-x-auto rounded-lg border border-gray-700">
+          <table class="min-w-full bg-gray-800 text-left text-sm text-gray-300">
+            <thead class="bg-gray-700 text-gray-200 uppercase text-xs font-bold tracking-wider">
+              <tr>
+                <th class="py-3 px-4">คำอธิบาย</th>
+                <th class="py-3 px-4">จำนวน</th>
+                <th class="py-3 px-4">ประเภท</th>
+                <th class="py-3 px-4">วันที่</th>
+                <th class="py-3 px-4">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="goldBody" class="divide-y divide-gray-700"></tbody>
+          </table>
+        </div>
+        <div id="goldPagination" class="mt-4 flex justify-center space-x-2"></div>
+      </div>
+    </div>
+
+    <div id="favor" class="tab-content">
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">✨ บันทึก Favor</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input id="favorDesc" placeholder="ใช้ไปกับ..." class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"/>
+          <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"/>
+        </div>
+        <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
+      </div>
+
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-white">ประวัติ Favor</h3>
+        <div id="favorTable" class="overflow-x-auto rounded-lg border border-gray-700">
+          <table class="min-w-full bg-gray-800 text-left text-sm text-gray-300">
+            <thead class="bg-gray-700 text-gray-200 uppercase text-xs font-bold tracking-wider">
+              <tr>
+                <th class="py-3 px-4">คำอธิบาย</th>
+                <th class="py-3 px-4">จำนวน</th>
+                <th class="py-3 px-4">วันที่</th>
+                <th class="py-3 px-4">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="favorBody" class="divide-y divide-gray-700"></tbody>
+          </table>
+        </div>
+        <div id="favorPagination" class="mt-4 flex justify-center space-x-2"></div>
+      </div>
+    </div>
+    
+    <div id="dm" class="tab-content">
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">🎲 บันทึก DM Session</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+          <input id="dmSessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+          <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" onchange="calculateDmRewards()"/>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+           <div class="flex items-center bg-gray-700/50 px-3 py-2 rounded border border-gray-700 w-fit">
+            <input id="soloQuest" type="checkbox" class="mr-2 w-4 h-4 text-purple-600 bg-gray-700 border-gray-500 rounded focus:ring-purple-600 ring-offset-gray-800" onchange="calculateDmRewards()"/>
+            <label for="soloQuest" class="text-gray-300 select-none cursor-pointer">ภารกิจเดี่ยว</label>
+          </div>
+          <div class="flex items-center bg-gray-700/50 px-3 py-2 rounded border border-gray-700 w-fit">
+            <input id="doubleReward" type="checkbox" class="mr-2 w-4 h-4 text-purple-600 bg-gray-700 border-gray-500 rounded focus:ring-purple-600 ring-offset-gray-800" onchange="calculateDmRewards()"/>
+            <label for="doubleReward" class="text-gray-300 select-none cursor-pointer">รางวัล x2</label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gray-700/50 p-3 rounded border border-gray-700 text-gray-300">
+            <strong class="block text-xs uppercase text-gray-500 mb-1">ทองที่ได้รับ</strong> 
+            <span id="dmAutoGold" class="text-yellow-400 font-bold text-lg">0</span> GP
+          </div>
+          <div class="bg-gray-700/50 p-3 rounded border border-gray-700 text-gray-300">
+            <strong class="block text-xs uppercase text-gray-500 mb-1">Favor ที่ได้รับ</strong> 
+            <span id="dmAutoFavor" class="text-indigo-400 font-bold text-lg">0</span> Favor
+          </div>
+          <div class="bg-gray-700/50 p-3 rounded border border-gray-700 text-gray-300">
+            <strong class="block text-xs uppercase text-gray-500 mb-1">ชั่วโมงที่ได้รับ</strong> 
+            <span id="dmAutoHours" class="text-green-400 font-bold text-lg">0</span> ชม.
+          </div>
+        </div>
+
+        <button onclick="addDmLog()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก DM Session</button>
+      </div>
+
+      <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-white">ประวัติ DM Session</h3>
+        <div id="dmTable" class="overflow-x-auto rounded-lg border border-gray-700">
+          <table class="min-w-full bg-gray-800 text-left text-sm text-gray-300">
+            <thead class="bg-gray-700 text-gray-200 uppercase text-xs font-bold tracking-wider">
+              <tr>
+                <th class="py-3 px-4">ชื่อเซสชั่น</th>
+                <th class="py-3 px-4">วันที่</th>
+                <th class="py-3 px-4">ชั่วโมง</th>
+                <th class="py-3 px-4">ทองที่ได้รับ</th>
+                <th class="py-3 px-4">Favor ที่ได้รับ</th>
+                <th class="py-3 px-4">ภารกิจเดี่ยว</th>
+                <th class="py-3 px-4">รางวัล x2</th>
+                <th class="py-3 px-4">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="dmBody" class="divide-y divide-gray-700"></tbody>
+          </table>
+        </div>
+        <div id="dmPagination" class="mt-4 flex justify-center space-x-2"></div>
+      </div>
+    </div>
+
+    <a href="characters.html" class="inline-block mt-6 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded transition flex items-center w-fit gap-2">
+      <span>⬅️</span> กลับหน้าตัวละคร
+    </a>
   </div>
 
-  <a href="characters.html" class="inline-block mt-6 bg-gray-500 text-white px-4 py-2 rounded">กลับหน้าตัวละคร</a>
-</body>
 <script>
   let currentUser = null;
   let currentCharId = null;
@@ -315,10 +328,15 @@
   // Tab system
   function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('text-blue-600', 'border-blue-500'));
+    document.querySelectorAll('.tab-button').forEach(el => {
+        el.classList.remove('text-blue-400', 'border-blue-400', 'text-white'); // Active Styles
+        el.classList.add('text-gray-400'); // Inactive
+    });
     
     document.getElementById(tabName).classList.add('active');
-    document.getElementById('tab-' + tabName).classList.add('text-blue-600', 'border-blue-500');
+    const btn = document.getElementById('tab-' + tabName);
+    btn.classList.remove('text-gray-400');
+    btn.classList.add('text-blue-400', 'border-blue-400', 'text-white');
   }
 
   // โหลดข้อมูลตัวละคร
@@ -498,18 +516,20 @@
     pageData.forEach(item => {
       const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
       const tr = document.createElement('tr');
+      // Update Table Row Styles for Dark Mode
+      tr.className = "hover:bg-gray-700/50 transition-colors";
       tr.innerHTML = `
-        <td class="py-2 px-4 border-b">${item.name}</td>
-        <td class="py-2 px-4 border-b">${item.dm}</td>
-        <td class="py-2 px-4 border-b">${dateStr}</td>
-        <td class="py-2 px-4 border-b">${item.hours}</td>
-        <td class="py-2 px-4 border-b">${item.notes}</td>
-        <td class="py-2 px-4 border-b text-center">${item.noGold ? '✅' : ''}</td>
-        <td class="py-2 px-4 border-b">${item.gotItems}</td>
-        <td class="py-2 px-4 border-b">${item.autoGold || 0} GP</td>
-        <td class="py-2 px-4 border-b">
-          <button onclick="editSession('${item.id}')" class="text-yellow-500 mr-2">แก้ไข</button>
-          <button onclick="deleteSession('${item.id}')" class="text-red-500">ลบ</button>
+        <td class="py-3 px-4 border-b border-gray-700 font-medium text-white">${item.name}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs" title="${item.notes}">${item.notes}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.noGold ? '✅' : ''}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.gotItems}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-yellow-400 font-medium">${item.autoGold || 0}</td>
+        <td class="py-3 px-4 border-b border-gray-700">
+          <button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
+          <button onclick="deleteSession('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -520,7 +540,7 @@
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.className = `px-3 py-1 rounded ${i === currentPageSession ? 'bg-blue-500 text-white' : 'bg-gray-200'}`;
+        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageSession ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
         btn.onclick = () => {
           currentPageSession = i;
           renderSessions();
@@ -631,14 +651,15 @@
     pageData.forEach(item => {
       const dateStr = item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
       const tr = document.createElement('tr');
+      tr.className = "hover:bg-gray-700/50 transition-colors";
       tr.innerHTML = `
-        <td class="py-2 px-4 border-b">${item.description}</td>
-        <td class="py-2 px-4 border-b text-red-600">-${item.amount}</td>
-        <td class="py-2 px-4 border-b">ใช้</td>
-        <td class="py-2 px-4 border-b">${dateStr}</td>
-        <td class="py-2 px-4 border-b">
-          <button onclick="editGold('${item.id}')" class="text-yellow-500 mr-2">แก้ไข</button>
-          <button onclick="deleteGold('${item.id}')" class="text-red-500">ลบ</button>
+        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-red-400 font-medium">-${item.amount}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">ใช้</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+        <td class="py-3 px-4 border-b border-gray-700">
+          <button onclick="editGold('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
+          <button onclick="deleteGold('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -648,7 +669,7 @@
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.className = `px-3 py-1 rounded ${i === currentPageGold ? 'bg-blue-500 text-white' : 'bg-gray-200'}`;
+        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageGold ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
         btn.onclick = () => {
           currentPageGold = i;
           renderGold();
@@ -759,13 +780,14 @@
     pageData.forEach(item => {
       const dateStr = item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
       const tr = document.createElement('tr');
+      tr.className = "hover:bg-gray-700/50 transition-colors";
       tr.innerHTML = `
-        <td class="py-2 px-4 border-b">${item.description}</td>
-        <td class="py-2 px-4 border-b">+${item.amount} Favor</td>
-        <td class="py-2 px-4 border-b">${dateStr}</td>
-        <td class="py-2 px-4 border-b">
-          <button onclick="editFavor('${item.id}')" class="text-yellow-500 mr-2">แก้ไข</button>
-          <button onclick="deleteFavor('${item.id}')" class="text-red-500">ลบ</button>
+        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-indigo-400 font-medium">+${item.amount} Favor</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+        <td class="py-3 px-4 border-b border-gray-700">
+          <button onclick="editFavor('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
+          <button onclick="deleteFavor('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -775,7 +797,7 @@
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.className = `px-3 py-1 rounded ${i === currentPageFavor ? 'bg-blue-500 text-white' : 'bg-gray-200'}`;
+        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageFavor ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
         btn.onclick = () => {
           currentPageFavor = i;
           renderFavor();
@@ -925,17 +947,18 @@
     pageData.forEach(item => {
       const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
       const tr = document.createElement('tr');
+      tr.className = "hover:bg-gray-700/50 transition-colors";
       tr.innerHTML = `
-        <td class="py-2 px-4 border-b">${item.sessionName}</td>
-        <td class="py-2 px-4 border-b">${dateStr}</td>
-        <td class="py-2 px-4 border-b">${item.hours}</td>
-        <td class="py-2 px-4 border-b">${item.autoGold || 0} GP</td>
-        <td class="py-2 px-4 border-b">${item.autoFavor || 0} Favor</td>
-        <td class="py-2 px-4 border-b text-center">${item.soloQuest ? '✅' : ''}</td>
-        <td class="py-2 px-4 border-b text-center">${item.doubleReward ? '✅' : ''}</td>
-        <td class="py-2 px-4 border-b">
-          <button onclick="editDmLog('${item.id}')" class="text-yellow-500 mr-2">แก้ไข</button>
-          <button onclick="deleteDmLog('${item.id}')" class="text-red-500">ลบ</button>
+        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.sessionName}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-yellow-400 font-medium">${item.autoGold || 0} GP</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-indigo-400 font-medium">${item.autoFavor || 0} Favor</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.soloQuest ? '✅' : ''}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.doubleReward ? '✅' : ''}</td>
+        <td class="py-3 px-4 border-b border-gray-700">
+          <button onclick="editDmLog('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
+          <button onclick="deleteDmLog('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -945,7 +968,7 @@
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.className = `px-3 py-1 rounded ${i === currentPageDm ? 'bg-blue-500 text-white' : 'bg-gray-200'}`;
+        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageDm ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
         btn.onclick = () => {
           currentPageDm = i;
           renderDmLogs();
@@ -1024,7 +1047,7 @@
         window.isCurrentUserAdmin = isCurrentUserAdmin;
         
         // แสดง/ซ่อนปุ่มตามสิทธิ์
-        button.style.display = 'inline-block';
+        button.style.display = 'inline-flex';
       }
     } catch (error) {
       console.error("ตรวจสอบสิทธิ์ล้มเหลว:", error);
@@ -1071,7 +1094,7 @@
     }
     
     // แสดง Tier
-    const tier = getTierFromLevel(currentCharData.level);
+    const tier = getTierFromLevel(currentLevel);
     document.getElementById('charTier').textContent = tier;
     
     const sheetLinkEl = document.getElementById('sheetLink');
@@ -1353,7 +1376,7 @@
       const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
       const multiplier = getGoldMultiplier(currentLevel);
       
-      autoGold = Math.floor(hours * 100 * multiplier);
+      autoGold = Math.floor(hours * 100 * multiplier * 1.5);
       autoFavor = Math.floor(hours * 4);
       
       if (doubleReward) {

@@ -10,39 +10,85 @@
   <script src="firebase-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Admin Dashboard</title>
+  <style>
+    /* ปรับ Scrollbar ให้เข้ากับธีมมืด */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+  </style>
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6 pb-4 border-b">
-      <h1 class="text-3xl font-bold">Admin Dashboard</h1>
-      <div class="flex items-center space-x-4">
-        <span class="text-gray-700 font-medium">สมาชิก: <span id="userEmail">...</span></span>
+<body class="bg-gray-900 text-gray-200 p-4 sm:p-6 font-sans min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-700 gap-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+        🛡️ Admin Dashboard
+      </h1>
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <span class="text-gray-400 font-medium text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
         <button onclick="auth.signOut().then(() => location.href='index.html')" 
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
         </button>
       </div>
     </div>
-    <a href="characters.html" class="mb-4 inline-block bg-gray-500 text-white px-3 py-1 rounded">กลับหน้าตัวละคร</a>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white p-4 rounded shadow">
-        <canvas id="levelChart" height="100"></canvas>
+    <a href="characters.html" class="mb-6 inline-flex items-center bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded transition text-sm font-medium">
+      ⬅️ กลับหน้าตัวละคร
+    </a>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">การกระจายเลเวล</h3>
+        <div class="relative h-64 w-full">
+          <canvas id="levelChart"></canvas>
+        </div>
       </div>
-      <div class="bg-white p-4 rounded shadow">
-        <canvas id="classChart" height="100"></canvas>
+
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">ทองเฉลี่ย</h3>
+        <div class="relative h-64 w-full">
+          <canvas id="goldChart"></canvas>
+        </div>
       </div>
-      <div class="bg-white p-4 rounded shadow">
-        <canvas id="raceChart" height="100"></canvas>
+
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">สัดส่วนอาชีพ</h3>
+        <div class="relative h-64 w-full">
+          <canvas id="classChart"></canvas>
+        </div>
       </div>
+
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">สัดส่วนเผ่า</h3>
+        <div class="relative h-64 w-full">
+          <canvas id="raceChart"></canvas>
+        </div>
+      </div>
+
     </div>
 
-    <h2 class="text-xl font-semibold mb-4">ตัวละครทั้งหมด (<span id="charCount">...</span>)</h2>
-    <div id="allChars" class="space-y-3"></div>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-white">
+        ตัวละครทั้งหมด <span class="bg-blue-900 text-blue-200 text-sm py-0.5 px-2 rounded-full ml-2" id="charCount">...</span>
+      </h2>
+    </div>
+    
+    <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
+       <div id="allChars" class="divide-y divide-gray-700">
+         </div>
+    </div>
+
   </div>
 
   <script src="/js/utils.js"></script>
   <script>
+    // *** Configuration: ตั้งค่าสี Chart.js ให้เข้ากับ Dark Theme ***
+    Chart.defaults.color = '#9ca3af'; // สี text (gray-400)
+    Chart.defaults.borderColor = '#374151'; // สีเส้น grid (gray-700)
+
     let chartInstances = [];
 
     auth.onAuthStateChanged(async user => {
@@ -97,19 +143,38 @@
         snap.forEach(doc => {
           const c = doc.data();
           const div = document.createElement('div');
-          div.className = 'bg-white p-3 rounded border';
+          // ปรับแต่ง List Item เป็นแบบ Flex และ Dark Theme
+          div.className = 'p-4 hover:bg-gray-700/50 transition duration-150 flex flex-col sm:flex-row justify-between sm:items-center gap-3';
           div.innerHTML = `
-            <strong>${c.name}</strong> | Lv.${c.level} | ${c.class} | ${c.race} | ทอง: ${c.gold}
-            <br><small>ผู้เล่น UID: ${c.userId}</small>
-            <a href="character-detail.html?charId=${doc.id}&admin=true" class="ml-2 text-blue-500 text-sm">ดูรายละเอียด</a>
-            <button onclick="deleteCharAdmin('${doc.id}')" class="ml-2 text-red-500 text-sm mt-1">ลบ</button>
+            <div>
+              <div class="flex items-center gap-2">
+                <strong class="text-lg text-white">${c.name}</strong>
+                <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Lv.${c.currentLevel}</span>
+              </div>
+              <div class="text-sm text-gray-400 mt-1">
+                <span class="mr-2">⚔️ ${c.class}</span>
+                <span class="mr-2">🧬 ${c.race}</span>
+                <span class="text-yellow-500 font-medium">💰 ${c.totalGold} gp</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                 UID: <span class="font-mono">${c.userId}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
+              <a href="character-detail.html?charId=${doc.id}&admin=true" class="text-blue-400 hover:text-blue-300 text-sm font-medium underline decoration-dotted">
+                ดูรายละเอียด
+              </a>
+              <button onclick="deleteCharAdmin('${doc.id}')" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1 rounded border border-red-900/50 text-sm transition">
+                ลบ
+              </button>
+            </div>
           `;
           list.appendChild(div);
         });
       } catch (error) {
         console.error('Error loading characters:', error);
         document.getElementById('allChars').innerHTML = 
-          '<p class="text-red-500">โหลดข้อมูลล้มเหลว: ' + error.message + '</p>';
+          '<div class="p-4 text-red-400 text-center">โหลดข้อมูลล้มเหลว: ' + error.message + '</div>';
       }
     }
 
@@ -126,7 +191,6 @@
     }
 
     async function loadCharts() {
-      // ลบกราฟเก่า
       chartInstances.forEach(c => c.destroy());
       chartInstances = [];
 
@@ -136,30 +200,87 @@
 
         if (chars.length === 0) return;
 
-        // Level Average
+        // =============== Level Distribution Chart ===============
         const levelCtx = document.getElementById('levelChart')?.getContext('2d');
         if (levelCtx) {
-          const avgLevel = chars.reduce((sum, c) => sum + c.level, 0) / chars.length;
+          // นับจำนวนตัวละครแต่ละเลเวล
+          const levelCount = {};
+          chars.forEach(c => {
+            const level = c.currentLevel || 1;
+            levelCount[level] = (levelCount[level] || 0) + 1;
+          });
+          
+          // จัดเรียงเลเวลจากน้อยไปมาก
+          const sortedLevels = Object.keys(levelCount).map(Number).sort((a, b) => a - b);
+          const levelLabels = sortedLevels.map(l => `Lv.${l}`);
+          const levelData = sortedLevels.map(l => levelCount[l]);
+          
           const levelChart = new Chart(levelCtx, {
             type: 'bar',
             data: {
-              labels: ['Average Level'],
+              labels: levelLabels,
               datasets: [{
-                label: 'เลเวลเฉลี่ย',
-                data: [parseFloat(avgLevel.toFixed(1))],
-                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                label: 'จำนวนตัวละคร',
+                data: levelData,
+                backgroundColor: 'rgba(59, 130, 246, 0.6)', // Blue-500
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1
               }]
             },
             options: { 
-              responsive: true, 
-              plugins: { legend: { display: false } },
-              scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: { 
+                y: { 
+                  beginAtZero: true, 
+                  ticks: { stepSize: 1 },
+                },
+                x: { grid: { display: false } }
+              },
+              plugins: { legend: { display: false } }
             }
           });
           chartInstances.push(levelChart);
         }
 
-        // Class Count
+        // =============== Average Gold Chart ===============
+        const goldCtx = document.getElementById('goldChart')?.getContext('2d');
+        if (goldCtx) {
+          // คำนวณค่าเฉลี่ยของยอดทองรวม
+          const totalGoldValues = chars
+            .map(c => c.totalGold || c.gold || 0)
+            .filter(gold => !isNaN(gold));
+          
+          const avgGold = totalGoldValues.length > 0 
+            ? totalGoldValues.reduce((sum, g) => sum + g, 0) / totalGoldValues.length
+            : 0;
+          
+          const goldChart = new Chart(goldCtx, {
+            type: 'bar',
+            data: {
+              labels: ['Average Gold'],
+              datasets: [{
+                label: 'ยอดทองรวมเฉลี่ย',
+                data: [parseFloat(avgGold.toFixed(1))],
+                backgroundColor: 'rgba(234, 179, 8, 0.6)', // Yellow-500
+                borderColor: 'rgba(234, 179, 8, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: { 
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { 
+                y: { beginAtZero: true },
+                x: { display: false }
+              }
+            }
+          });
+          chartInstances.push(goldChart);
+        }
+
+        // =============== Class Count ===============
         const classCount = {};
         chars.forEach(c => {
           const cls = c.class || 'Unknown';
@@ -173,15 +294,21 @@
               labels: Object.keys(classCount),
               datasets: [{
                 data: Object.values(classCount),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                backgroundColor: ['#ec4899', '#3b82f6', '#eab308', '#10b981', '#8b5cf6', '#f97316'],
+                borderColor: '#1f2937', // Border สีเดียวกับพื้นหลังการ์ด
+                borderWidth: 2
               }]
             },
-            options: { responsive: true }
+            options: { 
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } }
+            }
           });
           chartInstances.push(classChart);
         }
 
-        // Race Count
+        // =============== Race Count ===============
         const raceCount = {};
         chars.forEach(c => {
           const race = c.race || 'Unknown';
@@ -195,10 +322,16 @@
               labels: Object.keys(raceCount),
               datasets: [{
                 data: Object.values(raceCount),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+                backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#14b8a6', '#a855f7', '#f97316', '#9ca3af'],
+                borderColor: '#1f2937',
+                borderWidth: 2
               }]
             },
-            options: { responsive: true }
+            options: { 
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } }
+            }
           });
           chartInstances.push(raceChart);
         }
