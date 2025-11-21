@@ -838,20 +838,27 @@
     const soloQuest = document.getElementById('soloQuest').checked;
     const doubleReward = document.getElementById('doubleReward').checked;
     
-    // คำนวณรางวัล
-    let autoGold = 0, autoFavor = 0, finalHours = hours;
+    // คำนวณชั่วโมงที่ได้รับ (ทุกกรณี × 1.5)
+    let finalHours = hours * 1.5;
+    if (doubleReward) {
+      finalHours *= 2;
+    }
+    
+    let autoGold = 0;
+    let autoFavor = 0;
+    
+    // ถ้าไม่ใช่ภารกิจเดี่ยว → คำนวณทอง + Favor
     if (!soloQuest) {
       const totalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
       const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
       const multiplier = getGoldMultiplier(currentLevel);
+      
       autoGold = Math.floor(hours * 100 * multiplier);
       autoFavor = Math.floor(hours * 4);
-      finalHours = hours * 1.5;
       
       if (doubleReward) {
         autoGold *= 2;
         autoFavor *= 2;
-        finalHours *= 2;
       }
     }
 
@@ -860,7 +867,7 @@
         characterId: currentCharId,
         sessionName,
         date: document.getElementById('dmSessionDate').value,
-        hours: finalHours,
+        hours: finalHours, // ✅ บันทึกชั่วโมง × 1.5 (หรือ × 3 ถ้า x2)
         soloQuest,
         doubleReward,
         autoGold,    
@@ -879,6 +886,7 @@
       document.getElementById('dmAutoGold').textContent = '0';
       document.getElementById('dmAutoFavor').textContent = '0';
       document.getElementById('dmAutoHours').textContent = '0';
+      
       await loadAllData();
     } catch (error) {
       alert('บันทึกล้มเหลว: ' + error.message);
@@ -1328,35 +1336,33 @@
     const soloQuest = document.getElementById('soloQuest').checked;
     const doubleReward = document.getElementById('doubleReward').checked;
     
-    if (soloQuest) {
-      // ภารกิจเดี่ยว: ได้แค่ชั่วโมง
-      document.getElementById('dmAutoGold').textContent = '0';
-      document.getElementById('dmAutoFavor').textContent = '0';
-      document.getElementById('dmAutoHours').textContent = hours;
-      return;
-    }
-    
-    // คำนวณเลเวลปัจจุบัน
-    const totalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
-    const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
-    
-    // คำนวณชั่วโมงที่ได้รับ
+    // คำนวณชั่วโมงที่ได้รับ (ทุกกรณี × 1.5)
     let finalHours = hours * 1.5;
     
-    // คำนวณทอง
-    const multiplier = getGoldMultiplier(currentLevel);
-    let autoGold = Math.floor(hours * 100 * multiplier * 1.5);
-    
-    // คำนวณ Favor
-    let autoFavor = Math.floor(hours * 4);
-    
-    // ถ้ามีรางวัล x2
+    // ถ้ามีรางวัล x2 → คูณ 2
     if (doubleReward) {
-      autoGold *= 2;
-      autoFavor *= 2;
       finalHours *= 2;
     }
     
+    let autoGold = 0;
+    let autoFavor = 0;
+    
+    // ถ้าไม่ใช่ภารกิจเดี่ยว → คำนวณทอง + Favor
+    if (!soloQuest) {
+      const totalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
+      const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
+      const multiplier = getGoldMultiplier(currentLevel);
+      
+      autoGold = Math.floor(hours * 100 * multiplier);
+      autoFavor = Math.floor(hours * 4);
+      
+      if (doubleReward) {
+        autoGold *= 2;
+        autoFavor *= 2;
+      }
+    }
+    
+    // อัปเดตการแสดงผล
     document.getElementById('dmAutoGold').textContent = autoGold;
     document.getElementById('dmAutoFavor').textContent = autoFavor;
     document.getElementById('dmAutoHours').textContent = finalHours.toFixed(1);

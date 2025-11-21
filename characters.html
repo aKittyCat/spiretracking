@@ -10,31 +10,55 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <title>ตัวละครของฉัน</title>
 </head>
-<body class="bg-gray-100 p-6">
+<body class="bg-gray-900 text-gray-200 p-4 sm:p-6 min-h-screen font-sans">
   <div class="max-w-4xl mx-auto">
-    <div class="flex justify-between items-center mb-6 pb-4 border-b">
-      <h1 class="text-2xl font-bold text-gray-800">ตัวละครของฉัน</h1>
-      <div class="flex items-center space-x-4">
-        <span class="text-gray-700 font-medium">สมาชิก: <span id="userEmail">...</span></span>
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-700 gap-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white">ตัวละครของฉัน</h1>
+      
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <span class="text-gray-400 text-sm font-medium truncate max-w-[150px] sm:max-w-none">
+          สมาชิก: <span id="userEmail" class="text-gray-200">...</span>
+        </span>
         <button onclick="auth.signOut().then(() => location.href='index.html')" 
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
         </button>
       </div>
     </div>
-    <!-- ปุ่ม Admin + ปุ่มนำทางทั้งหมด -->
-    <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" class="mb-4 bg-purple-500 text-white px-3 py-1 rounded">Admin Dashboard</button>
 
-    <!-- แบบฟอร์มเพิ่มตัวละคร -->
-    <div class="bg-white p-4 rounded mb-6">
-      <h2 class="text-xl font-semibold mb-2">เพิ่มตัวละครใหม่</h2>
-      <input id="charName" placeholder="ชื่อตัวละคร" class="w-full p-2 mb-2 border rounded"/>
-      <input id="charLevel" type="number" min="1" max="20" placeholder="เลเวลเริ่มต้นที่ 3" class="w-full p-2 mb-2 border rounded"/>
-      <input id="charClass" placeholder="อาชีพ" class="w-full p-2 mb-2 border rounded"/>
-      <input id="charRace" placeholder="เผ่า" class="w-full p-2 mb-2 border rounded"/>
-      <input id="charGold" type="number" placeholder="ทองเริ่มต้น" class="w-full p-2 mb-2 border rounded"/>
-      <input id="sheetLink" placeholder="ลิงก์ Character Sheet" class="w-full p-2 mb-2 border rounded"/>
-      <button onclick="addCharacter()" class="bg-green-500 text-white px-4 py-2 rounded mt-2">บันทึกตัวละคร</button>
+    <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" class="mb-6 w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded shadow transition">
+      Admin Dashboard
+    </button>
+
+    <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+        <span>⚔️</span> เพิ่มตัวละครใหม่
+      </h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <input id="charName" placeholder="ชื่อตัวละคร" 
+               class="col-span-1 sm:col-span-2 w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        
+        <input id="charLevel" type="number" min="1" max="20" placeholder="เลเวล (ปกติเริ่ม 3)" 
+               class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        
+        <input id="charClass" placeholder="อาชีพ" 
+               class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        
+        <input id="charRace" placeholder="เผ่า" 
+               class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        
+        <input id="charGold" type="number" placeholder="ทองเริ่มต้น" 
+               class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+      </div>
+
+      <input id="sheetLink" placeholder="ลิงก์ Character Sheet (URL)" 
+             class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+      
+      <button onclick="addCharacter()" class="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2.5 rounded-lg shadow transition">
+        บันทึกตัวละคร
+      </button>
     </div>
 
     <div id="charactersList" class="space-y-4"></div>
@@ -136,19 +160,29 @@
         snap.forEach(doc => {
           const c = doc.data();
           const div = document.createElement('div');
-          div.className = 'bg-white p-4 rounded border';
+          div.className = 'bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md hover:border-gray-500 transition duration-200';
           div.innerHTML = `
-            <h3 class="font-bold text-lg">${c.name} (Lv. ${c.level})</h3>
-            <p><strong>อาชีพ:</strong> ${c.class} | <strong>เผ่า:</strong> ${c.race} | <strong>ทอง:</strong> ${c.gold}</p>
-            ${c.sheetLink ? `<a href="${c.sheetLink}" target="_blank" class="text-blue-500">ดู Sheet</a>` : ''}
-            <a href="character-detail.html?charId=${doc.id}" class="ml-2 text-blue-500 text-sm">ดูรายละเอียด</a>
-            <button onclick="deleteChar('${doc.id}')" class="ml-2 text-red-500 text-sm">ลบ</button>
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <div>
+                    <h3 class="font-bold text-xl text-yellow-500">${c.name} <span class="text-gray-400 text-base font-normal">(Lv. ${c.currentLevel})</span></h3>
+                    <p class="text-gray-300 text-sm mt-1">
+                        <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">อาชีพ: ${c.class}</span>
+                        <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">เผ่า: ${c.race}</span>
+                        <span class="text-yellow-400 font-medium">💰 ${c.totalGold} gp</span>
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 mt-3 sm:mt-0 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
+                    ${c.sheetLink ? `<a href="${c.sheetLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 ดู Sheet</a>` : ''}
+                    <a href="character-detail.html?charId=${doc.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">📝 รายละเอียด</a>
+                    <button onclick="deleteChar('${doc.id}')" class="ml-2 pl-4 border-l border-gray-600 text-red-400 hover:text-red-300 text-sm font-medium">🗑️ ลบ</button>
+                </div>
+            </div>
           `;
           list.appendChild(div);
         });
       } catch (error) {
         console.error('Error loading characters:', error);
-        document.getElementById('charactersList').innerHTML = '<p class="text-red-500">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
+        document.getElementById('charactersList').innerHTML = '<p class="text-red-400 text-center">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
       }
     }
 
