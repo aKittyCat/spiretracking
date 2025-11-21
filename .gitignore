@@ -69,3 +69,4 @@ node_modules/
 .dataconnect
 
 /bkup
+firebase-config.js
