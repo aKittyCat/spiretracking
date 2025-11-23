@@ -27,9 +27,41 @@
       </div>
     </div>
 
-    <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" class="mb-6 w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded shadow transition">
-      Admin Dashboard
-    </button>
+    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+        <button 
+            id="adminBtn" 
+            style="display:none" 
+            onclick="location.href='dashboard.html'" 
+            class="
+                inline-flex items-center justify-center
+                w-full sm:w-auto 
+                bg-purple-600 hover:bg-purple-500 text-white 
+                px-4 py-1 rounded shadow transition 
+                duration-300 ease-in-out transform hover:scale-105 
+                focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-50
+                text-sm font-medium
+            ">
+            Admin Dashboard
+        </button>
+
+        <button 
+            onclick="window.open('https://spiremk.vercel.app/', '_blank');"
+            class="
+                inline-flex items-center justify-center 
+                w-full sm:w-auto 
+                bg-blue-600 hover:bg-blue-500 text-white 
+                px-4 py-1 rounded shadow transition 
+                duration-300 ease-in-out transform hover:scale-105 
+                focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50
+                text-sm font-medium
+            ">
+            <!-- ไอคอนตะกร้าสินค้า (Shopping Bag Icon) -->
+            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z"></path>
+            </svg>
+            ร้านค้า
+        </button>
+    </div>
 
     <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
       <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">
@@ -66,6 +98,35 @@
 
   <script src="/js/utils.js"></script>
   <script>
+    const CHAR_LIST_CACHE_TTL = 5 * 60 * 1000;
+
+    // บันทึกข้อมูลตัวละครลง localStorage
+    function setCharactersCache(characters) {
+      const cache = {
+        data: characters,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('charListCache', JSON.stringify(cache));
+    }
+
+    // ดึงข้อมูลตัวละครจาก localStorage (ถ้ายังไม่หมดอายุ)
+    function getCharactersCache() {
+      try {
+        const item = localStorage.getItem('charListCache');
+        if (!item) return null;
+        
+        const cache = JSON.parse(item);
+        if (Date.now() - cache.timestamp > CHAR_LIST_CACHE_TTL) {
+          localStorage.removeItem('charListCache');
+          return null;
+        }
+        return cache.data;
+      } catch (e) {
+        console.warn("Cache error:", e);
+        return null;
+      }
+    }
+
     let currentUser = null;
 
     auth.onAuthStateChanged(async user => {
@@ -137,6 +198,7 @@
       try {
         await db.collection('characters').add(char);
         alert('เพิ่มตัวละครสำเร็จ!');
+        localStorage.removeItem('charListCache');
         loadCharacters();
         // ล้างฟอร์ม
         document.getElementById('charName').value = '';
@@ -153,37 +215,66 @@
 
     // โหลดตัวละคร
     async function loadCharacters() {
+      // 1. ลองดึงจากแคชก่อน
+      const cached = getCharactersCache();
+      if (cached) {
+        renderCharacters(cached);
+        return;
+      }
+
+      // 2. ถ้าไม่มีแคช → โหลดจาก Firestore
       try {
         const snap = await db.collection('characters').where('userId', '==', currentUser.uid).get();
-        const list = document.getElementById('charactersList');
-        list.innerHTML = '';
+        const characters = [];
         snap.forEach(doc => {
-          const c = doc.data();
-          const div = document.createElement('div');
-          div.className = 'bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md hover:border-gray-500 transition duration-200';
-          div.innerHTML = `
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                    <h3 class="font-bold text-xl text-yellow-500">${c.name} <span class="text-gray-400 text-base font-normal">(Lv. ${c.currentLevel})</span></h3>
-                    <p class="text-gray-300 text-sm mt-1">
-                        <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">อาชีพ: ${c.class}</span>
-                        <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">เผ่า: ${c.race}</span>
-                        <span class="text-yellow-400 font-medium">💰 ${c.totalGold} gp</span>
-                    </p>
-                </div>
-                <div class="flex items-center gap-3 mt-3 sm:mt-0 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
-                    ${c.sheetLink ? `<a href="${c.sheetLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 ดู Sheet</a>` : ''}
-                    <a href="character-detail.html?charId=${doc.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">📝 รายละเอียด</a>
-                    <button onclick="deleteChar('${doc.id}')" class="ml-2 pl-4 border-l border-gray-600 text-red-400 hover:text-red-300 text-sm font-medium">🗑️ ลบ</button>
-                </div>
-            </div>
-          `;
-          list.appendChild(div);
+          characters.push({ id: doc.id, ...doc.data() });
         });
+        
+        // บันทึกลงแคช
+        setCharactersCache(characters);
+        
+        // แสดงผล
+        renderCharacters(characters);
       } catch (error) {
         console.error('Error loading characters:', error);
-        document.getElementById('charactersList').innerHTML = '<p class="text-red-400 text-center">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
+        document.getElementById('charactersList').innerHTML = 
+          '<p class="text-red-400 text-center">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
       }
+    }
+
+    function renderCharacters(characters) {
+      const list = document.getElementById('charactersList');
+      list.innerHTML = '';
+      
+      if (characters.length === 0) {
+        list.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีตัวละคร</p>';
+        return;
+      }
+      
+      characters.forEach(char => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md hover:border-gray-500 transition duration-200';
+        div.innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <div>
+                  <h3 class="font-bold text-xl text-yellow-500">${char.name} 
+                    <span class="text-gray-400 text-base font-normal">(Lv. ${char.currentLevel || char.level})</span>
+                  </h3>
+                  <p class="text-gray-300 text-sm mt-1">
+                      <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">อาชีพ: ${char.class}</span>
+                      <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">เผ่า: ${char.race}</span>
+                      <span class="text-yellow-400 font-medium">💰 ${char.totalGold || char.gold} gp</span>
+                  </p>
+              </div>
+              <div class="flex items-center gap-3 mt-3 sm:mt-0 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
+                  ${char.sheetLink ? `<a href="${char.sheetLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 ดู Sheet</a>` : ''}
+                  <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">📝 รายละเอียด</a>
+                  <button onclick="deleteChar('${char.id}')" class="ml-2 pl-4 border-l border-gray-600 text-red-400 hover:text-red-300 text-sm font-medium">🗑️ ลบ</button>
+              </div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
     }
 
     async function deleteChar(charId) {
@@ -192,6 +283,7 @@
       const result = await deleteCharacterAndData(charId, true);
       if (result.success) {
         alert(result.message);
+        localStorage.removeItem('charListCache');
         loadCharacters();
       } else {
         alert('❌ ' + result.message);

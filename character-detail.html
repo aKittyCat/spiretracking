@@ -71,7 +71,7 @@
 
     <div id="session" class="tab-content active">
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
-        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 เพิ่มบันทึก Session</h2>
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 บันทึก Session</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <input id="sessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
@@ -249,6 +249,46 @@
   </div>
 
 <script>
+  // ตั้งค่า TTL 5 นาที
+  const CACHE_TTL = 5 * 60 * 1000;
+
+  // บันทึกข้อมูลลง localStorage พร้อม timestamp
+  function setCachedData(key, data) {
+    const cache = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(`char_${currentCharId}_${key}`, JSON.stringify(cache));
+  }
+
+  // ดึงข้อมูลจาก localStorage (ถ้ายังไม่หมดอายุ)
+  function getCachedData(key) {
+    try {
+      const item = localStorage.getItem(`char_${currentCharId}_${key}`);
+      if (!item) return null;
+      
+      const cache = JSON.parse(item);
+      if (Date.now() - cache.timestamp > CACHE_TTL) {
+        localStorage.removeItem(`char_${currentCharId}_${key}`);
+        return null;
+      }
+      return cache.data;
+    } catch (e) {
+      console.warn("Cache error:", e);
+      return null;
+    }
+  }
+
+  // ลบแคชทั้งหมดของตัวละครนี้
+  function clearCharCache() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith(`char_${currentCharId}_`)) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
   let currentUser = null;
   let currentCharId = null;
   let currentCharData = null;
@@ -408,6 +448,7 @@
         sheetLink: newSheetLink
       });
       alert('แก้ไขสำเร็จ!');
+      clearCharCache();
       await loadAllData();
       displayCharacterData();
     } catch (error) {
@@ -478,6 +519,7 @@
       document.getElementById('noGold').checked = false;
       document.getElementById('gotItems').value = '';
       document.getElementById('autoGoldAmount').textContent = '0';
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('บันทึกล้มเหลว: ' + error.message);
@@ -485,16 +527,31 @@
   }
 
   async function loadSessions() {
-    sessionsData = [];
-    const snap = await db.collection('sessions')
-      .where('characterId', '==', currentCharId)
-      .orderBy('createdAt', 'desc')
-      .get();
+    // ลองดึงจากแคชก่อน
+    const cached = getCachedData('sessions');
+    if (cached) {
+      sessionsData = cached;
+      currentPageSession = 1;
+      renderSessions();
+      return;
+    }
 
-    sessionsData = [];
-    snap.forEach(doc => sessionsData.push({ id: doc.id, ...doc.data() }));
-    currentPageSession = 1;
-    renderSessions();
+    // ถ้าไม่มีแคช → โหลดจาก Firestore
+    try {
+      const snap = await db.collection('sessions')
+        .where('characterId', '==', currentCharId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      sessionsData = [];
+      snap.forEach(doc => sessionsData.push({ id: doc.id, ...doc.data() }));
+      currentPageSession = 1;
+      
+      // บันทึกลงแคช
+      setCachedData('sessions', sessionsData);
+      renderSessions();
+    } catch (error) {
+      console.error('Error loading sessions:', error);
+    }
   }
 
   function renderSessions() {
@@ -574,6 +631,7 @@
         gotItems: newGotItems
       });
       alert('แก้ไข Session สำเร็จ!');
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('แก้ไขล้มเหลว: ' + error.message);
@@ -584,6 +642,7 @@
     if (confirm('ลบบันทึก Session นี้หรือไม่?')) {
       try {
         await db.collection('sessions').doc(id).delete();
+        clearCharCache();
         await loadAllData();
       } catch (error) {
         alert('ลบล้มเหลว: ' + error.message);
@@ -613,6 +672,7 @@
       alert('บันทึกการใช้ทองสำเร็จ!');
       document.getElementById('goldDesc').value = '';
       document.getElementById('goldAmount').value = '';
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('บันทึกล้มเหลว: ' + error.message);
@@ -620,16 +680,27 @@
   }
 
   async function loadGoldEntries() {
-    goldData = [];
-    const snap = await db.collection('gold')
-      .where('characterId', '==', currentCharId)
-      .orderBy('timestamp', 'desc')
-      .get();
+    const cached = getCachedData('gold');
+    if (cached) {
+      goldData = cached;
+      currentPageGold = 1;
+      renderGold();
+      return;
+    }
 
-    goldData = [];
-    snap.forEach(doc => goldData.push({ id: doc.id, ...doc.data() }));
-    currentPageGold = 1;
-    renderGold();
+    try {
+      const snap = await db.collection('gold')
+        .where('characterId', '==', currentCharId)
+        .orderBy('timestamp', 'desc')
+        .get();
+      goldData = [];
+      snap.forEach(doc => goldData.push({ id: doc.id, ...doc.data() }));
+      currentPageGold = 1;
+      setCachedData('gold', goldData);
+      renderGold();
+    } catch (error) {
+      console.error('Error loading gold:', error);
+    }
   }
 
   function renderGold() {
@@ -691,9 +762,10 @@
       await db.collection('gold').doc(id).update({
         description: newDesc,
         amount: parseFloat(newAmount) || item.amount,
-        type: 'spend' // ✅ บันทึกเป็น "ใช้ทอง" เท่านั้น
+        type: 'spend' 
       });
       alert('แก้ไขสำเร็จ!');
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('แก้ไขล้มเหลว: ' + error.message);
@@ -711,7 +783,7 @@
         
         // ลบรายการ
         await db.collection('gold').doc(id).delete();
-        
+        clearCharCache();
         // คืนทอง + อัปเดตยอดรวม
         await loadAllData();
         alert(`คืนทอง ${deletedAmount} GP แล้ว!`);
@@ -742,6 +814,7 @@
       alert('บันทึกการใช้ Favor สำเร็จ!');
       document.getElementById('favorDesc').value = '';
       document.getElementById('favorAmount').value = '';
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('บันทึกล้มเหลว: ' + error.message);
@@ -749,16 +822,28 @@
   }
 
   async function loadFavorEntries() {
-    favorData = [];
-    const snap = await db.collection('favor')
-      .where('characterId', '==', currentCharId)
-      .orderBy('timestamp', 'desc')
-      .get();
+    const cached = getCachedData('favor');
+    if (cached) {
+      favorData = cached;
+      currentPageFavor = 1;
+      renderFavor();
+      return;
+    }
 
-    favorData = [];
-    snap.forEach(doc => favorData.push({ id: doc.id, ...doc.data() }));
-    currentPageFavor = 1;
-    renderFavor();
+    try {
+      const snap = await db.collection('favor')
+        .where('characterId', '==', currentCharId)
+        .orderBy('timestamp', 'desc')
+        .get();
+      favorData = [];
+      snap.forEach(doc => favorData.push({ id: doc.id, ...doc.data() }));
+      currentPageFavor = 1;
+      
+      setCachedData('favor', favorData);
+      renderFavor();
+    } catch (error) {
+      console.error('Error loading favor:', error);
+    }
   }
 
   function renderFavor() {
@@ -821,6 +906,7 @@
         amount: parseInt(newAmount) || item.amount
       });
       alert('แก้ไขสำเร็จ!');
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('แก้ไขล้มเหลว: ' + error.message);
@@ -838,7 +924,7 @@
         
         // ลบรายการ
         await db.collection('favor').doc(id).delete();
-        
+        clearCharCache();
         // คืน Favor + อัปเดตยอดรวม
         await loadAllData();
         alert(`คืน Favor ${deletedAmount} หน่วยแล้ว!`);
@@ -908,7 +994,7 @@
       document.getElementById('dmAutoGold').textContent = '0';
       document.getElementById('dmAutoFavor').textContent = '0';
       document.getElementById('dmAutoHours').textContent = '0';
-      
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('บันทึกล้มเหลว: ' + error.message);
@@ -916,16 +1002,28 @@
   }
 
   async function loadDmLogs() {
-    dmData = [];
-    const snap = await db.collection('dm_logs')
-      .where('characterId', '==', currentCharId)
-      .orderBy('createdAt', 'desc')
-      .get();
+    const cached = getCachedData('dm');
+    if (cached) {
+      dmData = cached;
+      currentPageDm = 1;
+      renderDmLogs();
+      return;
+    }
 
-    dmData = [];
-    snap.forEach(doc => dmData.push({ id: doc.id, ...doc.data() }));
-    currentPageDm = 1;
-    renderDmLogs();
+    try {
+      const snap = await db.collection('dm_logs')
+        .where('characterId', '==', currentCharId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      dmData = [];
+      snap.forEach(doc => dmData.push({ id: doc.id, ...doc.data() }));
+      currentPageDm = 1;
+      
+      setCachedData('dm', dmData);
+      renderDmLogs();
+    } catch (error) {
+      console.error('Error loading DM logs:', error);
+    }
   }
 
   function renderDmLogs() {
@@ -998,6 +1096,7 @@
         doubleReward: newDouble
       });
       alert('แก้ไขสำเร็จ!');
+      clearCharCache();
       await loadAllData();
     } catch (error) {
       alert('แก้ไขล้มเหลว: ' + error.message);
@@ -1008,30 +1107,12 @@
     if (confirm('ลบบันทึก DM นี้หรือไม่?')) {
       try {
         await db.collection('dm_logs').doc(id).delete();
+        clearCharCache();
         await loadAllData();
       } catch (error) {
         alert('ลบล้มเหลว: ' + error.message);
       }
     }
-  }
-
-  async function loadAllData() {
-    // โหลดข้อมูลทั้งหมดพร้อมกัน
-    await Promise.all([
-      loadSessions(),
-      loadGoldEntries(),
-      loadFavorEntries(),
-      loadDmLogs()
-    ]);
-    
-    // อัปเดตยอดรวม (รอให้โหลดข้อมูลเสร็จก่อน)
-    await Promise.all([
-      updateTotalGold(),
-      updateTotalFavor()
-    ]);
-    
-    // แสดงข้อมูลล่าสุด
-    displayCharacterData();
   }
 
   // ตรวจสอบว่าเป็น admin หรือไม่ (สำหรับการแก้ไข)

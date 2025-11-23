@@ -85,7 +85,36 @@
 
   <script src="/js/utils.js"></script>
   <script>
-    // *** Configuration: ตั้งค่าสี Chart.js ให้เข้ากับ Dark Theme ***
+    // ตั้งค่า TTL (5 นาที = 300,000 มิลลิวินาที)
+    const CACHE_TTL = 5 * 60 * 1000;
+
+    // บันทึกข้อมูลลง localStorage พร้อม timestamp
+    function setDashboardCache(key, data) {
+      const cache = {
+        data,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(`dashboard_${key}`, JSON.stringify(cache));
+    }
+
+    // ดึงข้อมูลจาก localStorage (ถ้ายังไม่หมดอายุ)
+    function getDashboardCache(key) {
+      try {
+        const item = localStorage.getItem(`dashboard_${key}`);
+        if (!item) return null;
+        
+        const cache = JSON.parse(item);
+        if (Date.now() - cache.timestamp > CACHE_TTL) {
+          localStorage.removeItem(`dashboard_${key}`);
+          return null;
+        }
+        return cache.data;
+      } catch (e) {
+        console.warn("Cache error:", e);
+        return null;
+      }
+    }
+
     Chart.defaults.color = '#9ca3af'; // สี text (gray-400)
     Chart.defaults.borderColor = '#374151'; // สีเส้น grid (gray-700)
 
@@ -132,55 +161,74 @@
     }
 
     async function loadAllCharacters() {
+      const cachedChars = getDashboardCache('characters');
+      const list = document.getElementById('allChars');
+      const countEl = document.getElementById('charCount');
+
+      if (cachedChars) {
+        if (countEl) countEl.textContent = cachedChars.length;
+        list.innerHTML = '';
+        cachedChars.forEach(char => {
+          renderCharacterItem(char);
+        });
+        return;
+      }
+
       try {
         const snap = await db.collection('characters').get();
-        const list = document.getElementById('allChars');
-        const countEl = document.getElementById('charCount');
-        
-        if (countEl) countEl.textContent = snap.size;
-        list.innerHTML = '';
-        
+        const chars = [];
         snap.forEach(doc => {
-          const c = doc.data();
-          const div = document.createElement('div');
-          // ปรับแต่ง List Item เป็นแบบ Flex และ Dark Theme
-          div.className = 'p-4 hover:bg-gray-700/50 transition duration-150 flex flex-col sm:flex-row justify-between sm:items-center gap-3';
-          div.innerHTML = `
-            <div>
-              <div class="flex items-center gap-2">
-                <strong class="text-lg text-white">${c.name}</strong>
-                <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Lv.${c.currentLevel}</span>
-              </div>
-              <div class="text-sm text-gray-400 mt-1">
-                <span class="mr-2">⚔️ ${c.class}</span>
-                <span class="mr-2">🧬 ${c.race}</span>
-                <span class="text-yellow-500 font-medium">💰 ${c.totalGold} gp</span>
-              </div>
-              <div class="text-xs text-gray-500 mt-1">
-                 UID: <span class="font-mono">${c.userId}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
-              <a href="character-detail.html?charId=${doc.id}&admin=true" class="text-blue-400 hover:text-blue-300 text-sm font-medium underline decoration-dotted">
-                ดูรายละเอียด
-              </a>
-              <button onclick="deleteCharAdmin('${doc.id}')" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1 rounded border border-red-900/50 text-sm transition">
-                ลบ
-              </button>
-            </div>
-          `;
-          list.appendChild(div);
+          chars.push({ id: doc.id, ...doc.data() });
+        });
+
+        setDashboardCache('characters', chars);
+
+        if (countEl) countEl.textContent = chars.length;
+        list.innerHTML = '';
+        chars.forEach(char => {
+          renderCharacterItem(char);
         });
       } catch (error) {
         console.error('Error loading characters:', error);
-        document.getElementById('allChars').innerHTML = 
+        list.innerHTML = 
           '<div class="p-4 text-red-400 text-center">โหลดข้อมูลล้มเหลว: ' + error.message + '</div>';
       }
     }
 
+    // ฟังก์ชันแยกสำหรับสร้างรายการตัวละคร
+    function renderCharacterItem(c) {
+      const div = document.createElement('div');
+      div.className = 'p-4 hover:bg-gray-700/50 transition duration-150 flex flex-col sm:flex-row justify-between sm:items-center gap-3';
+      div.innerHTML = `
+        <div>
+          <div class="flex items-center gap-2">
+            <strong class="text-lg text-white">${c.name}</strong>
+            <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Lv.${c.currentLevel}</span>
+          </div>
+          <div class="text-sm text-gray-400 mt-1">
+            <span class="mr-2">⚔️ ${c.class}</span>
+            <span class="mr-2">🧬 ${c.race}</span>
+            <span class="text-yellow-500 font-medium">💰 ${c.totalGold} gp</span>
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+            UID: <span class="font-mono">${c.userId}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
+          <a href="character-detail.html?charId=${c.id}&admin=true" class="text-blue-400 hover:text-blue-300 text-sm font-medium underline decoration-dotted">
+            ดูรายละเอียด
+          </a>
+          <button onclick="deleteCharAdmin('${c.id}')" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1 rounded border border-red-900/50 text-sm transition">
+            ลบ
+          </button>
+        </div>
+      `;
+      document.getElementById('allChars').appendChild(div);
+    }
+
     async function deleteCharAdmin(charId) {
       if (!confirm('⚠️ ลบตัวละครนี้จริงหรือ? ข้อมูลทั้งหมดจะหายไป!')) return;
-      
+      localStorage.removeItem('dashboard_characters');
       const result = await deleteCharacterAndData(charId, false);
       if (result.success) {
         alert(result.message);
@@ -194,149 +242,158 @@
       chartInstances.forEach(c => c.destroy());
       chartInstances = [];
 
+      // ลองดึงจากแคชก่อน
+      const cachedChars = getDashboardCache('characters');
+      
+      if (cachedChars) {
+        renderCharts(cachedChars);
+        return;
+      }
+
+      // ถ้าไม่มีแคช → โหลดจาก Firestore
       try {
         const snap = await db.collection('characters').get();
-        const chars = snap.docs.map(d => d.data());
-
-        if (chars.length === 0) return;
-
-        // =============== Level Distribution Chart ===============
-        const levelCtx = document.getElementById('levelChart')?.getContext('2d');
-        if (levelCtx) {
-          // นับจำนวนตัวละครแต่ละเลเวล
-          const levelCount = {};
-          chars.forEach(c => {
-            const level = c.currentLevel || 1;
-            levelCount[level] = (levelCount[level] || 0) + 1;
-          });
-          
-          // จัดเรียงเลเวลจากน้อยไปมาก
-          const sortedLevels = Object.keys(levelCount).map(Number).sort((a, b) => a - b);
-          const levelLabels = sortedLevels.map(l => `Lv.${l}`);
-          const levelData = sortedLevels.map(l => levelCount[l]);
-          
-          const levelChart = new Chart(levelCtx, {
-            type: 'bar',
-            data: {
-              labels: levelLabels,
-              datasets: [{
-                label: 'จำนวนตัวละคร',
-                data: levelData,
-                backgroundColor: 'rgba(59, 130, 246, 0.6)', // Blue-500
-                borderColor: 'rgba(59, 130, 246, 1)',
-                borderWidth: 1
-              }]
-            },
-            options: { 
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: { 
-                y: { 
-                  beginAtZero: true, 
-                  ticks: { stepSize: 1 },
-                },
-                x: { grid: { display: false } }
-              },
-              plugins: { legend: { display: false } }
-            }
-          });
-          chartInstances.push(levelChart);
-        }
-
-        // =============== Average Gold Chart ===============
-        const goldCtx = document.getElementById('goldChart')?.getContext('2d');
-        if (goldCtx) {
-          // คำนวณค่าเฉลี่ยของยอดทองรวม
-          const totalGoldValues = chars
-            .map(c => c.totalGold || c.gold || 0)
-            .filter(gold => !isNaN(gold));
-          
-          const avgGold = totalGoldValues.length > 0 
-            ? totalGoldValues.reduce((sum, g) => sum + g, 0) / totalGoldValues.length
-            : 0;
-          
-          const goldChart = new Chart(goldCtx, {
-            type: 'bar',
-            data: {
-              labels: ['Average Gold'],
-              datasets: [{
-                label: 'ยอดทองรวมเฉลี่ย',
-                data: [parseFloat(avgGold.toFixed(1))],
-                backgroundColor: 'rgba(234, 179, 8, 0.6)', // Yellow-500
-                borderColor: 'rgba(234, 179, 8, 1)',
-                borderWidth: 1
-              }]
-            },
-            options: { 
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: { 
-                y: { beginAtZero: true },
-                x: { display: false }
-              }
-            }
-          });
-          chartInstances.push(goldChart);
-        }
-
-        // =============== Class Count ===============
-        const classCount = {};
-        chars.forEach(c => {
-          const cls = c.class || 'Unknown';
-          classCount[cls] = (classCount[cls] || 0) + 1;
+        const chars = [];
+        snap.forEach(doc => {
+          chars.push(doc.data());
         });
-        const classCtx = document.getElementById('classChart')?.getContext('2d');
-        if (classCtx) {
-          const classChart = new Chart(classCtx, {
-            type: 'pie',
-            data: {
-              labels: Object.keys(classCount),
-              datasets: [{
-                data: Object.values(classCount),
-                backgroundColor: ['#ec4899', '#3b82f6', '#eab308', '#10b981', '#8b5cf6', '#f97316'],
-                borderColor: '#1f2937', // Border สีเดียวกับพื้นหลังการ์ด
-                borderWidth: 2
-              }]
-            },
-            options: { 
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } }
-            }
-          });
-          chartInstances.push(classChart);
-        }
-
-        // =============== Race Count ===============
-        const raceCount = {};
-        chars.forEach(c => {
-          const race = c.race || 'Unknown';
-          raceCount[race] = (raceCount[race] || 0) + 1;
-        });
-        const raceCtx = document.getElementById('raceChart')?.getContext('2d');
-        if (raceCtx) {
-          const raceChart = new Chart(raceCtx, {
-            type: 'doughnut',
-            data: {
-              labels: Object.keys(raceCount),
-              datasets: [{
-                data: Object.values(raceCount),
-                backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#14b8a6', '#a855f7', '#f97316', '#9ca3af'],
-                borderColor: '#1f2937',
-                borderWidth: 2
-              }]
-            },
-            options: { 
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } }
-            }
-          });
-          chartInstances.push(raceChart);
-        }
+        
+        // บันทึกลงแคช
+        setDashboardCache('characters', chars);
+        
+        // แสดงกราฟ
+        renderCharts(chars);
       } catch (error) {
         console.error('Error loading charts:', error);
+      }
+    }
+
+    // ฟังก์ชันแยกสำหรับแสดงกราฟ
+    function renderCharts(chars) {
+      if (chars.length === 0) return;
+
+      // =============== Level Distribution Chart ===============
+      const levelCtx = document.getElementById('levelChart')?.getContext('2d');
+      if (levelCtx) {
+        const levelCount = {};
+        chars.forEach(c => {
+          const level = c.currentLevel || 1;
+          levelCount[level] = (levelCount[level] || 0) + 1;
+        });
+        const sortedLevels = Object.keys(levelCount).map(Number).sort((a, b) => a - b);
+        const levelLabels = sortedLevels.map(l => `Lv.${l}`);
+        const levelData = sortedLevels.map(l => levelCount[l]);
+        
+        const levelChart = new Chart(levelCtx, {
+          type: 'bar',
+          data: {
+            labels: levelLabels,
+            datasets: [{
+              label: 'จำนวนตัวละคร',
+              data: levelData,
+              backgroundColor: 'rgba(59, 130, 246, 0.6)',
+              borderColor: 'rgba(59, 130, 246, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { 
+              y: { beginAtZero: true, ticks: { stepSize: 1 } },
+              x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+        chartInstances.push(levelChart);
+      }
+
+      // =============== Average Gold Chart ===============
+      const goldCtx = document.getElementById('goldChart')?.getContext('2d');
+      if (goldCtx) {
+        const totalGoldValues = chars.map(c => c.totalGold || c.gold || 0).filter(gold => !isNaN(gold));
+        const avgGold = totalGoldValues.length > 0 ? totalGoldValues.reduce((sum, g) => sum + g, 0) / totalGoldValues.length : 0;
+        
+        const goldChart = new Chart(goldCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Average Gold'],
+            datasets: [{
+              label: 'ยอดทองรวมเฉลี่ย',
+              data: [parseFloat(avgGold.toFixed(1))],
+              backgroundColor: 'rgba(234, 179, 8, 0.6)',
+              borderColor: 'rgba(234, 179, 8, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { 
+              y: { beginAtZero: true },
+              x: { display: false }
+            }
+          }
+        });
+        chartInstances.push(goldChart);
+      }
+
+      // =============== Class Count ===============
+      const classCount = {};
+      chars.forEach(c => {
+        const cls = c.class || 'Unknown';
+        classCount[cls] = (classCount[cls] || 0) + 1;
+      });
+      const classCtx = document.getElementById('classChart')?.getContext('2d');
+      if (classCtx) {
+        const classChart = new Chart(classCtx, {
+          type: 'pie',
+          data: {
+            labels: Object.keys(classCount),
+            datasets: [{
+              data: Object.values(classCount),
+              backgroundColor: ['#ec4899', '#3b82f6', '#eab308', '#10b981', '#8b5cf6', '#f97316'],
+              borderColor: '#1f2937',
+              borderWidth: 2
+            }]
+          },
+          options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+          }
+        });
+        chartInstances.push(classChart);
+      }
+
+      // =============== Race Count ===============
+      const raceCount = {};
+      chars.forEach(c => {
+        const race = c.race || 'Unknown';
+        raceCount[race] = (raceCount[race] || 0) + 1;
+      });
+      const raceCtx = document.getElementById('raceChart')?.getContext('2d');
+      if (raceCtx) {
+        const raceChart = new Chart(raceCtx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(raceCount),
+            datasets: [{
+              data: Object.values(raceCount),
+              backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#14b8a6', '#a855f7', '#f97316', '#9ca3af'],
+              borderColor: '#1f2937',
+              borderWidth: 2
+            }]
+          },
+          options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+          }
+        });
+        chartInstances.push(raceChart);
       }
     }
   </script>
