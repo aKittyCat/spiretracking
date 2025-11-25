@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Admin Dashboard</title>
@@ -156,42 +155,63 @@
         window.location.href = 'index.html';
     }
     
-    // --- Load Data (Manual) ---
+    // --- Load Data (Manual & Raw) ---
     async function loadDashboardDataManual() {
         document.getElementById('tableLoadingText').style.display = 'block';
         const btnRefresh = document.getElementById('btnRefresh');
         if(btnRefresh) { btnRefresh.disabled = true; btnRefresh.classList.add('opacity-50'); }
 
         try {
-            console.log("🔄 Loading Dashboard Data...");
+            console.log("🔄 Admin Loading: Fetching Raw Data...");
             
-            // 1. ดึงข้อมูลสรุปจาก View (Admin เห็นทั้งหมดเพราะ RLS Policy)
-            const { data: chars, error: charError } = await supabase
-                .from('character_stats')
-                .select('*');
+            // 1. ดึงข้อมูลดิบทั้งหมด (Characters, Sessions, Logs)
+            // Admin มีสิทธิ์อ่านทุกตารางผ่าน RLS Policy ที่เราตั้งไว้
+            const [chars, sessions, dmlogs, golds, favors] = await Promise.all([
+                supabase.from('characters').select('*'),
+                supabase.from('sessions').select('*').order('created_at', { ascending: false }),
+                supabase.from('dm_logs').select('*'),
+                supabase.from('gold_logs').select('*'),
+                supabase.from('favor_logs').select('*')
+            ]);
+
+            if (chars.error) throw chars.error;
+
+            console.log(`✅ Loaded: ${chars.data.length} chars`);
+
+            // 2. ประมวลผลข้อมูลใน JS (Aggregation)
+            // วิธีนี้แม่นยำที่สุดสำหรับ Dashboard รวม และไม่กระทบ Quota Realtime
+            const aggregatedChars = chars.data.map(c => {
+                const mySessions = sessions.data.filter(s => s.character_id === c.id);
+                const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
+                const myGoldLogs = golds.data.filter(g => g.character_id === c.id);
+                const myFavorLogs = favors.data.filter(f => f.character_id === c.id);
+
+                // Sum Hours
+                const sessHours = mySessions.reduce((sum, s) => sum + (Number(s.hours) || 0), 0);
+                const dmHours = myDMs.reduce((sum, d) => sum + (Number(d.hours) || 0), 0);
+                const totalHours = sessHours + dmHours;
+
+                // Sum Gold
+                const startGold = Number(c.gold_start) || 0;
+                const sessGold = mySessions.reduce((sum, s) => sum + (Number(s.auto_gold) || 0), 0);
+                const dmGold = myDMs.reduce((sum, d) => sum + (Number(d.auto_gold) || 0), 0);
+                const logGold = myGoldLogs.reduce((sum, g) => sum + (Number(g.amount) || 0), 0);
+                const totalGold = startGold + sessGold + dmGold + logGold;
+
+                // Level Calc
+                const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
+
+                return {
+                    ...c,
+                    calculated_level: currentLevel,
+                    total_gold_num: totalGold,
+                    // เพิ่มชื่อสำหรับการแสดงผล Activity
+                    latest_activity: mySessions.length > 0 ? mySessions[0].created_at : null
+                };
+            });
             
-            if (charError) throw charError;
-            allCharacters = chars || [];
-
-            // 2. ดึงจำนวน DM Logs
-            const { count: dmCount, error: dmError } = await supabase
-                .from('dm_logs')
-                .select('*', { count: 'exact', head: true });
-            
-            if (dmError) throw dmError;
-
-            // 3. ดึงกิจกรรมล่าสุด (Sessions + Join Characters)
-            const { data: sessions, error: sessError } = await supabase
-                .from('sessions')
-                .select('*, characters(name)') 
-                .order('created_at', { ascending: false })
-                .limit(10);
-
-            if (sessError) throw sessError;
-
-            console.log(`✅ Loaded: ${allCharacters.length} chars`);
-            
-            renderStatsAndLists(allCharacters, dmCount, sessions);
+            // ส่งข้อมูลที่คำนวณเสร็จแล้วไป Render
+            renderStatsAndLists(aggregatedChars, dmlogs.data.length, sessions.data);
 
         } catch (error) {
             console.error("Error:", error);
@@ -223,12 +243,8 @@
       const raceCount = {}; 
 
       chars.forEach(c => {
-        const totalGold = Number(c.total_gold) || 0;
-        const totalHours = Number(c.total_hours) || 0;
-        const baseLevel = c.base_level || 1;
-        
-        // คำนวณ Level
-        const { level: currentLevel } = calculateCurrentLevel(baseLevel, totalHours);
+        const totalGold = c.total_gold_num;
+        const currentLevel = c.calculated_level;
 
         totalGoldSum += totalGold;
         
@@ -324,9 +340,12 @@
         latestCharsList.innerHTML = '<p class="text-gray-500 text-sm">ไม่มีกิจกรรมล่าสุด</p>';
       } else {
         const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' });
-        sessions.forEach(s => {
+        // แสดง 10 รายการล่าสุด
+        sessions.slice(0, 10).forEach(s => {
             const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
-            const charName = s.characters ? s.characters.name : 'Unknown';
+            // หาชื่อตัวละครจาก array ที่โหลดมา
+            const ownerChar = chars.find(c => c.id === s.character_id);
+            const charName = ownerChar ? ownerChar.name : 'Unknown';
             
             latestCharsList.innerHTML += `
                 <div class="p-3 bg-gray-700 rounded flex justify-between items-center hover:bg-gray-600 transition duration-150">
@@ -349,28 +368,22 @@
         return;
       }
       
-      // คำนวณ Level เพื่อเรียงลำดับ
-      const displayChars = chars.map(c => {
-          const totalHours = Number(c.total_hours) || 0;
-          const { level } = calculateCurrentLevel(c.base_level || 1, totalHours);
-          return { ...c, current_level: level, total_gold_num: Number(c.total_gold) || 0 };
-      });
+      // เรียงตาม Level (จากข้อมูลที่คำนวณแล้ว)
+      chars.sort((a, b) => b.calculated_level - a.calculated_level);
 
-      displayChars.sort((a, b) => b.current_level - a.current_level);
-
-      displayChars.forEach(char => {
+      chars.forEach(char => {
           const row = document.createElement('tr');
           row.className = 'hover:bg-gray-700 transition duration-150';
           row.innerHTML = `
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white max-w-[150px] truncate">${char.name}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.current_level}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.calculated_level}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">${char.total_gold_num.toLocaleString()} gp</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[150px] truncate">${char.user_id || 'N/A'}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="character-detail.html?charId=${char.character_id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
+                  <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
                       View/Edit
                   </a>
-                  <button onclick="deleteChar('${char.character_id}', '${char.name}')" class="text-red-400 hover:text-red-300">
+                  <button onclick="deleteChar('${char.id}', '${char.name}')" class="text-red-400 hover:text-red-300">
                       Delete
                   </button>
               </td>
@@ -385,7 +398,7 @@
       if (!confirm(`⚠️ Admin Delete: ยืนยันการลบตัวละคร "${charName}"?`)) return;
       
       try {
-        // ลบจาก characters (Session/Log อื่นๆ จะหายเองเพราะ Cascade)
+        // ลบจาก characters (Cascade ลบลูกให้เอง)
         const { error } = await supabase.from('characters').delete().eq('id', charId);
         
         if (error) throw error;

@@ -97,12 +97,9 @@
     }
 
     async function loadCharacters() {
-      // ✅ แก้ไข: เปลี่ยนจาก order by created_at (ซึ่งไม่มีใน View) เป็น order by name แทน
-      const { data, error } = await supabase
-        .from('character_stats')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('name', { ascending: true }); 
+      const { data, error } = await supabase.rpc('get_character_stats', { 
+          target_user_id: currentUser.id 
+      }); 
 
       if (error) {
           console.error('Load Error:', error);
@@ -118,7 +115,8 @@
       }
       
       data.forEach(c => {
-        const { level: currentLevel } = calculateCurrentLevel(c.base_level || 1, Number(c.total_hours || 0));
+        const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+        const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
         
         list.innerHTML += `
           <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -132,10 +130,10 @@
              </div>
              <div class="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
                 ${c.sheet_link ? `<a href="${c.sheet_link}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 Sheet</a>` : ''}
-                <a href="character-detail.html?charId=${c.character_id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1">
+                <a href="character-detail.html?charId=${c.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1">
                     📝 รายละเอียด
                 </a>
-                <button onclick="deleteChar('${c.character_id}')" class="text-red-400 hover:text-red-300 text-sm font-medium ml-2 border-l border-gray-600 pl-3">
+                <button onclick="deleteChar('${c.id}')" class="text-red-400 hover:text-red-300 text-sm font-medium ml-2 border-l border-gray-600 pl-3">
                     🗑️ ลบ
                 </button>
              </div>
