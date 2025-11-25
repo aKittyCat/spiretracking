@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="supabase-config.js"></script>
   <title>รายละเอียดตัวละคร</title>
@@ -392,18 +391,28 @@
         got_items: document.getElementById('gotItems').value
     });
 
-    if (error) alert('Error: ' + error.message);
+    if (error) alert('บันทึกไม่สำเร็จ: ' + error.message);
     else {
-        alert('✅ บันทึกสำเร็จ');
-        refreshAllData(); 
-        // Reset Form (Optional)
+        alert('✅ บันทึกสำเร็จ!');
+        refreshAllData(); // View จะคำนวณใหม่ให้เอง
+        // Clear Form
+        document.getElementById('sessionName').value = '';
+        document.getElementById('dmName').value = '';
+        document.getElementById('sessionDate').value = '';
+        document.getElementById('hours').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('noGold').checked = false;
+        document.getElementById('gotItems').value = '';
+        document.getElementById('autoGoldAmount').textContent = '0';
     }
   }
 
   async function addGoldEntry() {
       const amount = parseFloat(document.getElementById('goldAmount').value);
-      if (!amount) return alert('ระบุจำนวน');
-      const finalAmount = -Math.abs(amount); // Spend is negative
+      if (!amount) return alert('ระบุจำนวนทอง');
+      
+      // การใช้จ่าย = ลบ
+      const finalAmount = -Math.abs(amount); 
 
       const { error } = await supabase.from('gold_logs').insert({
           character_id: currentCharId,
@@ -414,12 +423,18 @@
       });
 
       if (error) alert(error.message);
-      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
+      else { 
+          alert('✅ บันทึกสำเร็จ'); 
+          document.getElementById('goldDesc').value = '';
+          document.getElementById('goldAmount').value = '';
+          refreshAllData(); 
+      }
   }
 
   async function addFavorEntry() {
       const amount = parseFloat(document.getElementById('favorAmount').value);
-      const finalAmount = -Math.abs(amount); // Spend is negative
+      // การใช้ Favor = ลบ
+      const finalAmount = -Math.abs(amount); 
 
       const { error } = await supabase.from('favor_logs').insert({
           character_id: currentCharId,
@@ -428,24 +443,33 @@
           amount: finalAmount
       });
       if (error) alert(error.message);
-      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
+      else { 
+          alert('✅ บันทึกสำเร็จ'); 
+          document.getElementById('favorDesc').value = '';
+          document.getElementById('favorAmount').value = '';
+          refreshAllData(); 
+      }
   }
 
   async function addDmLog() {
-      // Calculate
+      const hours = parseFloat(document.getElementById('dmHours').value) || 0;
+      
+      // ดึง Logic การคำนวณรางวัลมาจาก calculateDmRewards เพื่อความชัวร์
+      // Logic เดิมที่ใช้ดึง multiplier จาก level ปัจจุบัน
       const c = currentCharData;
       const totalHours = Number(c.total_hours) || 0;
-      const { level } = calculateCurrentLevel(c.base_level, totalHours);
-      const multiplier = getGoldMultiplier(level);
+      const { level: currentLevel } = calculateCurrentLevel(c.base_level, totalHours);
+      const multiplier = getGoldMultiplier(currentLevel);
 
-      const hours = parseFloat(document.getElementById('dmHours').value) || 0;
       const solo = document.getElementById('soloQuest').checked;
       const double = document.getElementById('doubleReward').checked;
 
       let finalHours = hours * 1.5;
       if (double) finalHours *= 2;
 
-      let autoGold = 0, autoFavor = 0;
+      let autoGold = 0;
+      let autoFavor = 0;
+
       if (!solo) {
           autoGold = Math.floor(hours * 100 * multiplier * 1.5);
           autoFavor = Math.floor(hours * 4);
@@ -465,7 +489,13 @@
       });
 
       if (error) alert(error.message);
-      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
+      else { 
+          alert('✅ บันทึกสำเร็จ'); 
+          document.getElementById('dmSessionName').value = '';
+          document.getElementById('dmSessionDate').value = '';
+          document.getElementById('dmHours').value = '';
+          refreshAllData(); 
+      }
   }
 
   // --- DELETE FUNCTIONS ---
@@ -490,7 +520,6 @@
       if(error) alert(error.message); else refreshAllData();
   }
 
-  // --- EDIT Character ---
   async function editCharacter() {
       const c = currentCharData;
       const newName = prompt('ชื่อตัวละคร:', c.name);
@@ -623,8 +652,9 @@
     btn.classList.remove('text-gray-400');
   }
 
-  // Helper: Logic
+  // Helper: Logic (Updated Multipliers)
   const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
+  
   function calculateCurrentLevel(startLevel, totalHours) {
       const maxLevel = 30;
       if (startLevel >= maxLevel) return { level: maxLevel, hoursToNextLevel: 0 };
@@ -638,12 +668,26 @@
       const hoursToNextLevel = currentLevel >= maxLevel ? 0 : LEVEL_HOURS[currentLevel + 1] - totalHoursWithBase;
       return { level: currentLevel, hoursToNextLevel: Math.max(0, hoursToNextLevel) };
   }
+
   function getTierFromLevel(level) {
-      if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
+      if (level >= 23) return "Tier 5";
+      if (level >= 17) return "Tier 4"; 
+      if (level >= 11) return "Tier 3"; 
+      if (level >= 5) return "Tier 2"; 
+      if (level >= 3) return "Tier 1"; // 3-4
+      return "Tier 0"; // 1-2
   }
+
+  // ✅ Updated Logic: New Multipliers
   function getGoldMultiplier(level) {
-      if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; return 1.0;
+      if (level >= 23) return 1.5;
+      if (level >= 17) return 1.4; 
+      if (level >= 11) return 1.3; 
+      if (level >= 5)  return 1.2; 
+      if (level >= 3)  return 1.1;
+      return 1.0;
   }
+
   function calculateAutoGold() {
       const hours = parseFloat(document.getElementById('hours').value) || 0;
       const noGold = document.getElementById('noGold').checked;
@@ -656,19 +700,30 @@
       
       document.getElementById('autoGoldAmount').textContent = Math.floor(hours * 100 * multiplier);
   }
+
   function calculateDmRewards() {
       const hours = parseFloat(document.getElementById('dmHours').value) || 0;
       const solo = document.getElementById('soloQuest').checked;
       const double = document.getElementById('doubleReward').checked;
-      let finalHours = hours * 1.5; if(double) finalHours *= 2;
+      
+      let finalHours = hours * 1.5; 
+      if(double) finalHours *= 2;
+      
       let gold = 0, favor = 0;
       
       if(!solo) {
           const c = currentCharData || {};
-          const { level } = calculateCurrentLevel(c.base_level || 1, Number(c.total_hours));
+          // Use current calculated level
+          const { level } = calculateCurrentLevel(c.base_level || 1, Number(c.total_hours || 0));
           const mult = getGoldMultiplier(level);
+          
+          // ✅ Logic: Hours * 100 * Multiplier * 1.5
           gold = Math.floor(hours * 100 * mult * 1.5);
-          favor = Math.floor(hours * 4);
+          
+          // Logic Favor: Hours * 4 (Assumption based on context, or could be different)
+          // Assuming Favor logic wasn't asked to change:
+          favor = Math.floor(hours * 4); 
+          
           if(double) { gold *= 2; favor *= 2; }
       }
       document.getElementById('dmAutoGold').textContent = gold;
