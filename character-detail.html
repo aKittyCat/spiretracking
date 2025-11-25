@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="supabase-config.js"></script>
   <title>รายละเอียดตัวละคร</title>
   <style>
     .tab-content { display: none; }
@@ -19,6 +17,14 @@
     ::-webkit-scrollbar-track { background: #1f2937; }
     ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+    /* Tab Styles */
+    .tab-button { border-bottom-width: 2px; border-color: transparent; }
+    .tab-button.active { font-weight: bold; }
+    #tab-session.active { border-color: #f59e0b; color: #f59e0b; }
+    #tab-gold.active { border-color: #10b981; color: #10b981; }
+    #tab-favor.active { border-color: #f97316; color: #f97316; }
+    #tab-dm.active { border-color: #f43f5e; color: #f43f5e; }
   </style>
 </head>
 <body class="bg-gray-900 text-gray-200 p-4 sm:p-6 font-sans min-h-screen">
@@ -28,7 +34,7 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-white">รายละเอียดตัวละคร</h1>
       <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
         <span class="text-gray-400 font-medium text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
-        <button onclick="auth.signOut().then(() => location.href='index.html')" 
+        <button onclick="logout()" 
                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
         </button>
@@ -37,7 +43,7 @@
 
     <div id="charInfo" class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
       <div class="mb-4 flex justify-between items-start">
-        <span id="charTier" class="inline-block px-3 py-1 bg-blue-900/50 text-blue-200 border border-blue-700/50 font-bold rounded-full text-xs sm:text-sm uppercase tracking-wider">Tier ...</span>
+        <span id="charTier" class="inline-block px-3 py-1 bg-blue-900/50 text-blue-200 border border-blue-700/50 font-bold rounded-full text-xs sm:text-sm uppercase tracking-wider">Loading...</span>
         <button onclick="editCharacter()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 rounded text-sm shadow transition flex items-center gap-1">
           <span>✏️</span> แก้ไข
         </button>
@@ -63,13 +69,13 @@
     </div>
 
     <div class="flex mb-6 border-b border-gray-700 overflow-x-auto pb-1 scrollbar-hide">
-      <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-yellow-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก Session</button>
-      <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-green-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึกทอง</button>
-      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-orange-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก Favor</button>
-      <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-rose-400 hover:text-white border-b-2 border-transparent transition-colors">บันทึก DM</button>
+      <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก Session</button>
+      <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึกทอง</button>
+      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก Favor</button>
+      <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก DM</button>
     </div>
 
-    <div id="session" class="tab-content active">
+    <div id="session" class="tab-content">
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
         <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 บันทึก Session</h2>
         
@@ -115,8 +121,7 @@
                 <th class="py-3 px-4">จัดการ</th>
               </tr>
             </thead>
-            <tbody id="sessionsBody" class="divide-y divide-gray-700">
-              </tbody>
+            <tbody id="sessionsBody" class="divide-y divide-gray-700"></tbody>
           </table>
         </div>
         <div id="sessionPagination" class="mt-4 flex justify-center space-x-2"></div>
@@ -248,1233 +253,431 @@
     </a>
   </div>
 
+  <script src="/js/utils.js"></script>
+  <script src="supabase-config.js"></script>
+
 <script>
-  // ตั้งค่า TTL 5 นาที
-  const CACHE_TTL = 5 * 60 * 1000;
-
-  // บันทึกข้อมูลลง localStorage พร้อม timestamp
-  function setCachedData(key, data) {
-    const cache = {
-      data,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(`char_${currentCharId}_${key}`, JSON.stringify(cache));
-  }
-
-  // ดึงข้อมูลจาก localStorage (ถ้ายังไม่หมดอายุ)
-  function getCachedData(key) {
-    try {
-      const item = localStorage.getItem(`char_${currentCharId}_${key}`);
-      if (!item) return null;
-      
-      const cache = JSON.parse(item);
-      if (Date.now() - cache.timestamp > CACHE_TTL) {
-        localStorage.removeItem(`char_${currentCharId}_${key}`);
-        return null;
-      }
-      return cache.data;
-    } catch (e) {
-      console.warn("Cache error:", e);
-      return null;
-    }
-  }
-
-  // ลบแคชทั้งหมดของตัวละครนี้
-  function clearCharCache() {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(`char_${currentCharId}_`)) {
-        localStorage.removeItem(key);
-      }
-    });
-  }
-
   let currentUser = null;
-  let currentCharId = null;
+  let isAdmin = false;
+  let currentCharId = new URLSearchParams(window.location.search).get('charId');
   let currentCharData = null;
   const ITEMS_PER_PAGE = 5;
 
-  // ดึง charId จาก URL
-  const urlParams = new URLSearchParams(window.location.search);
-  currentCharId = urlParams.get('charId');
-  if (!currentCharId) {
-    alert('ไม่พบ ID ตัวละคร!');
-    window.location.href = 'characters.html';
-  }
-
-  auth.onAuthStateChanged(async user => {
-    if (!user) return window.location.href = 'index.html';
-    document.getElementById('userEmail').textContent = user.email;
-    
-    // ดึงพารามิเตอร์จาก URL
-    const urlParams = new URLSearchParams(window.location.search);
-    currentCharId = urlParams.get('charId');
-    const isAdminMode = urlParams.get('admin') === 'true';
-    
-    if (!currentCharId) {
-      alert('ไม่พบ ID ตัวละคร!');
-      window.location.href = 'characters.html';
-      return;
-    }
-
-    currentUser = user;
-    
-    // ตรวจสอบว่าเป็น admin หรือไม่
-    let isAdmin = false;
-    if (isAdminMode) {
-      try {
-        const settingsDoc = await db.collection('settings').doc('admin').get();
-        const adminData = settingsDoc.data();
-        if (adminData?.adminEmails) {
-          const adminEmails = adminData.adminEmails.map(e => e.trim().toLowerCase());
-          isAdmin = adminEmails.includes(user.email?.trim().toLowerCase());
-        }
-      } catch (error) {
-        console.error("ตรวจสอบสิทธิ์ admin ล้มเหลว:", error);
-      }
-    }
-
-    // โหลดข้อมูลตัวละคร
-    try {
-      const charDoc = await db.collection('characters').doc(currentCharId).get();
-      if (!charDoc.exists) {
-        alert('ไม่พบตัวละคร!');
-        window.location.href = 'characters.html';
-        return;
-      }
-      
-      currentCharData = charDoc.data();
-      
-      // ตรวจสอบสิทธิ์: เป็นเจ้าของ OR เป็น admin
-      const isOwner = currentCharData.userId === user.uid;
-      if (!isOwner && !isAdmin) {
-        alert('คุณไม่มีสิทธิ์ดูตัวละครนี้');
-        window.location.href = 'characters.html';
-        return;
-      }
-      
-      // แสดงข้อมูล
-      displayCharacterData();
-      
-      // โหลดกิจกรรมทั้งหมด
-      await loadAllData();
-      
-    } catch (error) {
-      console.error('โหลดตัวละครล้มเหลว:', error);
-      alert('โหลดข้อมูลล้มเหลว');
-    }
-  });
-
-  // Tab system
-  function openTab(tabName) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(el => {
-        el.classList.remove('text-blue-400', 'border-blue-400', 'text-white'); // Active Styles
-        el.classList.add('text-gray-400'); // Inactive
-    });
-    
-    document.getElementById(tabName).classList.add('active');
-    const btn = document.getElementById('tab-' + tabName);
-    btn.classList.remove('text-gray-400');
-    btn.classList.add('text-blue-400', 'border-blue-400', 'text-white');
-  }
-
-  // โหลดข้อมูลตัวละคร
-  async function loadCharacter() {
-    try {
-      const doc = await db.collection('characters').doc(currentCharId).get();
-      if (!doc.exists) {
-        alert('ไม่พบตัวละคร!');
-        window.location.href = 'characters.html';
-        return;
-      }
-      currentCharData = doc.data();
-      
-      // แสดงข้อมูลพื้นฐาน
-      document.getElementById('charName').textContent = currentCharData.name;
-      document.getElementById('charLevel').textContent = currentCharData.level;
-      document.getElementById('charClass').textContent = currentCharData.class;
-      document.getElementById('charRace').textContent = currentCharData.race;
-      document.getElementById('charGoldStart').textContent = currentCharData.gold;
-      
-      // แสดง Tier
-      const tier = getTierFromLevel(currentCharData.level);
-      document.getElementById('charTier').textContent = tier;
-      
-      const sheetLinkEl = document.getElementById('sheetLink');
-      sheetLinkEl.textContent = currentCharData.sheetLink || 'ไม่มีลิงก์';
-      sheetLinkEl.href = currentCharData.sheetLink || '#';
-      
-      // ตรวจสอบสิทธิ์แก้ไข
-      const editBtn = document.querySelector('button[onclick="editCharacter()"]');
-      if (editBtn) {
-        checkAdminForEdit(editBtn);
-      }
-    } catch (error) {
-      console.error('Error loading character:', error);
-      alert('โหลดข้อมูลตัวละครล้มเหลว');
-    }
-  }
-
-  // แก้ไขตัวละคร
-  async function editCharacter() {
-    const isCurrentUserAdmin = window.isCurrentUserAdmin || false;
-    
-    const newName = prompt('ชื่อตัวละคร:', currentCharData.name);
-    if (newName === null) return;
-    
-    let newLevel = currentCharData.level;
-    if (isCurrentUserAdmin) {
-      newLevel = parseInt(prompt('เลเวล:', currentCharData.level)) || currentCharData.level;
-    }
-    
-    const newClass = prompt('อาชีพ:', currentCharData.class) || currentCharData.class;
-    const newRace = prompt('เผ่า:', currentCharData.race) || currentCharData.race;
-    
-    let newGold = currentCharData.gold;
-    if (isCurrentUserAdmin) {
-      newGold = parseInt(prompt('ทองเริ่มต้น:', currentCharData.gold)) || currentCharData.gold;
-    }
-    
-    const newSheetLink = prompt('ลิงก์ Character Sheet:', currentCharData.sheetLink) || currentCharData.sheetLink;
-
-    try {
-      await db.collection('characters').doc(currentCharId).update({
-        name: newName,
-        level: newLevel,
-        class: newClass,
-        race: newRace,
-        gold: newGold,
-        sheetLink: newSheetLink
-      });
-      alert('แก้ไขสำเร็จ!');
-      clearCharCache();
-      await loadAllData();
-      displayCharacterData();
-    } catch (error) {
-      alert('แก้ไขล้มเหลว: ' + error.message);
-    }
-  }
-
-  // โหลดข้อมูลทั้งหมด
-  async function loadAllData() {
-    // โหลดข้อมูลทั้งหมดพร้อมกัน
-    await Promise.all([
-      loadSessions(),
-      loadGoldEntries(),
-      loadFavorEntries(),
-      loadDmLogs()
-    ]);
-    
-    // อัปเดตยอดรวม (รอให้โหลดข้อมูลเสร็จก่อน)
-    await Promise.all([
-      updateTotalGold(),
-      updateTotalFavor()
-    ]);
-    
-    // แสดงข้อมูลล่าสุด
-    displayCharacterData();
-  }
-
-  // =============== SESSIONS ===============
+  // Data Arrays
   let sessionsData = [];
-  let currentPageSession = 1;
+  let goldData = [];
+  let favorData = [];
+  let dmData = [];
 
+  // Pagination (Placeholder)
+  let currentPageSession = 1;
+  let currentPageGold = 1;
+  let currentPageFavor = 1;
+  let currentPageDm = 1;
+
+  async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      currentUser = session.user;
+      document.getElementById('userEmail').textContent = currentUser.email;
+
+      // Check Admin
+      const { data: adminStatus } = await supabase.rpc('is_admin');
+      isAdmin = adminStatus;
+
+      if (!currentCharId) { window.location.href = 'characters.html'; return; }
+      refreshAllData();
+  }
+  init();
+
+  async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+  }
+
+  // --- LOAD & RENDER ---
+  async function refreshAllData() {
+      // ดึงข้อมูลจาก View (เพื่อเอา Stats)
+      const { data: c, error } = await supabase.from('character_stats').select('*').eq('character_id', currentCharId).single();
+      
+      if (error) { 
+          console.error(error); 
+          alert('โหลดข้อมูลไม่สำเร็จ หรือคุณไม่มีสิทธิ์'); 
+          window.location.href = 'characters.html';
+          return; 
+      }
+      
+      // Security Check: ถ้าไม่ใช่เจ้าของ และไม่ใช่ Admin -> เด้งออก
+      if (c.user_id !== currentUser.id && !isAdmin) {
+          alert('คุณไม่มีสิทธิ์เข้าถึงตัวละครนี้');
+          window.location.href = 'characters.html';
+          return;
+      }
+
+      currentCharData = c;
+      renderHeader();
+      loadLists();
+  }
+
+  function renderHeader() {
+      const c = currentCharData;
+      document.getElementById('charName').textContent = c.name;
+      document.getElementById('charLevel').textContent = c.base_level;
+      
+      const totalHours = Number(c.total_hours) || 0;
+      const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.base_level, totalHours);
+
+      document.getElementById('charCurrentLevel').textContent = currentLevel;
+      document.getElementById('charTotalHours').textContent = totalHours.toFixed(1);
+      document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(1)} ชม.`;
+      document.getElementById('charTier').textContent = getTierFromLevel(currentLevel);
+      
+      document.getElementById('charClass').textContent = c.class || '-';
+      document.getElementById('charRace').textContent = c.race || '-';
+      document.getElementById('charGoldStart').textContent = c.gold_start;
+      
+      document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
+      document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
+      
+      // Fetch Link (ถ้า View ไม่มี)
+      supabase.from('characters').select('sheet_link').eq('id', currentCharId).single()
+        .then(({data}) => {
+            if(data && data.sheet_link) {
+                const el = document.getElementById('sheetLink');
+                el.textContent = data.sheet_link;
+                el.href = data.sheet_link;
+            }
+        });
+  }
+
+  async function loadLists() {
+      // Load Sessions
+      supabase.from('sessions').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false})
+        .then(({data}) => { sessionsData = data || []; renderSessions(); });
+        
+      // Load Gold
+      supabase.from('gold_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false})
+        .then(({data}) => { goldData = data || []; renderGold(); });
+
+      // Load Favor
+      supabase.from('favor_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false})
+        .then(({data}) => { favorData = data || []; renderFavor(); });
+
+      // Load DM
+      supabase.from('dm_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false})
+        .then(({data}) => { dmData = data || []; renderDmLogs(); });
+  }
+
+  // --- ADD FUNCTIONS (Insert only) ---
   async function addSession() {
     const name = document.getElementById('sessionName').value.trim();
-    if (!name) return alert('กรุณาใส่ชื่อเซสชั่น');
-
+    if (!name) return alert('ใส่ชื่อ Session');
+    const hours = parseFloat(document.getElementById('hours').value) || 0;
     const noGold = document.getElementById('noGold').checked;
     const autoGold = noGold ? 0 : parseInt(document.getElementById('autoGoldAmount').textContent);
+    const autoFavor = Math.floor(hours * 2);
 
-    // คำนวณเลเวลปัจจุบันขณะบันทึก
-    const hours = parseFloat(document.getElementById('hours').value) || 0;
-    const newTotalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0) + hours;
-    const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, newTotalHours);
+    const { error } = await supabase.from('sessions').insert({
+        character_id: currentCharId,
+        user_id: currentUser.id,
+        name: name,
+        dm: document.getElementById('dmName').value,
+        date: document.getElementById('sessionDate').value || null,
+        hours: hours,
+        notes: document.getElementById('notes').value,
+        no_gold: noGold,
+        auto_gold: autoGold,
+        auto_favor: autoFavor,
+        got_items: document.getElementById('gotItems').value
+    });
 
-    const session = {
-      characterId: currentCharId,
-      name,
-      dm: document.getElementById('dmName').value.trim() || 'Unknown DM',
-      date: document.getElementById('sessionDate').value,
-      hours,
-      notes: document.getElementById('notes').value.trim() || '',
-      noGold,
-      autoGold,
-      gotItems: document.getElementById('gotItems').value.trim() || '',
-      userId: currentUser.uid,
-      characterLevelAtSession: currentLevel, // ✅ บันทึกเลเวลปัจจุบันขณะนั้น
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    try {
-      await db.collection('sessions').add(session);
-      alert('บันทึก Session สำเร็จ!');
-      // clear form
-      document.getElementById('sessionName').value = '';
-      document.getElementById('dmName').value = '';
-      document.getElementById('sessionDate').value = '';
-      document.getElementById('hours').value = '';
-      document.getElementById('notes').value = '';
-      document.getElementById('noGold').checked = false;
-      document.getElementById('gotItems').value = '';
-      document.getElementById('autoGoldAmount').textContent = '0';
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('บันทึกล้มเหลว: ' + error.message);
+    if (error) alert('Error: ' + error.message);
+    else {
+        alert('✅ บันทึกสำเร็จ');
+        refreshAllData(); 
+        // Reset Form (Optional)
     }
   }
 
-  async function loadSessions() {
-    // ลองดึงจากแคชก่อน
-    const cached = getCachedData('sessions');
-    if (cached) {
-      sessionsData = cached;
-      currentPageSession = 1;
-      renderSessions();
-      return;
-    }
+  async function addGoldEntry() {
+      const amount = parseFloat(document.getElementById('goldAmount').value);
+      if (!amount) return alert('ระบุจำนวน');
+      const finalAmount = -Math.abs(amount); // Spend is negative
 
-    // ถ้าไม่มีแคช → โหลดจาก Firestore
-    try {
-      const snap = await db.collection('sessions')
-        .where('characterId', '==', currentCharId)
-        .orderBy('createdAt', 'desc')
-        .get();
-      sessionsData = [];
-      snap.forEach(doc => sessionsData.push({ id: doc.id, ...doc.data() }));
-      currentPageSession = 1;
-      
-      // บันทึกลงแคช
-      setCachedData('sessions', sessionsData);
-      renderSessions();
-    } catch (error) {
-      console.error('Error loading sessions:', error);
-    }
+      const { error } = await supabase.from('gold_logs').insert({
+          character_id: currentCharId,
+          user_id: currentUser.id,
+          description: document.getElementById('goldDesc').value,
+          amount: finalAmount, 
+          type: 'spend'
+      });
+
+      if (error) alert(error.message);
+      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
   }
 
+  async function addFavorEntry() {
+      const amount = parseFloat(document.getElementById('favorAmount').value);
+      const finalAmount = -Math.abs(amount); // Spend is negative
+
+      const { error } = await supabase.from('favor_logs').insert({
+          character_id: currentCharId,
+          user_id: currentUser.id,
+          description: document.getElementById('favorDesc').value,
+          amount: finalAmount
+      });
+      if (error) alert(error.message);
+      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
+  }
+
+  async function addDmLog() {
+      // Calculate
+      const c = currentCharData;
+      const totalHours = Number(c.total_hours) || 0;
+      const { level } = calculateCurrentLevel(c.base_level, totalHours);
+      const multiplier = getGoldMultiplier(level);
+
+      const hours = parseFloat(document.getElementById('dmHours').value) || 0;
+      const solo = document.getElementById('soloQuest').checked;
+      const double = document.getElementById('doubleReward').checked;
+
+      let finalHours = hours * 1.5;
+      if (double) finalHours *= 2;
+
+      let autoGold = 0, autoFavor = 0;
+      if (!solo) {
+          autoGold = Math.floor(hours * 100 * multiplier * 1.5);
+          autoFavor = Math.floor(hours * 4);
+          if (double) { autoGold *= 2; autoFavor *= 2; }
+      }
+
+      const { error } = await supabase.from('dm_logs').insert({
+          character_id: currentCharId,
+          user_id: currentUser.id,
+          session_name: document.getElementById('dmSessionName').value,
+          date: document.getElementById('dmSessionDate').value || null,
+          hours: finalHours,
+          solo_quest: solo,
+          double_reward: double,
+          auto_gold: autoGold,
+          auto_favor: autoFavor
+      });
+
+      if (error) alert(error.message);
+      else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
+  }
+
+  // --- DELETE FUNCTIONS ---
+  async function deleteSession(id) {
+      if(!confirm('ลบ?')) return;
+      const { error } = await supabase.from('sessions').delete().eq('id', id);
+      if(error) alert(error.message); else refreshAllData();
+  }
+  async function deleteGold(id) {
+      if(!confirm('ลบ?')) return;
+      const { error } = await supabase.from('gold_logs').delete().eq('id', id);
+      if(error) alert(error.message); else refreshAllData();
+  }
+  async function deleteFavor(id) {
+      if(!confirm('ลบ?')) return;
+      const { error } = await supabase.from('favor_logs').delete().eq('id', id);
+      if(error) alert(error.message); else refreshAllData();
+  }
+  async function deleteDmLog(id) {
+      if(!confirm('ลบ?')) return;
+      const { error } = await supabase.from('dm_logs').delete().eq('id', id);
+      if(error) alert(error.message); else refreshAllData();
+  }
+
+  // --- EDIT Character ---
+  async function editCharacter() {
+      const c = currentCharData;
+      const newName = prompt('ชื่อตัวละคร:', c.name);
+      if (newName === null) return;
+      const newLevel = parseInt(prompt('เลเวลเริ่มต้น:', c.base_level)) || c.base_level;
+      const newGold = parseInt(prompt('ทองเริ่มต้น:', c.gold_start)) || c.gold_start;
+      const newClass = prompt('อาชีพ:', c.class) || c.class;
+      const newRace = prompt('เผ่า:', c.race) || c.race;
+
+      const { error } = await supabase.from('characters').update({
+          name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace
+      }).eq('id', currentCharId);
+
+      if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
+  }
+
+  // --- RENDER FUNCTIONS ---
   function renderSessions() {
     const tbody = document.getElementById('sessionsBody');
     const pagination = document.getElementById('sessionPagination');
-    tbody.innerHTML = '';
-    pagination.innerHTML = '';
-
-    if (sessionsData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
-      return;
-    }
+    tbody.innerHTML = ''; pagination.innerHTML = '';
+    if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
 
     const totalPages = Math.ceil(sessionsData.length / ITEMS_PER_PAGE);
     const start = (currentPageSession - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const pageData = sessionsData.slice(start, end);
+    const pageData = sessionsData.slice(start, start + ITEMS_PER_PAGE);
 
     pageData.forEach(item => {
-      const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+      const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : '-';
       const tr = document.createElement('tr');
-      // Update Table Row Styles for Dark Mode
       tr.className = "hover:bg-gray-700/50 transition-colors";
       tr.innerHTML = `
         <td class="py-3 px-4 border-b border-gray-700 font-medium text-white">${item.name}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm || '-'}</td>
         <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
         <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs" title="${item.notes}">${item.notes}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.noGold ? '✅' : ''}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.gotItems}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-yellow-400 font-medium">${item.autoGold || 0}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes || '-'}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold ? '✅' : ''}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items || '-'}</td>
+        <td class="py-3 px-4 border-b border-gray-700 text-yellow-400 font-medium">${item.auto_gold || 0}</td>
         <td class="py-3 px-4 border-b border-gray-700">
-          <button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
           <button onclick="deleteSession('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
         </td>
       `;
       tbody.appendChild(tr);
     });
-
-    // Pagination
+    
+    // Simple Pagination UI
     if (totalPages > 1) {
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageSession ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
-        btn.onclick = () => {
-          currentPageSession = i;
-          renderSessions();
-        };
-        pagination.appendChild(btn);
-      }
-    }
-  }
-
-  async function editSession(id) {
-    const item = sessionsData.find(s => s.id === id);
-    if (!item) return;
-
-    const newName = prompt('ชื่อเซสชั่น:', item.name);
-    if (newName === null) return;
-    const newDm = prompt('ชื่อ DM:', item.dm);
-    const newDate = prompt('วันที่ (YYYY-MM-DD):', item.date || '');
-    const newHours = prompt('จำนวนชั่วโมง:', item.hours);
-    const newNotes = prompt('Notes:', item.notes);
-    const newNoGold = confirm('ไม่ได้รับทอง? (OK = ใช่, Cancel = ไม่)');
-    const newGotItems = prompt('ของที่ได้รับ:', item.gotItems);
-
-    try {
-      await db.collection('sessions').doc(id).update({
-        name: newName,
-        dm: newDm,
-        date: newDate || null,
-        hours: parseFloat(newHours) || 0,
-        notes: newNotes,
-        noGold: newNoGold,
-        gotItems: newGotItems
-      });
-      alert('แก้ไข Session สำเร็จ!');
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('แก้ไขล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function deleteSession(id) {
-    if (confirm('ลบบันทึก Session นี้หรือไม่?')) {
-      try {
-        await db.collection('sessions').doc(id).delete();
-        clearCharCache();
-        await loadAllData();
-      } catch (error) {
-        alert('ลบล้มเหลว: ' + error.message);
-      }
-    }
-  }
-
-  // =============== GOLD ===============
-  let goldData = [];
-  let currentPageGold = 1;
-
-  async function addGoldEntry() {
-    const desc = document.getElementById('goldDesc').value.trim();
-    if (!desc) return alert('กรุณาใส่คำอธิบาย');
-    const amount = parseFloat(document.getElementById('goldAmount').value);
-    if (isNaN(amount) || amount <= 0) return alert('กรุณาใส่จำนวนทองที่ถูกต้อง');
-
-    try {
-      await db.collection('gold').add({
-        characterId: currentCharId,
-        description: desc,
-        amount,
-        type: 'spend',
-        userId: currentUser.uid,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('บันทึกการใช้ทองสำเร็จ!');
-      document.getElementById('goldDesc').value = '';
-      document.getElementById('goldAmount').value = '';
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('บันทึกล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function loadGoldEntries() {
-    const cached = getCachedData('gold');
-    if (cached) {
-      goldData = cached;
-      currentPageGold = 1;
-      renderGold();
-      return;
-    }
-
-    try {
-      const snap = await db.collection('gold')
-        .where('characterId', '==', currentCharId)
-        .orderBy('timestamp', 'desc')
-        .get();
-      goldData = [];
-      snap.forEach(doc => goldData.push({ id: doc.id, ...doc.data() }));
-      currentPageGold = 1;
-      setCachedData('gold', goldData);
-      renderGold();
-    } catch (error) {
-      console.error('Error loading gold:', error);
+        for(let i=1; i<=totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i;
+            btn.className = `px-3 py-1 mx-1 rounded text-sm ${i===currentPageSession ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'}`;
+            btn.onclick = () => { currentPageSession = i; renderSessions(); };
+            pagination.appendChild(btn);
+        }
     }
   }
 
   function renderGold() {
     const tbody = document.getElementById('goldBody');
-    const pagination = document.getElementById('goldPagination');
-    tbody.innerHTML = '';
-    pagination.innerHTML = '';
-
-    if (goldData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
-      return;
-    }
-
-    const totalPages = Math.ceil(goldData.length / ITEMS_PER_PAGE);
-    const start = (currentPageGold - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const pageData = goldData.slice(start, end);
-
-    pageData.forEach(item => {
-      const dateStr = item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
-      const tr = document.createElement('tr');
-      tr.className = "hover:bg-gray-700/50 transition-colors";
-      tr.innerHTML = `
-        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-red-400 font-medium">-${item.amount}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">ใช้</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
-        <td class="py-3 px-4 border-b border-gray-700">
-          <button onclick="editGold('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
-          <button onclick="deleteGold('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+    tbody.innerHTML = ''; 
+    if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
+    
+    goldData.slice(0, 10).forEach(item => { 
+        const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH') : '-';
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-gray-700/50 transition-colors";
+        const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
+        tr.innerHTML = `
+            <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
+            <td class="py-3 px-4 border-b border-gray-700 ${color} font-medium">${item.amount}</td>
+            <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.type || '-'}</td>
+            <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+            <td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>
+        `;
+        tbody.appendChild(tr);
     });
-
-    if (totalPages > 1) {
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageGold ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
-        btn.onclick = () => {
-          currentPageGold = i;
-          renderGold();
-        };
-        pagination.appendChild(btn);
-      }
-    }
-  }
-
-  async function editGold(id) {
-    const item = goldData.find(g => g.id === id);
-    if (!item) return;
-
-    const newDesc = prompt('คำอธิบาย:', item.description);
-    if (newDesc === null) return;
-    const newAmount = prompt('จำนวน:', item.amount);
-
-    try {
-      await db.collection('gold').doc(id).update({
-        description: newDesc,
-        amount: parseFloat(newAmount) || item.amount,
-        type: 'spend' 
-      });
-      alert('แก้ไขสำเร็จ!');
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('แก้ไขล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function deleteGold(id) {
-    if (confirm('ลบรายการทองนี้หรือไม่?')) {
-      try {
-        // ดึงข้อมูลรายการที่จะลบ
-        const doc = await db.collection('gold').doc(id).get();
-        if (!doc.exists) throw new Error('ไม่พบข้อมูล');
-        
-        const deletedAmount = doc.data().amount;
-        
-        // ลบรายการ
-        await db.collection('gold').doc(id).delete();
-        clearCharCache();
-        // คืนทอง + อัปเดตยอดรวม
-        await loadAllData();
-        alert(`คืนทอง ${deletedAmount} GP แล้ว!`);
-      } catch (error) {
-        alert('ลบล้มเหลว: ' + error.message);
-      }
-    }
-  }
-
-  // =============== FAVOR ===============
-  let favorData = [];
-  let currentPageFavor = 1;
-
-  async function addFavorEntry() {
-    const desc = document.getElementById('favorDesc').value.trim();
-    if (!desc) return alert('กรุณาใส่คำอธิบาย');
-    const amount = parseInt(document.getElementById('favorAmount').value);
-    if (isNaN(amount) || amount <= 0) return alert('กรุณาใส่จำนวน Favor ที่ถูกต้อง');
-
-    try {
-      await db.collection('favor').add({
-        characterId: currentCharId,
-        description: desc,
-        amount,
-        userId: currentUser.uid,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('บันทึกการใช้ Favor สำเร็จ!');
-      document.getElementById('favorDesc').value = '';
-      document.getElementById('favorAmount').value = '';
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('บันทึกล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function loadFavorEntries() {
-    const cached = getCachedData('favor');
-    if (cached) {
-      favorData = cached;
-      currentPageFavor = 1;
-      renderFavor();
-      return;
-    }
-
-    try {
-      const snap = await db.collection('favor')
-        .where('characterId', '==', currentCharId)
-        .orderBy('timestamp', 'desc')
-        .get();
-      favorData = [];
-      snap.forEach(doc => favorData.push({ id: doc.id, ...doc.data() }));
-      currentPageFavor = 1;
-      
-      setCachedData('favor', favorData);
-      renderFavor();
-    } catch (error) {
-      console.error('Error loading favor:', error);
-    }
   }
 
   function renderFavor() {
-    const tbody = document.getElementById('favorBody');
-    const pagination = document.getElementById('favorPagination');
-    tbody.innerHTML = '';
-    pagination.innerHTML = '';
-
-    if (favorData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
-      return;
-    }
-
-    const totalPages = Math.ceil(favorData.length / ITEMS_PER_PAGE);
-    const start = (currentPageFavor - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const pageData = favorData.slice(start, end);
-
-    pageData.forEach(item => {
-      const dateStr = item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
-      const tr = document.createElement('tr');
-      tr.className = "hover:bg-gray-700/50 transition-colors";
-      tr.innerHTML = `
-        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-indigo-400 font-medium">+${item.amount} Favor</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
-        <td class="py-3 px-4 border-b border-gray-700">
-          <button onclick="editFavor('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
-          <button onclick="deleteFavor('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    if (totalPages > 1) {
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageFavor ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
-        btn.onclick = () => {
-          currentPageFavor = i;
-          renderFavor();
-        };
-        pagination.appendChild(btn);
-      }
-    }
-  }
-
-  async function editFavor(id) {
-    const item = favorData.find(f => f.id === id);
-    if (!item) return;
-
-    const newDesc = prompt('คำอธิบาย:', item.description);
-    if (newDesc === null) return;
-    const newAmount = prompt('จำนวน:', item.amount);
-
-    try {
-      await db.collection('favor').doc(id).update({
-        description: newDesc,
-        amount: parseInt(newAmount) || item.amount
+      const tbody = document.getElementById('favorBody');
+      tbody.innerHTML = ''; 
+      if (favorData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
+      favorData.slice(0, 10).forEach(item => {
+          const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH') : '-';
+          const tr = document.createElement('tr');
+          const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
+          tr.innerHTML = `
+              <td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td>
+              <td class="py-3 px-4 border-b border-gray-700 ${color} font-medium">${item.amount}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+              <td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteFavor('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>
+          `;
+          tbody.appendChild(tr);
       });
-      alert('แก้ไขสำเร็จ!');
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('แก้ไขล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function deleteFavor(id) {
-    if (confirm('ลบรายการ Favor นี้หรือไม่?')) {
-      try {
-        // ดึงข้อมูลรายการที่จะลบ
-        const doc = await db.collection('favor').doc(id).get();
-        if (!doc.exists) throw new Error('ไม่พบข้อมูล');
-        
-        const deletedAmount = doc.data().amount;
-        
-        // ลบรายการ
-        await db.collection('favor').doc(id).delete();
-        clearCharCache();
-        // คืน Favor + อัปเดตยอดรวม
-        await loadAllData();
-        alert(`คืน Favor ${deletedAmount} หน่วยแล้ว!`);
-      } catch (error) {
-        alert('ลบล้มเหลว: ' + error.message);
-      }
-    }
-  }
-
-  // =============== DM LOGS ===============
-  let dmData = [];
-  let currentPageDm = 1;
-
-  async function addDmLog() {
-    const sessionName = document.getElementById('dmSessionName').value.trim();
-    if (!sessionName) return alert('กรุณาใส่ชื่อเซสชั่น');
-    
-    const hours = parseFloat(document.getElementById('dmHours').value) || 0;
-    const soloQuest = document.getElementById('soloQuest').checked;
-    const doubleReward = document.getElementById('doubleReward').checked;
-    
-    // คำนวณชั่วโมงที่ได้รับ (ทุกกรณี × 1.5)
-    let finalHours = hours * 1.5;
-    if (doubleReward) {
-      finalHours *= 2;
-    }
-    
-    let autoGold = 0;
-    let autoFavor = 0;
-    
-    // ถ้าไม่ใช่ภารกิจเดี่ยว → คำนวณทอง + Favor
-    if (!soloQuest) {
-      const totalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
-      const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
-      const multiplier = getGoldMultiplier(currentLevel);
-      
-      autoGold = Math.floor(hours * 100 * multiplier);
-      autoFavor = Math.floor(hours * 4);
-      
-      if (doubleReward) {
-        autoGold *= 2;
-        autoFavor *= 2;
-      }
-    }
-
-    try {
-      await db.collection('dm_logs').add({
-        characterId: currentCharId,
-        sessionName,
-        date: document.getElementById('dmSessionDate').value,
-        hours: finalHours,
-        soloQuest,
-        doubleReward,
-        autoGold,    
-        autoFavor,   
-        dmId: currentUser.uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('บันทึก DM Session สำเร็จ!');
-      
-      // clear form
-      document.getElementById('dmSessionName').value = '';
-      document.getElementById('dmSessionDate').value = '';
-      document.getElementById('dmHours').value = '';
-      document.getElementById('soloQuest').checked = false;
-      document.getElementById('doubleReward').checked = false;
-      document.getElementById('dmAutoGold').textContent = '0';
-      document.getElementById('dmAutoFavor').textContent = '0';
-      document.getElementById('dmAutoHours').textContent = '0';
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('บันทึกล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function loadDmLogs() {
-    const cached = getCachedData('dm');
-    if (cached) {
-      dmData = cached;
-      currentPageDm = 1;
-      renderDmLogs();
-      return;
-    }
-
-    try {
-      const snap = await db.collection('dm_logs')
-        .where('characterId', '==', currentCharId)
-        .orderBy('createdAt', 'desc')
-        .get();
-      dmData = [];
-      snap.forEach(doc => dmData.push({ id: doc.id, ...doc.data() }));
-      currentPageDm = 1;
-      
-      setCachedData('dm', dmData);
-      renderDmLogs();
-    } catch (error) {
-      console.error('Error loading DM logs:', error);
-    }
   }
 
   function renderDmLogs() {
-    const tbody = document.getElementById('dmBody');
-    const pagination = document.getElementById('dmPagination');
-    tbody.innerHTML = '';
-    pagination.innerHTML = '';
+      const tbody = document.getElementById('dmBody');
+      tbody.innerHTML = ''; 
+      if (dmData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
+      dmData.slice(0, 10).forEach(item => {
+          const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : '-';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+              <td class="py-3 px-4 border-b border-gray-700 text-white">${item.session_name}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-center">${item.solo_quest ? '✅' : ''}</td>
+              <td class="py-3 px-4 border-b border-gray-700 text-center">${item.double_reward ? '✅' : ''}</td>
+              <td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteDmLog('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>
+          `;
+          tbody.appendChild(tr);
+      });
+  }
 
-    if (dmData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
-      return;
-    }
-
-    const totalPages = Math.ceil(dmData.length / ITEMS_PER_PAGE);
-    const start = (currentPageDm - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const pageData = dmData.slice(start, end);
-
-    pageData.forEach(item => {
-      const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : 'ไม่ระบุ';
-      const tr = document.createElement('tr');
-      tr.className = "hover:bg-gray-700/50 transition-colors";
-      tr.innerHTML = `
-        <td class="py-3 px-4 border-b border-gray-700 text-white">${item.sessionName}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-yellow-400 font-medium">${item.autoGold || 0} GP</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-indigo-400 font-medium">${item.autoFavor || 0} Favor</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.soloQuest ? '✅' : ''}</td>
-        <td class="py-3 px-4 border-b border-gray-700 text-center">${item.doubleReward ? '✅' : ''}</td>
-        <td class="py-3 px-4 border-b border-gray-700">
-          <button onclick="editDmLog('${item.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2 text-sm">แก้ไข</button>
-          <button onclick="deleteDmLog('${item.id}')" class="text-red-500 hover:text-red-400 text-sm">ลบ</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+  // Helper: Tabs
+  function openTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('text-gray-400');
     });
-
-    if (totalPages > 1) {
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = `px-3 py-1 rounded text-sm font-medium ${i === currentPageDm ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
-        btn.onclick = () => {
-          currentPageDm = i;
-          renderDmLogs();
-        };
-        pagination.appendChild(btn);
-      }
-    }
+    document.getElementById(tabName).classList.add('active');
+    const btn = document.getElementById('tab-' + tabName);
+    btn.classList.add('active');
+    btn.classList.remove('text-gray-400');
   }
 
-  async function editDmLog(id) {
-    const item = dmData.find(d => d.id === id);
-    if (!item) return;
-
-    const newName = prompt('ชื่อเซสชั่น:', item.sessionName);
-    if (newName === null) return;
-    const newDate = prompt('วันที่ (YYYY-MM-DD):', item.date || '');
-    const newHours = prompt('จำนวนชั่วโมง:', item.hours);
-    const newSolo = confirm('เป็นภารกิจเดี่ยว? (OK = ใช่)');
-    const newDouble = confirm('มีรางวัล x2? (OK = ใช่)');
-
-    try {
-      await db.collection('dm_logs').doc(id).update({
-        sessionName: newName,
-        date: newDate || null,
-        hours: parseFloat(newHours) || 0,
-        soloQuest: newSolo,
-        doubleReward: newDouble
-      });
-      alert('แก้ไขสำเร็จ!');
-      clearCharCache();
-      await loadAllData();
-    } catch (error) {
-      alert('แก้ไขล้มเหลว: ' + error.message);
-    }
-  }
-
-  async function deleteDmLog(id) {
-    if (confirm('ลบบันทึก DM นี้หรือไม่?')) {
-      try {
-        await db.collection('dm_logs').doc(id).delete();
-        clearCharCache();
-        await loadAllData();
-      } catch (error) {
-        alert('ลบล้มเหลว: ' + error.message);
-      }
-    }
-  }
-
-  // ตรวจสอบว่าเป็น admin หรือไม่ (สำหรับการแก้ไข)
-  async function checkAdminForEdit(button) {
-    try {
-      const settingsDoc = await db.collection('settings').doc('admin').get();
-      const adminData = settingsDoc.data();
-      if (adminData?.adminEmails) {
-        const adminEmails = adminData.adminEmails.map(e => e.trim().toLowerCase());
-        const isCurrentUserAdmin = adminEmails.includes(currentUser.email?.trim().toLowerCase());
-        
-        // เก็บสถานะ admin เพื่อใช้ใน editCharacter()
-        window.isCurrentUserAdmin = isCurrentUserAdmin;
-        
-        // แสดง/ซ่อนปุ่มตามสิทธิ์
-        button.style.display = 'inline-flex';
-      }
-    } catch (error) {
-      console.error("ตรวจสอบสิทธิ์ล้มเหลว:", error);
-    }
-  }
-
-  // ฟังก์ชันคำนวณ Tier จากเลเวล
-  function getTierFromLevel(level) {
-    if (level >= 23) return "Tier 5";
-    if (level >= 17) return "Tier 4";
-    if (level >= 11) return "Tier 3";
-    if (level >= 5) return "Tier 2";
-    if (level >= 3) return "Tier 1";
-    return "Tier 0";
-  }
-
-  // ฟังก์ชันแสดงข้อมูลตัวละคร
-  async function displayCharacterData() {
-    const charDoc = await db.collection('characters').doc(currentCharId).get();
-    if (charDoc.exists) {
-      currentCharData = charDoc.data(); // อัปเดต currentCharData
-    }
-    document.getElementById('charName').textContent = currentCharData.name;
-    document.getElementById('charLevel').textContent = currentCharData.level;
-    document.getElementById('charClass').textContent = currentCharData.class;
-    document.getElementById('charRace').textContent = currentCharData.race;
-
-    // คำนวณชั่วโมงรวมจาก Session + DM Logs
-    const totalHoursFromSessions = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
-    const totalHoursFromDm = dmData.reduce((sum, d) => sum + (d.hours || 0), 0);
-    const totalHours = totalHoursFromSessions + totalHoursFromDm;
-    document.getElementById('charTotalHours').textContent = totalHours.toFixed(1);
-
-    // คำนวณเลเวลปัจจุบัน (เริ่มจากเลเวลที่ตั้งไว้)
-    const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
-    document.getElementById('charCurrentLevel').textContent = currentLevel;
-
-    // แสดงข้อความเลเวลอัป
-    if (currentLevel >= 30) {
-      document.getElementById('charHoursToLevelUp').textContent = 'ถึงเลเวลสูงสุดแล้ว!';
-    } else {
-      document.getElementById('charHoursToLevelUp').textContent = 
-        `${hoursToNextLevel.toFixed(1)} ชั่วโมง`;
-    }
-    
-    // แสดง Tier
-    const tier = getTierFromLevel(currentLevel);
-    document.getElementById('charTier').textContent = tier;
-    
-    const sheetLinkEl = document.getElementById('sheetLink');
-    sheetLinkEl.textContent = currentCharData.sheetLink || 'ไม่มีลิงก์';
-    sheetLinkEl.href = currentCharData.sheetLink || '#';
-    
-    // แสดงทองเริ่มต้น
-    document.getElementById('charGoldStart').textContent = currentCharData.gold;
-
-    // แสดงยอดทองรวมจาก Firestore (หรือค่าเริ่มต้น)
-    const totalGold = currentCharData.totalGold || currentCharData.gold;
-    document.getElementById('charTotalGold').textContent = totalGold;
-
-    // แสดงยอด Favor รวมจาก Firestore
-    const totalFavor = currentCharData.totalFavor || 0;
-    document.getElementById('charTotalFavor').textContent = totalFavor;
-
-    // อัปเดตข้อมูลใน Firestore (เฉพาะเลเวลปัจจุบัน)
-    await db.collection('characters').doc(currentCharId).update({
-      currentLevel: currentLevel,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    // ตรวจสอบสิทธิ์แก้ไข
-    const editBtn = document.querySelector('button[onclick="editCharacter()"]');
-    if (editBtn) {
-      checkAdminForEdit(editBtn);
-    }
-  }
-
-  // ฟังก์ชันคำนวณ multiplier จากเลเวล
-  function getGoldMultiplier(level) {
-    if (level >= 23) return 1.5;
-    if (level >= 17) return 1.4;
-    if (level >= 11) return 1.3;
-    if (level >= 5) return 1.2;
-    if (level >= 3) return 1.1;
-    return 1.0; // เลเวล 1-2
-  }
-
-  // ฟังก์ชันคำนวณทองอัตโนมัติ
-  function calculateAutoGold() {
-    const noGold = document.getElementById('noGold').checked;
-    if (noGold) {
-      document.getElementById('autoGoldAmount').textContent = '0';
-      return;
-    }
-    
-    const hours = parseFloat(document.getElementById('hours').value) || 0;
-    
-    const newTotalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0) + hours;
-    const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, newTotalHours);
-    
-    const multiplier = getGoldMultiplier(currentLevel);
-    const autoGold = Math.floor(hours * 100 * multiplier);
-    
-    document.getElementById('autoGoldAmount').textContent = autoGold;
-  }
-
-  // คำนวณยอดทองรวม
-  async function calculateTotalGold() {
-    try {
-      // ดึง Session ทั้งหมดที่ได้รับทอง
-      const sessions = await db.collection('sessions')
-        .where('characterId', '==', currentCharId)
-        .where('noGold', '==', false)
-        .get();
-      
-      let totalFromSessions = 0;
-      sessions.forEach(doc => {
-        const data = doc.data();
-        totalFromSessions += data.autoGold || 0;
-      });
-      
-      return currentCharData.gold + totalFromSessions;
-    } catch (error) {
-      console.error('คำนวณยอดทองล้มเหลว:', error);
-      return currentCharData.gold;
-    }
-  }
-
-  // อัปเดตยอด Favor รวมใน Firestore
-  async function updateTotalFavor() {
-    try {
-      // 1. ดึง Favor จาก Session
-      const sessions = await db.collection('sessions')
-        .where('characterId', '==', currentCharId)
-        .get();
-      let totalFromSessions = 0;
-      sessions.forEach(doc => {
-        const data = doc.data();
-        totalFromSessions += Math.floor((data.hours || 0) * 2);
-      });
-      
-      // 2. ดึง Favor จาก DM Logs
-      const dmLogs = await db.collection('dm_logs')
-        .where('characterId', '==', currentCharId)
-        .get();
-      dmLogs.forEach(doc => {
-        const data = doc.data();
-        totalFromSessions += data.autoFavor || 0;
-      });
-      
-      // 3. ดึง Favor ที่ใช้ไป
-      const favorEntries = await db.collection('favor')
-        .where('characterId', '==', currentCharId)
-        .get();
-      let totalSpent = 0;
-      favorEntries.forEach(doc => {
-        const data = doc.data();
-        totalSpent += data.amount || 0;
-      });
-      
-      // 4. คำนวณยอดรวม
-      const totalFavor = totalFromSessions - totalSpent;
-      
-      // 5. อัปเดตฐานข้อมูล
-      await db.collection('characters').doc(currentCharId).update({
-        totalFavor: totalFavor,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      // 6. อัปเดตการแสดงผล
-      if (document.getElementById('charTotalFavor')) {
-        document.getElementById('charTotalFavor').textContent = totalFavor;
-      }
-      
-      return totalFavor;
-    } catch (error) {
-      console.error('อัปเดตยอด Favor ล้มเหลว:', error);
-      alert('อัปเดตยอด Favor ล้มเหลว: ' + error.message);
-    }
-  }
-
-  // อัปเดตยอดทองรวมใน Firestore
-  async function updateTotalGold() {
-    try {
-      // 1. ดึงทองจาก Session
-      let totalFromSessions = 0;
-      const sessions = await db.collection('sessions')
-        .where('characterId', '==', currentCharId)
-        .where('noGold', '==', false)
-        .get();
-      sessions.forEach(doc => {
-        totalFromSessions += doc.data().autoGold || 0;
-      });
-
-      // 2. ดึงทองจาก DM Logs
-      const dmLogs = await db.collection('dm_logs')
-        .where('characterId', '==', currentCharId)
-        .get();
-      dmLogs.forEach(doc => {
-        totalFromSessions += doc.data().autoGold || 0;
-      });
-      
-      // 2. ดึงทองที่ใช้ไปทั้งหมด
-      const goldEntries = await db.collection('gold')
-        .where('characterId', '==', currentCharId)
-        .get();
-      
-      let totalSpent = 0;
-      goldEntries.forEach(doc => {
-        const data = doc.data();
-        if (data.type === 'spend') {
-          totalSpent += data.amount || 0;
-        }
-      });
-      
-      // 3. คำนวณยอดทองรวม
-      const totalGold = currentCharData.gold + totalFromSessions - totalSpent;
-      
-      // 4. อัปเดตในฐานข้อมูล
-      await db.collection('characters').doc(currentCharId).update({
-        totalGold: totalGold,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      // 5. อัปเดตการแสดงผล
-      if (document.getElementById('charTotalGold')) {
-        document.getElementById('charTotalGold').textContent = totalGold;
-      }
-      
-      return totalGold;
-    } catch (error) {
-      console.error('อัปเดตยอดทองล้มเหลว:', error);
-      alert('อัปเดตยอดทองล้มเหลว: ' + error.message);
-    }
-  }
-
-  // คำนวณเลเวลปัจจุบันจากชั่วโมงรวม + เลเวลเริ่มต้น
+  // Helper: Logic
+  const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
   function calculateCurrentLevel(startLevel, totalHours) {
-    const maxLevel = 30;
-    
-    if (startLevel >= maxLevel) {
-      return { level: maxLevel, hoursToNextLevel: 0 };
-    }
-    
-    // คำนวณชั่วโมงสะสมจากเลเวลเริ่มต้น
-    const baseHours = LEVEL_HOURS[startLevel] || 0;
-    const totalHoursWithBase = baseHours + totalHours;
-    
-    // หาเลเวลปัจจุบัน
-    let currentLevel = startLevel;
-    for (let level = startLevel + 1; level <= maxLevel; level++) {
-      if (totalHoursWithBase >= LEVEL_HOURS[level]) {
-        currentLevel = level;
-      } else {
-        break;
+      const maxLevel = 30;
+      if (startLevel >= maxLevel) return { level: maxLevel, hoursToNextLevel: 0 };
+      const baseHours = LEVEL_HOURS[startLevel] || 0;
+      const totalHoursWithBase = baseHours + totalHours;
+      let currentLevel = startLevel;
+      for (let level = startLevel + 1; level <= maxLevel; level++) {
+          if (totalHoursWithBase >= LEVEL_HOURS[level]) currentLevel = level;
+          else break;
       }
-    }
-    
-    // คำนวณชั่วโมงที่ต้องเล่นอีกเพื่ออัปเลเวล
-    const hoursToNextLevel = currentLevel >= maxLevel
-      ? 0
-      : LEVEL_HOURS[currentLevel + 1] - totalHoursWithBase;
-      
-    return {
-      level: currentLevel,
-      hoursToNextLevel: Math.max(0, hoursToNextLevel)
-    };
+      const hoursToNextLevel = currentLevel >= maxLevel ? 0 : LEVEL_HOURS[currentLevel + 1] - totalHoursWithBase;
+      return { level: currentLevel, hoursToNextLevel: Math.max(0, hoursToNextLevel) };
   }
-
-  // ตารางชั่วโมงสะสมตามเลเวล
-  const LEVEL_HOURS = [
-    0,     
-    0,     
-    3.5,   // เลเวล 1 → ต้องเล่น 3.5 ชม. เพื่อไปถึงเลเวล 2
-    10.5,  // เลเวล 2 → ต้องเล่น 7 ชม. เพิ่ม (รวม 10.5 ชม.) เพื่อไปถึงเลเวล 3
-    21,    // เลเวล 3 → ต้องเล่น 10.5 ชม. เพิ่ม (รวม 21 ชม.) เพื่อไปถึงเลเวล 4
-    35,    // เลเวล 4 → ต้องเล่น 14 ชม. เพิ่ม (รวม 35 ชม.) เพื่อไปถึงเลเวล 5
-    52.5,  // เลเวล 5 → ต้องเล่น 17.5 ชม. เพิ่ม (รวม 52.5 ชม.) เพื่อไปถึงเลเวล 6
-    70,    // เลเวล 6 → ต้องเล่น 21 ชม. เพิ่ม (รวม 70 ชม.) เพื่อไปถึงเลเวล 7
-    91,    // เลเวล 7 → ต้องเล่น 24.5 ชม. เพิ่ม (รวม 91 ชม.) เพื่อไปถึงเลเวล 8
-    115.5, // เลเวล 8 → ต้องเล่น 28 ชม. เพิ่ม (รวม 115.5 ชม.) เพื่อไปถึงเลเวล 9
-    143.5, // เลเวล 9 → ต้องเล่น 31.5 ชม. เพิ่ม (รวม 143.5 ชม.) เพื่อไปถึงเลเวล 10
-    175,   // เลเวล 10 → ต้องเล่น 35 ชม. เพิ่ม (รวม 175 ชม.) เพื่อไปถึงเลเวล 11
-    210,   // เลเวล 11 → ต้องเล่น 38.5 ชม. เพิ่ม (รวม 210 ชม.) เพื่อไปถึงเลเวล 12
-    248.5, // เลเวล 12 → ต้องเล่น 42 ชม. เพิ่ม (รวม 248.5 ชม.) เพื่อไปถึงเลเวล 13
-    290.5, // เลเวล 13 → ต้องเล่น 45.5 ชม. เพิ่ม (รวม 290.5 ชม.) เพื่อไปถึงเลเวล 14
-    336,   // เลเวล 14 → ต้องเล่น 49 ชม. เพิ่ม (รวม 336 ชม.) เพื่อไปถึงเลเวล 15
-    385,   // เลเวล 15 → ต้องเล่น 56 ชม. เพิ่ม (รวม 385 ชม.) เพื่อไปถึงเลเวล 16
-    437.5, // เลเวล 16 → ต้องเล่น 52.5 ชม. เพิ่ม (รวม 437.5 ชม.) เพื่อไปถึงเลเวล 17
-    493.5, // เลเวล 17 → ต้องเล่น 59.5 ชม. เพิ่ม (รวม 493.5 ชม.) เพื่อไปถึงเลเวล 18
-    553,   // เลเวล 18 → ต้องเล่น 63 ชม. เพิ่ม (รวม 553 ชม.) เพื่อไปถึงเลเวล 19
-    616,   // เลเวล 19 → ต้องเล่น 66.5 ชม. เพิ่ม (รวม 616 ชม.) เพื่อไปถึงเลเวล 20
-    682.5, // เลเวล 20 → ต้องเล่น 70 ชม. เพิ่ม (รวม 682.5 ชม.) เพื่อไปถึงเลเวล 21
-    752.5, // เลเวล 21 → ต้องเล่น 73.5 ชม. เพิ่ม (รวม 752.5 ชม.) เพื่อไปถึงเลเวล 22
-    826,   // เลเวล 22 → ต้องเล่น 77 ชม. เพิ่ม (รวม 826 ชม.) เพื่อไปถึงเลเวล 23
-    903,   // เลเวล 23 → ต้องเล่น 80.5 ชม. เพิ่ม (รวม 903 ชม.) เพื่อไปถึงเลเวล 24
-    983.5, // เลเวล 24 → ต้องเล่น 84 ชม. เพิ่ม (รวม 983.5 ชม.) เพื่อไปถึงเลเวล 25
-    1067.5, // เลเวล 25 → ต้องเล่น 87.5 ชม. เพิ่ม (รวม 1067.5 ชม.) เพื่อไปถึงเลเวล 26
-    1155,  // เลเวล 26 → ต้องเล่น 91 ชม. เพิ่ม (รวม 1155 ชม.) เพื่อไปถึงเลเวล 27
-    1246,  // เลเวล 27 → ต้องเล่น 94.5 ชม. เพิ่ม (รวม 1246 ชม.) เพื่อไปถึงเลเวล 28
-    1340.5, // เลเวล 28 → ต้องเล่น 98 ชม. เพิ่ม (รวม 1340.5 ชม.) เพื่อไปถึงเลเวล 29
-    1438.5, // เลเวล 29 → ต้องเล่น 101.5 ชม. เพิ่ม (รวม 1438.5 ชม.) เพื่อไปถึงเลเวล 30
-    1540   // เลเวล 30 → ต้องเล่น 105 ชม. เพิ่ม (รวม 1540 ชม.) — แต่ไม่มีเลเวล 31
-  ];
-
-  // คำนวณรางวัล DM อัตโนมัติ
+  function getTierFromLevel(level) {
+      if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
+  }
+  function getGoldMultiplier(level) {
+      if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; return 1.0;
+  }
+  function calculateAutoGold() {
+      const hours = parseFloat(document.getElementById('hours').value) || 0;
+      const noGold = document.getElementById('noGold').checked;
+      if(noGold) { document.getElementById('autoGoldAmount').textContent='0'; return; }
+      
+      const c = currentCharData || {};
+      const totalHours = Number(c.total_hours) || 0;
+      const { level } = calculateCurrentLevel(c.base_level || 1, totalHours);
+      const multiplier = getGoldMultiplier(level);
+      
+      document.getElementById('autoGoldAmount').textContent = Math.floor(hours * 100 * multiplier);
+  }
   function calculateDmRewards() {
-    const hours = parseFloat(document.getElementById('dmHours').value) || 0;
-    const soloQuest = document.getElementById('soloQuest').checked;
-    const doubleReward = document.getElementById('doubleReward').checked;
-    
-    // คำนวณชั่วโมงที่ได้รับ (ทุกกรณี × 1.5)
-    let finalHours = hours * 1.5;
-    
-    // ถ้ามีรางวัล x2 → คูณ 2
-    if (doubleReward) {
-      finalHours *= 2;
-    }
-    
-    let autoGold = 0;
-    let autoFavor = 0;
-    
-    // ถ้าไม่ใช่ภารกิจเดี่ยว → คำนวณทอง + Favor
-    if (!soloQuest) {
-      const totalHours = sessionsData.reduce((sum, s) => sum + (s.hours || 0), 0);
-      const { level: currentLevel } = calculateCurrentLevel(currentCharData.level, totalHours);
-      const multiplier = getGoldMultiplier(currentLevel);
+      const hours = parseFloat(document.getElementById('dmHours').value) || 0;
+      const solo = document.getElementById('soloQuest').checked;
+      const double = document.getElementById('doubleReward').checked;
+      let finalHours = hours * 1.5; if(double) finalHours *= 2;
+      let gold = 0, favor = 0;
       
-      autoGold = Math.floor(hours * 100 * multiplier * 1.5);
-      autoFavor = Math.floor(hours * 4);
-      
-      if (doubleReward) {
-        autoGold *= 2;
-        autoFavor *= 2;
+      if(!solo) {
+          const c = currentCharData || {};
+          const { level } = calculateCurrentLevel(c.base_level || 1, Number(c.total_hours));
+          const mult = getGoldMultiplier(level);
+          gold = Math.floor(hours * 100 * mult * 1.5);
+          favor = Math.floor(hours * 4);
+          if(double) { gold *= 2; favor *= 2; }
       }
-    }
-    
-    // อัปเดตการแสดงผล
-    document.getElementById('dmAutoGold').textContent = autoGold;
-    document.getElementById('dmAutoFavor').textContent = autoFavor;
-    document.getElementById('dmAutoHours').textContent = finalHours.toFixed(1);
+      document.getElementById('dmAutoGold').textContent = gold;
+      document.getElementById('dmAutoFavor').textContent = favor;
+      document.getElementById('dmAutoHours').textContent = finalHours;
   }
 
-  // ตั้งค่าให้ Session เป็น active โดยอัตโนมัติเมื่อโหลดหน้า
   document.addEventListener('DOMContentLoaded', () => {
     openTab('session');
   });
 </script>
+</body>
 </html>

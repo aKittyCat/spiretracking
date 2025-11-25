@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="firebase-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Admin Dashboard</title>
   <style>
@@ -19,361 +16,289 @@
   </style>
 </head>
 <body class="bg-gray-900 text-gray-200 p-4 sm:p-6 font-sans min-h-screen">
+  
   <div class="max-w-7xl mx-auto">
     
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-700 gap-4">
-      <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-        🛡️ Admin Dashboard
-      </h1>
-      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-        <span class="text-gray-400 font-medium text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
-        <button onclick="auth.signOut().then(() => location.href='index.html')" 
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
+      <div class="flex items-center gap-4">
+        <h1 class="text-3xl font-bold text-white">
+            <span class="text-purple-400">Admin</span> Dashboard
+        </h1>
+        <button id="btnRefresh" onclick="loadDashboardDataManual()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition flex items-center gap-1">
+            <span>🔄</span> รีเฟรชข้อมูล
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-gray-400 text-sm font-medium hidden sm:inline">
+          ผู้ดูแล: <span id="userEmail" class="text-gray-200">...</span>
+        </span>
+        <button onclick="location.href='characters.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
+          กลับหน้าตัวละคร
+        </button>
+        <button onclick="logout()" 
                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
         </button>
       </div>
     </div>
 
-    <a href="characters.html" class="mb-6 inline-flex items-center bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded transition text-sm font-medium">
-      ⬅️ กลับหน้าตัวละคร
-    </a>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between h-full">
+        <p class="text-sm font-medium text-gray-400">ตัวละครทั้งหมด</p>
+        <p id="totalChars" class="text-3xl font-bold text-green-400 mt-2">0</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between h-full">
+        <p class="text-sm font-medium text-gray-400">ทองเฉลี่ยต่อตัว</p>
+        <p id="averageGold" class="text-3xl font-bold text-yellow-400 mt-2">0 GP</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between h-full">
+        <p class="text-sm font-medium text-gray-400">DM Logs รวม</p>
+        <p id="totalDmLogs" class="text-3xl font-bold text-indigo-400 mt-2">0</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between h-full">
+        <p class="text-sm font-medium text-gray-400">ตัวละครทองมากสุด</p>
+        <p id="highestGoldChar" class="text-xl font-bold text-amber-400 mt-2 truncate">N/A (0 GP)</p>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
       
-      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
-        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">การกระจายเลเวล</h3>
-        <div class="relative h-64 w-full">
+      <div class="lg:col-span-1 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between">
+        <h2 class="text-xl font-semibold mb-4 text-white">สัดส่วนเลเวล</h2>
+        <div class="h-64 flex items-center justify-center">
           <canvas id="levelChart"></canvas>
         </div>
       </div>
-
-      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
-        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">ทองเฉลี่ย</h3>
-        <div class="relative h-64 w-full">
-          <canvas id="goldChart"></canvas>
-        </div>
-      </div>
-
-      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
-        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">สัดส่วนอาชีพ</h3>
-        <div class="relative h-64 w-full">
+      
+      <div class="lg:col-span-1 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between">
+        <h2 class="text-xl font-semibold mb-4 text-white">สัดส่วนอาชีพ</h2>
+        <div class="h-64 flex items-center justify-center">
           <canvas id="classChart"></canvas>
         </div>
       </div>
 
-      <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col">
-        <h3 class="text-sm font-semibold text-gray-400 mb-2 text-center">สัดส่วนเผ่า</h3>
-        <div class="relative h-64 w-full">
+      <div class="lg:col-span-1 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col justify-between">
+        <h2 class="text-xl font-semibold mb-4 text-white">สัดส่วนเผ่า</h2>
+        <div class="h-64 flex items-center justify-center">
           <canvas id="raceChart"></canvas>
         </div>
       </div>
 
+      <div class="lg:col-span-1 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-white">สถิติเลเวลสูงสุด</h2>
+        <p class="text-sm font-medium text-gray-400">ตัวละครเลเวลสูงสุด</p>
+        <p id="highestLevelChar" class="text-2xl font-bold text-red-400 mt-1 mb-4 truncate">N/A (Lv. 0)</p>
+        
+        <h2 class="text-xl font-semibold mb-4 text-white border-t border-gray-700 pt-4">กิจกรรมล่าสุด</h2>
+        <div id="latestChars" class="space-y-3 max-h-56 overflow-y-auto">
+          <p class="text-gray-500 text-sm">กำลังโหลด...</p>
+        </div>
+      </div>
     </div>
 
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold text-white">
-        ตัวละครทั้งหมด <span class="bg-blue-900 text-blue-200 text-sm py-0.5 px-2 rounded-full ml-2" id="charCount">...</span>
-      </h2>
-    </div>
-    
-    <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
-       <div id="allChars" class="divide-y divide-gray-700">
-         </div>
+    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-white">จัดการตัวละครทั้งหมด</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ชื่อ</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">เลเวล</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gold</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ผู้สร้าง (ID)</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"></th>
+            </tr>
+          </thead>
+          <tbody id="allCharsTable" class="divide-y divide-gray-700">
+            </tbody>
+        </table>
+        <p id="tableLoadingText" class="text-center text-gray-500 py-4" style="display:none">กำลังโหลด...</p>
+      </div>
     </div>
 
   </div>
 
+  <script src="supabase-config.js"></script>
   <script src="/js/utils.js"></script>
+
   <script>
-    // ตั้งค่า TTL (5 นาที = 300,000 มิลลิวินาที)
-    const CACHE_TTL = 5 * 60 * 1000;
-
-    // บันทึกข้อมูลลง localStorage พร้อม timestamp
-    function setDashboardCache(key, data) {
-      const cache = {
-        data,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(`dashboard_${key}`, JSON.stringify(cache));
-    }
-
-    // ดึงข้อมูลจาก localStorage (ถ้ายังไม่หมดอายุ)
-    function getDashboardCache(key) {
-      try {
-        const item = localStorage.getItem(`dashboard_${key}`);
-        if (!item) return null;
-        
-        const cache = JSON.parse(item);
-        if (Date.now() - cache.timestamp > CACHE_TTL) {
-          localStorage.removeItem(`dashboard_${key}`);
-          return null;
-        }
-        return cache.data;
-      } catch (e) {
-        console.warn("Cache error:", e);
-        return null;
-      }
-    }
-
-    Chart.defaults.color = '#9ca3af'; // สี text (gray-400)
-    Chart.defaults.borderColor = '#374151'; // สีเส้น grid (gray-700)
-
+    let currentUser = null;
+    let isAdminUser = false;
+    let allCharacters = [];
     let chartInstances = [];
-
-    auth.onAuthStateChanged(async user => {
-      if (!user) return location.href = 'index.html';
-      document.getElementById('userEmail').textContent = user.email;
-      
-      try {
-        // ดึงการตั้งค่า admin จาก Firestore
-        const settingsDoc = await db.collection('settings').doc('admin').get();
-        const adminData = settingsDoc.data();
+    
+    async function init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = 'index.html'; return; }
         
-        // ตรวจสอบว่ามีข้อมูล admin หรือไม่
-        if (!adminData || !Array.isArray(adminData.adminEmails)) {
-          alert('❌ ไม่พบการตั้งค่า admin ที่ถูกต้อง!');
-          return location.href = 'characters.html';
+        // เช็คสิทธิ์ Admin
+        const { data: isAdmin, error } = await supabase.rpc('is_admin');
+        
+        if (!isAdmin || error) {
+            alert('⛔️ พื้นที่สำหรับ Admin เท่านั้น');
+            window.location.href = 'characters.html';
+            return;
         }
-        
-        // เปรียบเทียบอีเมล (แปลงเป็นตัวพิมพ์เล็กและลบช่องว่าง)
-        const currentEmail = user.email?.trim().toLowerCase();
-        const adminEmails = adminData.adminEmails
-          .map(email => String(email).trim().toLowerCase());
-        
-        // ตรวจสอบสิทธิ์
-        if (!currentEmail || !adminEmails.includes(currentEmail)) {
-          alert('🚫 คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
-          return location.href = 'characters.html';
+
+        isAdminUser = true;
+        currentUser = session.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+
+        // เริ่มโหลดข้อมูล
+        loadDashboardDataManual();
+    }
+    init();
+
+    async function logout() {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+    }
+    
+    // --- Load Data (Manual) ---
+    async function loadDashboardDataManual() {
+        document.getElementById('tableLoadingText').style.display = 'block';
+        const btnRefresh = document.getElementById('btnRefresh');
+        if(btnRefresh) { btnRefresh.disabled = true; btnRefresh.classList.add('opacity-50'); }
+
+        try {
+            console.log("🔄 Loading Dashboard Data...");
+            
+            // 1. ดึงข้อมูลสรุปจาก View (Admin เห็นทั้งหมดเพราะ RLS Policy)
+            const { data: chars, error: charError } = await supabase
+                .from('character_stats')
+                .select('*');
+            
+            if (charError) throw charError;
+            allCharacters = chars || [];
+
+            // 2. ดึงจำนวน DM Logs
+            const { count: dmCount, error: dmError } = await supabase
+                .from('dm_logs')
+                .select('*', { count: 'exact', head: true });
+            
+            if (dmError) throw dmError;
+
+            // 3. ดึงกิจกรรมล่าสุด (Sessions + Join Characters)
+            const { data: sessions, error: sessError } = await supabase
+                .from('sessions')
+                .select('*, characters(name)') 
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (sessError) throw sessError;
+
+            console.log(`✅ Loaded: ${allCharacters.length} chars`);
+            
+            renderStatsAndLists(allCharacters, dmCount, sessions);
+
+        } catch (error) {
+            console.error("Error:", error);
+            alert("โหลดข้อมูลไม่สำเร็จ: " + error.message);
+        } finally {
+            document.getElementById('tableLoadingText').style.display = 'none';
+            if(btnRefresh) { btnRefresh.disabled = false; btnRefresh.classList.remove('opacity-50'); }
         }
-        
-        // โหลดข้อมูลทั้งหมด
-        await loadAllData();
-      } catch (error) {
-        console.error('💥 เกิดข้อผิดพลาด:', error);
-        alert('ตรวจสอบสิทธิ์ล้มเหลว: ' + (error.message || 'ไม่สามารถเชื่อมต่อได้'));
-        location.href = 'characters.html';
-      }
-    });
-
-    async function loadAllData() {
-      await loadAllCharacters();
-      await loadCharts();
     }
 
-    async function loadAllCharacters() {
-      const cachedChars = getDashboardCache('characters');
-      const list = document.getElementById('allChars');
-      const countEl = document.getElementById('charCount');
-
-      if (cachedChars) {
-        if (countEl) countEl.textContent = cachedChars.length;
-        list.innerHTML = '';
-        cachedChars.forEach(char => {
-          renderCharacterItem(char);
-        });
-        return;
-      }
-
-      try {
-        const snap = await db.collection('characters').get();
-        const chars = [];
-        snap.forEach(doc => {
-          chars.push({ id: doc.id, ...doc.data() });
-        });
-
-        setDashboardCache('characters', chars);
-
-        if (countEl) countEl.textContent = chars.length;
-        list.innerHTML = '';
-        chars.forEach(char => {
-          renderCharacterItem(char);
-        });
-      } catch (error) {
-        console.error('Error loading characters:', error);
-        list.innerHTML = 
-          '<div class="p-4 text-red-400 text-center">โหลดข้อมูลล้มเหลว: ' + error.message + '</div>';
-      }
-    }
-
-    // ฟังก์ชันแยกสำหรับสร้างรายการตัวละคร
-    function renderCharacterItem(c) {
-      const div = document.createElement('div');
-      div.className = 'p-4 hover:bg-gray-700/50 transition duration-150 flex flex-col sm:flex-row justify-between sm:items-center gap-3';
-      div.innerHTML = `
-        <div>
-          <div class="flex items-center gap-2">
-            <strong class="text-lg text-white">${c.name}</strong>
-            <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Lv.${c.currentLevel}</span>
-          </div>
-          <div class="text-sm text-gray-400 mt-1">
-            <span class="mr-2">⚔️ ${c.class}</span>
-            <span class="mr-2">🧬 ${c.race}</span>
-            <span class="text-yellow-500 font-medium">💰 ${c.totalGold} gp</span>
-          </div>
-          <div class="text-xs text-gray-500 mt-1">
-            UID: <span class="font-mono">${c.userId}</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
-          <a href="character-detail.html?charId=${c.id}&admin=true" class="text-blue-400 hover:text-blue-300 text-sm font-medium underline decoration-dotted">
-            ดูรายละเอียด
-          </a>
-          <button onclick="deleteCharAdmin('${c.id}')" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1 rounded border border-red-900/50 text-sm transition">
-            ลบ
-          </button>
-        </div>
-      `;
-      document.getElementById('allChars').appendChild(div);
-    }
-
-    async function deleteCharAdmin(charId) {
-      if (!confirm('⚠️ ลบตัวละครนี้จริงหรือ? ข้อมูลทั้งหมดจะหายไป!')) return;
-      localStorage.removeItem('dashboard_characters');
-      const result = await deleteCharacterAndData(charId, false);
-      if (result.success) {
-        alert(result.message);
-        loadAllData();
-      } else {
-        alert('❌ ' + result.message);
-      }
-    }
-
-    async function loadCharts() {
-      chartInstances.forEach(c => c.destroy());
+    // --- Render ---
+    function renderStatsAndLists(chars, dmCount, sessions) {
+      // Clear charts
+      chartInstances.forEach(chart => chart.destroy());
       chartInstances = [];
 
-      // ลองดึงจากแคชก่อน
-      const cachedChars = getDashboardCache('characters');
+      // Summary Stats
+      document.getElementById('totalChars').textContent = chars.length;
+      document.getElementById('totalDmLogs').textContent = dmCount;
+
+      let totalGoldSum = 0;
+      let highestGold = -1;
+      let highestGoldCharName = 'N/A';
+      let highestLevel = -1;
+      let highestLevelCharName = 'N/A';
       
-      if (cachedChars) {
-        renderCharts(cachedChars);
-        return;
-      }
+      const levelCount = {}; 
+      const classCount = {}; 
+      const raceCount = {}; 
 
-      // ถ้าไม่มีแคช → โหลดจาก Firestore
-      try {
-        const snap = await db.collection('characters').get();
-        const chars = [];
-        snap.forEach(doc => {
-          chars.push(doc.data());
-        });
+      chars.forEach(c => {
+        const totalGold = Number(c.total_gold) || 0;
+        const totalHours = Number(c.total_hours) || 0;
+        const baseLevel = c.base_level || 1;
         
-        // บันทึกลงแคช
-        setDashboardCache('characters', chars);
+        // คำนวณ Level
+        const { level: currentLevel } = calculateCurrentLevel(baseLevel, totalHours);
+
+        totalGoldSum += totalGold;
         
-        // แสดงกราฟ
-        renderCharts(chars);
-      } catch (error) {
-        console.error('Error loading charts:', error);
-      }
-    }
+        // Max Gold
+        if (totalGold > highestGold) {
+          highestGold = totalGold;
+          highestGoldCharName = c.name;
+        }
+        // Max Level
+        if (currentLevel > highestLevel) {
+          highestLevel = currentLevel;
+          highestLevelCharName = c.name;
+        }
+        
+        // Counts for Charts
+        const levelKey = `Lv. ${currentLevel}`;
+        levelCount[levelKey] = (levelCount[levelKey] || 0) + 1;
 
-    // ฟังก์ชันแยกสำหรับแสดงกราฟ
-    function renderCharts(chars) {
-      if (chars.length === 0) return;
+        const cls = c.class || 'Unknown';
+        classCount[cls] = (classCount[cls] || 0) + 1;
 
-      // =============== Level Distribution Chart ===============
+        const race = c.race || 'Unknown';
+        raceCount[race] = (raceCount[race] || 0) + 1;
+      });
+
+      const averageGold = chars.length > 0 ? (totalGoldSum / chars.length) : 0;
+
+      document.getElementById('averageGold').textContent = `${averageGold.toFixed(0).toLocaleString()} GP`;
+      document.getElementById('highestGoldChar').textContent = `${highestGoldCharName} (${highestGold.toLocaleString()} GP)`;
+      document.getElementById('highestLevelChar').textContent = `${highestLevelCharName} (Lv. ${highestLevel})`;
+
+      // --- Charts Rendering ---
+      
+      // Level Chart
       const levelCtx = document.getElementById('levelChart')?.getContext('2d');
       if (levelCtx) {
-        const levelCount = {};
-        chars.forEach(c => {
-          const level = c.currentLevel || 1;
-          levelCount[level] = (levelCount[level] || 0) + 1;
-        });
-        const sortedLevels = Object.keys(levelCount).map(Number).sort((a, b) => a - b);
-        const levelLabels = sortedLevels.map(l => `Lv.${l}`);
-        const levelData = sortedLevels.map(l => levelCount[l]);
-        
+        const sortedLabels = Object.keys(levelCount).sort((a, b) => parseInt(a.replace('Lv. ', '')) - parseInt(b.replace('Lv. ', '')));
         const levelChart = new Chart(levelCtx, {
           type: 'bar',
           data: {
-            labels: levelLabels,
+            labels: sortedLabels,
             datasets: [{
-              label: 'จำนวนตัวละคร',
-              data: levelData,
-              backgroundColor: 'rgba(59, 130, 246, 0.6)',
-              borderColor: 'rgba(59, 130, 246, 1)',
-              borderWidth: 1
+              label: 'จำนวน',
+              data: sortedLabels.map(l => levelCount[l]),
+              backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1
             }]
           },
-          options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { 
-              y: { beginAtZero: true, ticks: { stepSize: 1 } },
-              x: { grid: { display: false } }
-            },
-            plugins: { legend: { display: false } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
         });
         chartInstances.push(levelChart);
       }
-
-      // =============== Average Gold Chart ===============
-      const goldCtx = document.getElementById('goldChart')?.getContext('2d');
-      if (goldCtx) {
-        const totalGoldValues = chars.map(c => c.totalGold || c.gold || 0).filter(gold => !isNaN(gold));
-        const avgGold = totalGoldValues.length > 0 ? totalGoldValues.reduce((sum, g) => sum + g, 0) / totalGoldValues.length : 0;
-        
-        const goldChart = new Chart(goldCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Average Gold'],
-            datasets: [{
-              label: 'ยอดทองรวมเฉลี่ย',
-              data: [parseFloat(avgGold.toFixed(1))],
-              backgroundColor: 'rgba(234, 179, 8, 0.6)',
-              borderColor: 'rgba(234, 179, 8, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { 
-              y: { beginAtZero: true },
-              x: { display: false }
-            }
-          }
-        });
-        chartInstances.push(goldChart);
-      }
-
-      // =============== Class Count ===============
-      const classCount = {};
-      chars.forEach(c => {
-        const cls = c.class || 'Unknown';
-        classCount[cls] = (classCount[cls] || 0) + 1;
-      });
+      
+      // Class Chart
       const classCtx = document.getElementById('classChart')?.getContext('2d');
       if (classCtx) {
         const classChart = new Chart(classCtx, {
-          type: 'pie',
+          type: 'doughnut',
           data: {
             labels: Object.keys(classCount),
             datasets: [{
               data: Object.values(classCount),
               backgroundColor: ['#ec4899', '#3b82f6', '#eab308', '#10b981', '#8b5cf6', '#f97316'],
-              borderColor: '#1f2937',
-              borderWidth: 2
+              borderColor: '#1f2937', borderWidth: 2
             }]
           },
-          options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
         chartInstances.push(classChart);
       }
 
-      // =============== Race Count ===============
-      const raceCount = {};
-      chars.forEach(c => {
-        const race = c.race || 'Unknown';
-        raceCount[race] = (raceCount[race] || 0) + 1;
-      });
+      // Race Chart
       const raceCtx = document.getElementById('raceChart')?.getContext('2d');
       if (raceCtx) {
         const raceChart = new Chart(raceCtx, {
@@ -383,18 +308,107 @@
             datasets: [{
               data: Object.values(raceCount),
               backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#14b8a6', '#a855f7', '#f97316', '#9ca3af'],
-              borderColor: '#1f2937',
-              borderWidth: 2
+              borderColor: '#1f2937', borderWidth: 2
             }]
           },
-          options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
         chartInstances.push(raceChart);
       }
+      
+      // --- Latest Activities ---
+      const latestCharsList = document.getElementById('latestChars');
+      latestCharsList.innerHTML = '';
+      if (!sessions || sessions.length === 0) {
+        latestCharsList.innerHTML = '<p class="text-gray-500 text-sm">ไม่มีกิจกรรมล่าสุด</p>';
+      } else {
+        const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' });
+        sessions.forEach(s => {
+            const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
+            const charName = s.characters ? s.characters.name : 'Unknown';
+            
+            latestCharsList.innerHTML += `
+                <div class="p-3 bg-gray-700 rounded flex justify-between items-center hover:bg-gray-600 transition duration-150">
+                    <div>
+                        <p class="font-medium text-white max-w-[120px] truncate">${charName}</p>
+                        <p class="text-xs text-gray-400 truncate max-w-[150px]">${s.name || 'Session'}</p>
+                    </div>
+                    <p class="text-xs text-gray-300 ml-2 whitespace-nowrap">${dateStr}</p>
+                </div>
+            `;
+        });
+      }
+
+      // --- All Characters Table ---
+      const tableBody = document.getElementById('allCharsTable');
+      tableBody.innerHTML = '';
+
+      if (chars.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">ไม่มีตัวละครในระบบ</td></tr>`;
+        return;
+      }
+      
+      // คำนวณ Level เพื่อเรียงลำดับ
+      const displayChars = chars.map(c => {
+          const totalHours = Number(c.total_hours) || 0;
+          const { level } = calculateCurrentLevel(c.base_level || 1, totalHours);
+          return { ...c, current_level: level, total_gold_num: Number(c.total_gold) || 0 };
+      });
+
+      displayChars.sort((a, b) => b.current_level - a.current_level);
+
+      displayChars.forEach(char => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-gray-700 transition duration-150';
+          row.innerHTML = `
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white max-w-[150px] truncate">${char.name}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.current_level}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">${char.total_gold_num.toLocaleString()} gp</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[150px] truncate">${char.user_id || 'N/A'}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <a href="character-detail.html?charId=${char.character_id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
+                      View/Edit
+                  </a>
+                  <button onclick="deleteChar('${char.character_id}', '${char.name}')" class="text-red-400 hover:text-red-300">
+                      Delete
+                  </button>
+              </td>
+          `;
+          tableBody.appendChild(row);
+      });
+    }
+
+    async function deleteChar(charId, charName) {
+      if (!isAdminUser) return alert('🚫 เฉพาะ Admin เท่านั้น');
+      
+      if (!confirm(`⚠️ Admin Delete: ยืนยันการลบตัวละคร "${charName}"?`)) return;
+      
+      try {
+        // ลบจาก characters (Session/Log อื่นๆ จะหายเองเพราะ Cascade)
+        const { error } = await supabase.from('characters').delete().eq('id', charId);
+        
+        if (error) throw error;
+        
+        alert('ลบเรียบร้อย');
+        loadDashboardDataManual(); // รีโหลดข้อมูล
+      } catch (error) {
+          alert('❌ การลบล้มเหลว: ' + error.message);
+      }
+    }
+
+    // Helper Functions
+    const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
+    function calculateCurrentLevel(startLevel, totalHours) {
+        const maxLevel = 30;
+        if (startLevel >= maxLevel) return { level: maxLevel, hoursToNextLevel: 0 };
+        const baseHours = LEVEL_HOURS[startLevel] || 0;
+        const totalHoursWithBase = baseHours + totalHours;
+        let currentLevel = startLevel;
+        for (let level = startLevel + 1; level <= maxLevel; level++) {
+            if (totalHoursWithBase >= LEVEL_HOURS[level]) currentLevel = level;
+            else break;
+        }
+        return { level: currentLevel, hoursToNextLevel: 0 };
     }
   </script>
 </body>

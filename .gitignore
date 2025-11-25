@@ -69,4 +69,7 @@ node_modules/
 .dataconnect
 
 /bkup
+/firebase-spiretk
 firebase-config.js
+supabase-config.js
+supabaseClient.js

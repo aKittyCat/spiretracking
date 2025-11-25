@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>ตัวละครของฉัน</title>
 </head>
@@ -20,7 +17,7 @@
         <span class="text-gray-400 text-sm font-medium truncate max-w-[150px] sm:max-w-none">
           สมาชิก: <span id="userEmail" class="text-gray-200">...</span>
         </span>
-        <button onclick="auth.signOut().then(() => location.href='index.html')" 
+        <button onclick="logout()" 
                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
         </button>
@@ -122,197 +119,99 @@
 
   <script src="/js/utils.js"></script>
   <script src="/js/fetch.js"></script>
+  
   <script>
-    const CHAR_LIST_CACHE_TTL = 5 * 60 * 1000;
-
-    // บันทึกข้อมูลตัวละครลง localStorage
-    function setCharactersCache(characters) {
-      const cache = {
-        data: characters,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('charListCache', JSON.stringify(cache));
-    }
-
-    // ดึงข้อมูลตัวละครจาก localStorage (ถ้ายังไม่หมดอายุ)
-    function getCharactersCache() {
-      try {
-        const item = localStorage.getItem('charListCache');
-        if (!item) return null;
-        
-        const cache = JSON.parse(item);
-        if (Date.now() - cache.timestamp > CHAR_LIST_CACHE_TTL) {
-          localStorage.removeItem('charListCache');
-          return null;
-        }
-        return cache.data;
-      } catch (e) {
-        console.warn("Cache error:", e);
-        return null;
-      }
-    }
-
     let currentUser = null;
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) return window.location.href = 'index.html';
-      document.getElementById('userEmail').textContent = user.email;
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      currentUser = session.user;
+      document.getElementById('userEmail').textContent = currentUser.email;
       
-      currentUser = user;
-      console.log("✅ ล็อกอินสำเร็จด้วยอีเมล:", user.email);
-      
-      // โหลดตัวละครก่อน
-      await loadCharacters();
-      
-      // ตรวจสอบสิทธิ์ admin แบบละเอียด
-      await checkAdmin();
-    });
+      checkAdmin();
+      loadCharacters();
+    }
+    init();
 
     async function checkAdmin() {
-      try {
-        console.log("🔍 เริ่มตรวจสอบสิทธิ์ admin...");
-        
-        const doc = await db.collection('settings').doc('admin').get();
-        
-        if (!doc.exists) {
-          console.error("❌ ไม่พบเอกสาร settings/admin");
-          return;
-        }
-        
-        const data = doc.data();
-        // ✅ ตรวจสอบว่าเป็น array
-        const adminEmails = data.adminEmails || [];
-        const currentEmail = currentUser.email?.trim().toLowerCase();
-        
-        console.log("📧 อีเมลผู้ใช้:", currentEmail);
-        console.log("📧 รายชื่อ admin:", adminEmails.map(e => e.trim().toLowerCase()));
-        
-        // ✅ ตรวจสอบว่าอีเมลผู้ใช้อยู่ในรายการ admin
-        const isAdmin = adminEmails
-          .map(e => e.trim().toLowerCase())
-          .includes(currentEmail);
-        
-        if (isAdmin) {
-          console.log("✅ คุณเป็น admin!");
-          document.getElementById('adminBtn').style.display = 'inline-flex';
-        } else {
-          console.log("❌ ไม่ใช่ admin");
-        }
-      } catch (error) {
-        console.error("💥 เกิดข้อผิดพลาดตอนตรวจสอบ admin:", error);
-        alert("ตรวจสอบสิทธิ์ล้มเหลว: " + error.message);
-      }
+        const { data } = await supabase.rpc('is_admin'); // เรียกใช้ function SQL
+        if (data) document.getElementById('adminBtn').style.display = 'inline-flex';
     }
 
-    // เพิ่มตัวละครใหม่
     async function addCharacter() {
       const name = document.getElementById('charName').value.trim();
-      if (!name) return alert('กรุณาใส่ชื่อตัวละคร');
+      if (!name) return alert('ใส่ชื่อตัวละคร');
 
-      const char = {
-        name,
-        level: parseInt(document.getElementById('charLevel').value) || 1,
-        class: document.getElementById('charClass').value.trim() || 'None',
-        race: document.getElementById('charRace').value.trim() || 'None',
-        gold: parseInt(document.getElementById('charGold').value) || 0,
-        sheetLink: document.getElementById('sheetLink').value || '',
-        userId: currentUser.uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
+      const { error } = await supabase.from('characters').insert({
+        user_id: currentUser.id,
+        name: name,
+        level: document.getElementById('charLevel').value || 1,
+        class: document.getElementById('charClass').value || 'None',
+        race: document.getElementById('charRace').value || 'None',
+        gold_start: document.getElementById('charGold').value || 0,
+        sheet_link: document.getElementById('sheetLink').value
+      });
 
-      try {
-        await db.collection('characters').add(char);
-        alert('เพิ่มตัวละครสำเร็จ!');
-        localStorage.removeItem('charListCache');
+      if (error) alert('Error: ' + error.message);
+      else {
+        alert('✅ เพิ่มสำเร็จ!');
         loadCharacters();
-        // ล้างฟอร์ม
-        document.getElementById('charName').value = '';
-        document.getElementById('charLevel').value = '';
-        document.getElementById('charClass').value = '';
-        document.getElementById('charRace').value = '';
-        document.getElementById('charGold').value = '';
-        document.getElementById('sheetLink').value = '';
-      } catch (error) {
-        console.error('Error adding character:', error);
-        alert('เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถบันทึกได้'));
+        // Clear inputs...
+        document.querySelectorAll('input').forEach(i => i.value = '');
       }
     }
 
-    // โหลดตัวละคร
     async function loadCharacters() {
-      // 1. ลองดึงจากแคชก่อน
-      const cached = getCharactersCache();
-      if (cached) {
-        renderCharacters(cached);
-        return;
-      }
+      // ดึงจาก View 'character_stats'
+      const { data, error } = await supabase
+        .from('character_stats')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false }); // ต้องแก้ View ให้ return created_at ด้วย หรือใช้ id แทน
 
-      // 2. ถ้าไม่มีแคช → โหลดจาก Firestore
-      try {
-        const snap = await db.collection('characters').where('userId', '==', currentUser.uid).get();
-        const characters = [];
-        snap.forEach(doc => {
-          characters.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // บันทึกลงแคช
-        setCharactersCache(characters);
-        
-        // แสดงผล
-        renderCharacters(characters);
-      } catch (error) {
-        console.error('Error loading characters:', error);
-        document.getElementById('charactersList').innerHTML = 
-          '<p class="text-red-400 text-center">โหลดข้อมูลไม่ได้ กรุณาลองใหม่</p>';
-      }
-    }
-
-    function renderCharacters(characters) {
+      if (error) return console.error(error);
+      
       const list = document.getElementById('charactersList');
       list.innerHTML = '';
       
-      if (characters.length === 0) {
-        list.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีตัวละคร</p>';
-        return;
-      }
-      
-      characters.forEach(char => {
-        const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md hover:border-gray-500 transition duration-200';
-        div.innerHTML = `
-          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-              <div>
-                  <h3 class="font-bold text-xl text-yellow-500">${char.name} 
-                    <span class="text-gray-400 text-base font-normal">(Lv. ${char.currentLevel || char.level})</span>
-                  </h3>
-                  <p class="text-gray-300 text-sm mt-1">
-                      <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">อาชีพ: ${char.class}</span>
-                      <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">เผ่า: ${char.race}</span>
-                      <span class="text-yellow-400 font-medium">💰 ${char.totalGold || char.gold} gp</span>
-                  </p>
-              </div>
-              <div class="flex items-center gap-3 mt-3 sm:mt-0 border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
-                  ${char.sheetLink ? `<a href="${char.sheetLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 ดู Sheet</a>` : ''}
-                  <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">📝 รายละเอียด</a>
-                  <button onclick="deleteChar('${char.id}')" class="ml-2 pl-4 border-l border-gray-600 text-red-400 hover:text-red-300 text-sm font-medium">🗑️ ลบ</button>
-              </div>
+      data.forEach(c => {
+        const { level: currentLevel } = calculateCurrentLevel(c.base_level || 1, Number(c.total_hours || 0));
+        
+        list.innerHTML += `
+          <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md flex justify-between items-center">
+             <div>
+                <h3 class="font-bold text-xl text-yellow-500">${c.name} <span class="text-gray-400 text-sm">(Lv. ${currentLevel})</span></h3>
+                <p class="text-gray-300 text-sm">${c.class || '-'} | ${c.race || '-'} | 💰 ${(Number(c.total_gold)||0).toLocaleString()} gp</p>
+             </div>
+             <div class="flex items-center gap-3">
+                <a href="character-detail.html?charId=${c.character_id}" class="text-indigo-400 hover:text-indigo-300">📝 รายละเอียด</a>
+                <button onclick="deleteChar('${c.character_id}')" class="text-red-400 hover:text-red-300 ml-2">🗑️ ลบ</button>
+             </div>
           </div>
         `;
-        list.appendChild(div);
       });
     }
 
-    async function deleteChar(charId) {
-      if (!confirm('⚠️ ลบตัวละครนี้จริงหรือ? ข้อมูลทั้งหมดจะหายไป!')) return;
-      
-      const result = await deleteCharacterAndData(charId, true);
-      if (result.success) {
-        alert(result.message);
-        localStorage.removeItem('charListCache');
-        loadCharacters();
-      } else {
-        alert('❌ ' + result.message);
-      }
+    async function deleteChar(id) {
+        if(!confirm('ยืนยันลบ?')) return;
+        const { error } = await supabase.from('characters').delete().eq('id', id);
+        if(error) alert(error.message);
+        else loadCharacters();
+    }
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    // Helper Level Calculation (Copy same logic)
+    const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
+    function calculateCurrentLevel(start, hours) {
+        let lvl = start;
+        const total = (LEVEL_HOURS[start] || 0) + hours;
+        for(let i=start+1; i<=30; i++) { if(total >= LEVEL_HOURS[i]) lvl = i; else break; }
+        return { level: lvl };
     }
   </script>
 </body>
