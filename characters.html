@@ -105,9 +105,13 @@
                class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
       </div>
 
-      <input id="sheetLink" placeholder="ลิงก์ Character Sheet (URL)" 
+      <input id="sheetLink" placeholder="ลิงก์ชีทตัวละคร Character Sheet (URL)" 
              class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
       
+      <p class="text-xs text-blue-300">
+          หมายเหตุ: สามารถวางลิงก์ชีทตัวละคร D&D Beyond ลงในช่องลิงก์ชีทตัวละคนเพื่อดึงข้อมูลได้
+      </p>
+             
       <button onclick="addCharacter()" class="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2.5 rounded-lg shadow transition">
         บันทึกตัวละคร
       </button>
@@ -117,6 +121,7 @@
   </div>
 
   <script src="/js/utils.js"></script>
+  <script src="/js/fetch.js"></script>
   <script>
     const CHAR_LIST_CACHE_TTL = 5 * 60 * 1000;
 
