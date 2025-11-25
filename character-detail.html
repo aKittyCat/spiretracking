@@ -64,15 +64,15 @@
       </div>
       
       <div class="mt-4 pt-4 border-t border-gray-700">
-        <p><strong class="text-gray-500 text-xs uppercase mr-2">Sheet Link:</strong> <a id="sheetLink" href="#" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted">ดู Sheet</a></p>
+        <p class="flex items-center w-full"><strong class="text-gray-500 text-xs uppercase mr-2">Sheet Link:</strong> <a id="sheetLink" href="#" target="_blank" class="text-blue-400 hover:text-blue-300 underline decoration-dotted truncate min-w-0">ดู Sheet</a></p>
       </div>
     </div>
 
     <div class="flex mb-6 border-b border-gray-700 overflow-x-auto pb-1 scrollbar-hide">
-      <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก Session</button>
-      <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึกทอง</button>
-      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก Favor</button>
-      <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-gray-400 hover:text-white transition-colors">บันทึก DM</button>
+      <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-yellow-400 hover:text-white transition-colors">บันทึก Session</button>
+      <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-green-400 hover:text-white transition-colors">บันทึกทอง</button>
+      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-orange-400 hover:text-white transition-colors">บันทึก Favor</button>
+      <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-red-400 hover:text-white transition-colors">บันทึก DM</button>
     </div>
 
     <div id="session" class="tab-content">
@@ -524,8 +524,12 @@
       const c = currentCharData;
       const newName = prompt('ชื่อตัวละคร:', c.name);
       if (newName === null) return;
-      const newLevel = parseInt(prompt('เลเวลเริ่มต้น:', c.base_level)) || c.base_level;
-      const newGold = parseInt(prompt('ทองเริ่มต้น:', c.gold_start)) || c.gold_start;
+      let newLevel = c.base_level;
+      let newGold = c.gold_start;
+      if (isAdmin) {
+          newLevel = parseInt(prompt('เลเวลเริ่มต้น (Admin):', c.base_level)) || c.base_level;
+          newGold = parseInt(prompt('ทองเริ่มต้น (Admin):', c.gold_start)) || c.gold_start;
+      }
       const newClass = prompt('อาชีพ:', c.class) || c.class;
       const newRace = prompt('เผ่า:', c.race) || c.race;
 
