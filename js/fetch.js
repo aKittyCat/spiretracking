@@ -24,21 +24,33 @@ document.getElementById('sheetLink').addEventListener('blur', async function() {
     // ดึงชื่อ
     document.getElementById('charName').value = safeValue(c.name);
 
-    // ดึงคลาสหลัก → ตัดเลเวลออก เช่น "Wizard 3" → "Wizard"
-    if (c.classes && c.classes.length > 0) {
-      const className = c.classes[0].definition?.name || '';
-      document.getElementById('charClass').value = className;
-    }
-
     // ดึงเผ่า
     const raceName = safeValue(c.race?.fullName || c.race?.baseRaceName, '');
     document.getElementById('charRace').value = raceName;
 
     // ดึงทอง
-    document.getElementById('charGold').value = safeValue(c.currencies?.gp);
+    document.getElementById('charGold').value = safeValue(c.currencies?.gp) || "";
+
+    // === จัดการหลายคลาส ===
+    if (Array.isArray(c.classes) && c.classes.length > 0) {
+      // รวมเลเวลทั้งหมด
+      const totalLevel = c.classes.reduce((sum, cls) => sum + (cls.level || 0), 0);
+      document.getElementById('charLevel').value = totalLevel;
+
+      // ดึงชื่อคลาสทั้งหมด (ไม่มีเลเวล)
+      const classNames = c.classes
+        .map(cls => cls.definition?.name || '')
+        .filter(name => name.trim() !== '');
+      
+      document.getElementById('charClass').value = classNames.join(', ');
+    } else {
+      // กรณีไม่มีคลาส (ไม่น่าจะเกิด แต่ป้องกันไว้)
+      document.getElementById('charLevel').value = 1;
+      document.getElementById('charClass').value = '';
+    }
 
   } catch (err) {
     console.warn('Auto-fill จาก D&D Beyond ล้มเหลว:', err);
-    // ไม่ต้อง alert ผู้ใช้ — ปล่อยให้กรอกเองตามปกติ
+    // ไม่ alert ผู้ใช้ — ปล่อยให้กรอกเองตามปกติ
   }
 });
