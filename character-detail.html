@@ -21,7 +21,7 @@
     .tab-button.active { font-weight: bold; }
     #tab-session.active { border-color: #f59e0b; color: #f59e0b; }
     #tab-gold.active { border-color: #10b981; color: #10b981; }
-    #tab-favor.active { border-color: #f97316; color: #f97316; }
+    #tab-favor.active { border-color: #c084fc; color: #c084fc; }
     #tab-dm.active { border-color: #f43f5e; color: #f43f5e; }
   </style>
 </head>
@@ -69,7 +69,7 @@
     <div class="flex mb-6 border-b border-gray-700 overflow-x-auto pb-1 scrollbar-hide">
       <button onclick="openTab('session')" id="tab-session" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-yellow-400 hover:text-white transition-colors">บันทึก Session</button>
       <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-green-400 hover:text-white transition-colors">บันทึกทอง</button>
-      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-orange-400 hover:text-white transition-colors">บันทึก Favor</button>
+      <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-purple-400 hover:text-white transition-colors">บันทึก Favor</button>
       <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-red-400 hover:text-white transition-colors">บันทึก DM</button>
     </div>
 
@@ -93,7 +93,7 @@
           <div>✨ Favor: <span id="autoFavorAmount" class="text-orange-400 font-bold text-lg">0</span></div>
         </div>
         <div class="flex gap-2">
-            <button id="btnSaveSession" onclick="saveSession()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก Session</button>
+            <button id="btnSaveSession" onclick="saveSession()" class="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก Session</button>
             <button id="btnCancelSession" onclick="cancelEditSession()" class="hidden w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold px-6 py-2.5 rounded shadow transition">ยกเลิก</button>
         </div>
       </div>
@@ -122,7 +122,7 @@
           <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวนทอง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"/>    
           <input id="goldDesc" placeholder="คำอธิบาย (เช่น ซื้อยา, ขายของ)" class="col-span-1 md:col-span-2 p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"/>
         </div>
-        <button onclick="addGoldEntry()" class="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
+        <button onclick="addGoldEntry()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
       </div>
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
         <div id="goldTable" class="overflow-x-auto rounded-lg border border-gray-700">
@@ -142,7 +142,7 @@
           <input id="favorDesc" placeholder="คำอธิบาย" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
         </div>
-        <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
+        <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
       </div>
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
         <div id="favorTable" class="overflow-x-auto rounded-lg border border-gray-700">
@@ -172,7 +172,7 @@
           <div class="bg-gray-700/50 p-3 rounded border border-gray-700 text-gray-300">✨ Favor: <span id="dmAutoFavor" class="text-indigo-400 font-bold">0</span></div>
           <div class="bg-gray-700/50 p-3 rounded border border-gray-700 text-gray-300">⏰ ชม.: <span id="dmAutoHours" class="text-green-400 font-bold">0</span></div>
         </div>
-        <button onclick="addDmLog()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก DM Session</button>
+        <button onclick="addDmLog()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก DM Session</button>
       </div>
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
         <div id="dmTable" class="overflow-x-auto rounded-lg border border-gray-700">
