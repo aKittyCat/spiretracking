@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="supabase-config.js"></script> <title>ตัวละครของฉัน</title>
+  <script src="supabase-config.js"></script>
+  <title>ตัวละครของฉัน</title>
 </head>
 <body class="bg-gray-900 text-gray-200 p-4 sm:p-6 min-h-screen font-sans">
   <div class="max-w-4xl mx-auto">
@@ -13,7 +14,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-700 gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-white">ตัวละครของฉัน</h1>
       <div class="flex items-center gap-3">
-        <span class="text-gray-400 text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
+        <span class="text-gray-200 text-sm">สมาชิก: <span id="userEmail">...</span></span>
         <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm shadow">ออกจากระบบ</button>
       </div>
     </div>
@@ -43,16 +44,19 @@
       <button onclick="addCharacter()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2.5 rounded-lg shadow">บันทึกตัวละคร</button>
     </div>
 
-    <div id="charactersList" class="space-y-4"></div>
+    <div id="charactersList" class="space-y-4 mb-6"></div>
+    
+    <div id="paginationControls" class="flex justify-center space-x-2"></div>
   </div>
 
   <script src="/js/utils.js"></script>
   <script src="/js/fetch.js"></script>
   <script>
     let currentUser = null;
+    const ITEMS_PER_PAGE = 10; // จำนวนรายการต่อหน้า
+    let currentPage = 1;
 
     async function init() {
-      // ตรวจสอบว่า Supabase โหลดเรียบร้อยไหม
       if (typeof supabase === 'undefined') {
           alert('❌ ไม่พบ Supabase Client! กรุณาตรวจสอบไฟล์ supabase-config.js');
           return;
@@ -64,7 +68,7 @@
       document.getElementById('userEmail').textContent = currentUser.email;
       
       checkAdmin();
-      loadCharacters();
+      loadCharacters(1);
     }
     init();
 
@@ -90,31 +94,45 @@
       if (error) alert('Error: ' + error.message);
       else {
         alert('✅ เพิ่มสำเร็จ!');
-        // Clear inputs...
         document.querySelectorAll('input').forEach(i => i.value = '');
-        loadCharacters();
+        loadCharacters(1);
       }
     }
 
-    async function loadCharacters() {
+    async function loadCharacters(page) {
+      currentPage = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
       const { data, error } = await supabase.rpc('get_character_stats', { 
           target_user_id: currentUser.id 
-      }); 
+      });
 
       if (error) {
           console.error('Load Error:', error);
           return;
       }
       
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      
+      const totalItems = data.length;
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      const paginatedData = data.slice(from, from + ITEMS_PER_PAGE);
+      
+      renderCharacters(paginatedData);
+      renderPagination(totalPages, page);
+    }
+
+    function renderCharacters(characters) {
       const list = document.getElementById('charactersList');
       list.innerHTML = '';
       
-      if (!data || data.length === 0) {
+      if (!characters || characters.length === 0) {
           list.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีตัวละคร</p>';
           return;
       }
       
-      data.forEach(c => {
+      characters.forEach(c => {
         const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
         const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
         
@@ -142,13 +160,27 @@
       });
     }
 
+    function renderPagination(totalPages, currentPage) {
+        const container = document.getElementById('paginationControls');
+        container.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i;
+            btn.className = `w-8 h-8 rounded-md text-sm font-medium transition ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
+            btn.onclick = () => loadCharacters(i);
+            container.appendChild(btn);
+        }
+    }
+
     async function deleteChar(id) {
         if(!confirm('ยืนยันลบ?')) return;
-        const { error } = await deleteCharacterAndData(id, true); // ใช้ function จาก utils.js
+        const { error } = await deleteCharacterAndData(id, true); 
         if(error) alert(error.message);
         else {
             alert('ลบเรียบร้อย');
-            loadCharacters();
+            loadCharacters(currentPage);
         }
     }
 
@@ -157,7 +189,7 @@
         window.location.href = 'index.html';
     }
 
-    // Helper Level Calculation
+    // Helper
     const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
     function calculateCurrentLevel(start, hours) {
         let lvl = start;

@@ -31,7 +31,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-700 gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-white">รายละเอียดตัวละคร</h1>
       <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-        <span class="text-gray-400 font-medium text-sm">สมาชิก: <span id="userEmail" class="text-gray-200">...</span></span>
+        <span class="text-gray-200 font-medium text-sm">สมาชิก: <span id="userEmail">...</span></span>
         <button onclick="logout()" 
                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           ออกจากระบบ
@@ -127,6 +127,7 @@
             <tbody id="goldBody" class="divide-y divide-gray-700"></tbody>
           </table>
         </div>
+        <div id="goldPagination" class="mt-4 flex justify-center space-x-2"></div>
       </div>
     </div>
 
@@ -146,6 +147,7 @@
             <tbody id="favorBody" class="divide-y divide-gray-700"></tbody>
           </table>
         </div>
+        <div id="favorPagination" class="mt-4 flex justify-center space-x-2"></div>
       </div>
     </div>
     
@@ -175,6 +177,7 @@
             <tbody id="dmBody" class="divide-y divide-gray-700"></tbody>
           </table>
         </div>
+        <div id="dmPagination" class="mt-4 flex justify-center space-x-2"></div>
       </div>
     </div>
 
@@ -191,12 +194,13 @@
   let isAdmin = false;
   let currentCharId = new URLSearchParams(window.location.search).get('charId');
   let currentCharData = null;
-  const ITEMS_PER_PAGE = 5;
-
-  let sessionsData = [], goldData = [], favorData = [], dmData = [];
-  let currentPageSession = 1;
   
-  // ตัวแปรสำหรับโหมดแก้ไข Session
+  // Pagination Config
+  const ITEMS_PER_PAGE = 10;
+  let pageState = { session: 1, gold: 1, favor: 1, dm: 1 };
+  let sessionsData = [], goldData = [], favorData = [], dmData = [];
+  
+  // Edit Session
   let editingSessionId = null;
 
   async function init() {
@@ -218,22 +222,15 @@
       window.location.href = 'index.html';
   }
 
-  // --- 1. Logic การโหลดข้อมูล ---
+  // --- 1. Load Data ---
   async function refreshAllData() {
-      const { data: charInfo, error: charErr } = await supabase
-          .from('characters').select('user_id').eq('id', currentCharId).single();
-      
-      if (charErr || !charInfo) { alert('ไม่พบข้อมูลตัวละคร'); window.location.href = 'characters.html'; return; }
+      const { data: charInfo } = await supabase.from('characters').select('user_id').eq('id', currentCharId).single();
+      if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href='characters.html'; return; }
+      if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href='characters.html'; return; }
 
-      if (charInfo.user_id !== currentUser.id && !isAdmin) {
-          alert('คุณไม่มีสิทธิ์เข้าถึงตัวละครนี้'); window.location.href = 'characters.html'; return;
-      }
-
-      const { data: stats, error: rpcErr } = await supabase.rpc('get_character_stats', { target_user_id: charInfo.user_id });
-      if (rpcErr) { console.error(rpcErr); alert('โหลดข้อมูลไม่สำเร็จ'); return; }
-
-      const c = stats.find(char => char.id === currentCharId);
-      if (!c) { alert('Data inconsistency'); return; }
+      const { data: stats } = await supabase.rpc('get_character_stats', { target_user_id: charInfo.user_id });
+      const c = stats?.find(x => x.id === currentCharId);
+      if(!c) return;
 
       currentCharData = c;
       renderHeader();
@@ -252,32 +249,58 @@
       document.getElementById('charTotalHours').textContent = totalHours.toFixed(1);
       document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(1)} ชม.`;
       document.getElementById('charTier').textContent = getTierFromLevel(currentLevel);
+      
       document.getElementById('charClass').textContent = c.class || '-';
       document.getElementById('charRace').textContent = c.race || '-';
       document.getElementById('charGoldStart').textContent = c.gold_start;
       document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
       document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
       
-      if(c.sheet_link) {
-          const el = document.getElementById('sheetLink');
-          el.textContent = c.sheet_link; el.href = c.sheet_link;
-      }
+      if(c.sheet_link) { const el = document.getElementById('sheetLink'); el.textContent = c.sheet_link; el.href = c.sheet_link; }
   }
 
   async function loadLists() {
-      const [sess, gold, favor, dm] = await Promise.all([
-          supabase.from('sessions').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false}),
-          supabase.from('gold_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false}),
-          supabase.from('favor_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false}),
-          supabase.from('dm_logs').select('*').eq('character_id', currentCharId).order('created_at', {ascending: false})
-      ]);
-      sessionsData = sess.data || []; renderSessions();
-      goldData = gold.data || []; renderGold();
-      favorData = favor.data || []; renderFavor();
-      dmData = dm.data || []; renderDmLogs();
+      loadSessions(pageState.session);
+      loadGold(pageState.gold);
+      loadFavor(pageState.favor);
+      loadDmLogs(pageState.dm);
   }
 
-  // --- 2. Logic การคำนวณ (Multipliers) ---
+  // --- Server-side Pagination Functions ---
+  async function loadSessions(page) {
+      pageState.session = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      const { data, count } = await supabase.from('sessions').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+      sessionsData = data || [];
+      renderSessions(count || 0);
+  }
+  async function loadGold(page) {
+      pageState.gold = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      const { data, count } = await supabase.from('gold_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+      goldData = data || [];
+      renderGold(count || 0);
+  }
+  async function loadFavor(page) {
+      pageState.favor = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      const { data, count } = await supabase.from('favor_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+      favorData = data || [];
+      renderFavor(count || 0);
+  }
+  async function loadDmLogs(page) {
+      pageState.dm = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      const { data, count } = await supabase.from('dm_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+      dmData = data || [];
+      renderDmLogs(count || 0);
+  }
+
+  // --- 2. Logic & Multipliers ---
   function getGoldMultiplier(level) {
       if (level >= 23) return 1.5; if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; if (level >= 3) return 1.1; return 1.0;
   }
@@ -295,9 +318,7 @@
       if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
   }
 
-  // --- 3. Session Functions (Add & Update) ---
-  
-  // ฟังก์ชันบันทึก (รองรับทั้ง Add และ Update)
+  // --- 3. Session Logic (Add/Edit) ---
   async function saveSession() {
     const name = document.getElementById('sessionName').value.trim();
     if (!name) return alert('ใส่ชื่อ Session');
@@ -316,11 +337,9 @@
 
     let error;
     if (editingSessionId) {
-        // Update Mode
         const res = await supabase.from('sessions').update(payload).eq('id', editingSessionId);
         error = res.error;
     } else {
-        // Insert Mode
         payload.character_id = currentCharId;
         payload.user_id = currentUser.id;
         const res = await supabase.from('sessions').insert(payload);
@@ -331,16 +350,13 @@
     else {
         alert(editingSessionId ? '✅ แก้ไขเรียบร้อย' : '✅ บันทึกสำเร็จ');
         refreshAllData();
-        cancelEditSession(); // Reset form
+        cancelEditSession();
     }
   }
 
-  // ฟังก์ชันเริ่มแก้ไข
   function editSession(id) {
       const item = sessionsData.find(s => s.id === id);
       if (!item) return;
-
-      // Populate Form
       document.getElementById('sessionName').value = item.name;
       document.getElementById('dmName').value = item.dm || '';
       document.getElementById('sessionDate').value = item.date || '';
@@ -348,25 +364,18 @@
       document.getElementById('notes').value = item.notes || '';
       document.getElementById('noGold').checked = item.no_gold;
       document.getElementById('gotItems').value = item.got_items || '';
-      
-      // Recalculate display
       calculateAutoGold();
-
-      // UI Changes
       editingSessionId = id;
-      document.getElementById('btnSaveSession').textContent = 'อัปเดต Session';
-      document.getElementById('btnSaveSession').classList.replace('bg-blue-600', 'bg-yellow-600');
-      document.getElementById('btnSaveSession').classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');
+      const btn = document.getElementById('btnSaveSession');
+      btn.textContent = 'อัปเดต Session';
+      btn.classList.replace('bg-blue-600', 'bg-yellow-600');
+      btn.classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');
       document.getElementById('btnCancelSession').classList.remove('hidden');
-      
-      // Scroll to form
       document.getElementById('sessionFormCard').scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ฟังก์ชันยกเลิกแก้ไข
   function cancelEditSession() {
       editingSessionId = null;
-      // Clear Form
       document.getElementById('sessionName').value = '';
       document.getElementById('dmName').value = '';
       document.getElementById('sessionDate').value = '';
@@ -376,8 +385,6 @@
       document.getElementById('gotItems').value = '';
       document.getElementById('autoGoldAmount').textContent = '0';
       document.getElementById('autoFavorAmount').textContent = '0';
-
-      // UI Reset
       const btn = document.getElementById('btnSaveSession');
       btn.textContent = 'บันทึก Session';
       btn.classList.replace('bg-yellow-600', 'bg-blue-600');
@@ -387,42 +394,33 @@
 
   function calculateAutoGold() {
       const hours = parseFloat(document.getElementById('hours').value) || 0;
-      if(document.getElementById('noGold').checked) { 
-          document.getElementById('autoGoldAmount').textContent='0'; 
-          document.getElementById('autoFavorAmount').textContent='0'; 
-          return; 
-      }
+      if(document.getElementById('noGold').checked) { document.getElementById('autoGoldAmount').textContent='0'; document.getElementById('autoFavorAmount').textContent='0'; return; }
       
       const c = currentCharData || {};
       const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
       const { level } = calculateCurrentLevel(c.level, totalHours);
       const multiplier = getGoldMultiplier(level);
       
-      const gold = Math.floor(hours * 100 * multiplier);
-      const favor = Math.floor(hours * 2); 
-      
-      document.getElementById('autoGoldAmount').textContent = gold.toLocaleString();
-      document.getElementById('autoFavorAmount').textContent = favor;
+      document.getElementById('autoGoldAmount').textContent = (Math.floor(hours * 100 * multiplier)).toLocaleString();
+      document.getElementById('autoFavorAmount').textContent = Math.floor(hours * 2);
   }
 
-  // --- Other Add Functions ---
+  // --- 4. Other Logs ---
   async function addGoldEntry() {
       const amount = parseFloat(document.getElementById('goldAmount').value);
       if (!amount) return alert('ระบุจำนวน');
-      const finalAmount = -Math.abs(amount); 
       const { error } = await supabase.from('gold_logs').insert({
           character_id: currentCharId, user_id: currentUser.id,
-          description: document.getElementById('goldDesc').value, amount: finalAmount, type: 'spend'
+          description: document.getElementById('goldDesc').value, amount: -Math.abs(amount), type: 'spend'
       });
       if (error) alert(error.message); else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
   }
 
   async function addFavorEntry() {
       const amount = parseFloat(document.getElementById('favorAmount').value);
-      const finalAmount = -Math.abs(amount); 
       const { error } = await supabase.from('favor_logs').insert({
           character_id: currentCharId, user_id: currentUser.id,
-          description: document.getElementById('favorDesc').value, amount: finalAmount
+          description: document.getElementById('favorDesc').value, amount: -Math.abs(amount)
       });
       if (error) alert(error.message); else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
   }
@@ -503,66 +501,80 @@
       if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
   }
 
-  // --- Delete ---
+  // --- 5. Delete ---
   async function deleteSession(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('sessions').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
   async function deleteGold(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('gold_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
   async function deleteFavor(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('favor_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
   async function deleteDmLog(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('dm_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
 
-  // --- Render ---
-  function renderSessions() {
-    const tbody = document.getElementById('sessionsBody');
-    tbody.innerHTML = '';
-    if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
+  // --- 6. Render & Pagination UI ---
+  function renderPaginationUI(elementId, totalItems, currentPage, loadFunction) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = '';
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      if (totalPages <= 1) return;
+      for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.innerText = i;
+          btn.className = `w-8 h-8 rounded-md text-sm font-medium transition ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
+          btn.onclick = () => loadFunction(i);
+          container.appendChild(btn);
+      }
+  }
+
+  function renderSessions(count) {
+    const tbody = document.getElementById('sessionsBody'); tbody.innerHTML = '';
+    if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
     sessionsData.forEach(item => {
-      const dateStr = item.date ? new Date(item.date).toLocaleDateString('th-TH') : '-';
-      const tr = document.createElement('tr');
-      tr.className = "hover:bg-gray-700/50 transition-colors";
-      // เพิ่มปุ่ม แก้ไข
-      tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${dateStr}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold||0}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+      const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50 transition-colors";
+      tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold||0}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
       tbody.appendChild(tr);
     });
+    renderPaginationUI('sessionPagination', count, pageState.session, loadSessions);
   }
-  function renderGold() {
+
+  function renderGold(count) {
     const tbody = document.getElementById('goldBody'); tbody.innerHTML = '';
     if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
     goldData.forEach(item => {
         const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-gray-700/50";
+        const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
         tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
     });
+    renderPaginationUI('goldPagination', count, pageState.gold, loadGold);
   }
-  function renderFavor() {
+
+  function renderFavor(count) {
     const tbody = document.getElementById('favorBody'); tbody.innerHTML = '';
     if (favorData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
     favorData.forEach(item => {
         const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-gray-700/50";
+        const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
         tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteFavor('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
     });
+    renderPaginationUI('favorPagination', count, pageState.favor, loadFavor);
   }
-  function renderDmLogs() {
+
+  function renderDmLogs(count) {
     const tbody = document.getElementById('dmBody'); tbody.innerHTML = '';
     if (dmData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
     dmData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-gray-700/50";
+        const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
         tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.session_name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.solo_quest?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.double_reward?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteDmLog('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
     });
+    renderPaginationUI('dmPagination', count, pageState.dm, loadDmLogs);
   }
 
   function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-button').forEach(el => { el.classList.remove('active'); el.classList.add('text-gray-400'); });
+    document.querySelectorAll('.tab-button').forEach(el => { el.classList.remove('active'); el.classList.add('text-400'); });
     document.getElementById(tabName).classList.add('active');
     const btn = document.getElementById('tab-' + tabName);
     btn.classList.add('active');
-    btn.classList.remove('text-gray-400');
+    btn.classList.remove('text-400');
   }
 
   document.addEventListener('DOMContentLoaded', () => { openTab('session'); });

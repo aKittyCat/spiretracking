@@ -30,8 +30,8 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <span class="text-gray-400 text-sm font-medium hidden sm:inline">
-          ผู้ดูแล: <span id="userEmail" class="text-gray-200">...</span>
+        <span class="text-gray-200 text-sm font-medium hidden sm:inline">
+          ผู้ดูแล: <span id="userEmail">...</span>
         </span>
         <button onclick="location.href='characters.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           กลับหน้าตัวละคร
@@ -115,6 +115,7 @@
         </table>
         <p id="tableLoadingText" class="text-center text-gray-500 py-4" style="display:none">กำลังโหลด...</p>
       </div>
+      <div id="adminPagination" class="flex justify-center space-x-2 mt-4"></div>
     </div>
 
   </div>
@@ -125,8 +126,12 @@
   <script>
     let currentUser = null;
     let isAdminUser = false;
-    let allCharacters = [];
+    let allCharacters = []; // ข้อมูลดิบที่คำนวณแล้ว
     let chartInstances = [];
+    
+    // Pagination Config
+    const ITEMS_PER_PAGE = 20;
+    let currentAdminPage = 1;
     
     async function init() {
         const { data: { session } } = await supabase.auth.getSession();
@@ -164,8 +169,7 @@
         try {
             console.log("🔄 Admin Loading: Fetching Raw Data...");
             
-            // 1. ดึงข้อมูลดิบทั้งหมด (Characters, Sessions, Logs)
-            // Admin มีสิทธิ์อ่านทุกตารางผ่าน RLS Policy ที่เราตั้งไว้
+            // 1. ดึงข้อมูลดิบทั้งหมด
             const [chars, sessions, dmlogs, golds, favors] = await Promise.all([
                 supabase.from('characters').select('*'),
                 supabase.from('sessions').select('*').order('created_at', { ascending: false }),
@@ -179,7 +183,6 @@
             console.log(`✅ Loaded: ${chars.data.length} chars`);
 
             // 2. ประมวลผลข้อมูลใน JS (Aggregation)
-            // วิธีนี้แม่นยำที่สุดสำหรับ Dashboard รวม และไม่กระทบ Quota Realtime
             const aggregatedChars = chars.data.map(c => {
                 const mySessions = sessions.data.filter(s => s.character_id === c.id);
                 const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
@@ -205,13 +208,22 @@
                     ...c,
                     calculated_level: currentLevel,
                     total_gold_num: totalGold,
-                    // เพิ่มชื่อสำหรับการแสดงผล Activity
+                    // เพิ่มชื่อสำหรับการแสดงผล Activity (กรณีไม่ได้ join)
                     latest_activity: mySessions.length > 0 ? mySessions[0].created_at : null
                 };
             });
             
-            // ส่งข้อมูลที่คำนวณเสร็จแล้วไป Render
-            renderStatsAndLists(aggregatedChars, dmlogs.data.length, sessions.data);
+            // เก็บข้อมูลดิบไว้ใช้งานต่อ (เช่น Pagination)
+            allCharacters = aggregatedChars;
+            
+            // ส่งข้อมูลไป Render (ใช้ข้อมูลทั้งหมดคำนวณกราฟ)
+            renderStats(allCharacters, dmlogs.data.length);
+            
+            // Render Table หน้าแรก (1)
+            renderAdminTable(1);
+            
+            // Render Activity
+            renderLatestActivity(sessions.data, allCharacters);
 
         } catch (error) {
             console.error("Error:", error);
@@ -222,8 +234,8 @@
         }
     }
 
-    // --- Render ---
-    function renderStatsAndLists(chars, dmCount, sessions) {
+    // --- Render Charts & Stats ---
+    function renderStats(chars, dmCount) {
       // Clear charts
       chartInstances.forEach(chart => chart.destroy());
       chartInstances = [];
@@ -332,64 +344,90 @@
         });
         chartInstances.push(raceChart);
       }
-      
-      // --- Latest Activities ---
+    }
+
+    // --- Render Latest Activity ---
+    function renderLatestActivity(sessions, chars) {
       const latestCharsList = document.getElementById('latestChars');
       latestCharsList.innerHTML = '';
       if (!sessions || sessions.length === 0) {
         latestCharsList.innerHTML = '<p class="text-gray-500 text-sm">ไม่มีกิจกรรมล่าสุด</p>';
-      } else {
-        const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' });
-        // แสดง 10 รายการล่าสุด
-        sessions.slice(0, 10).forEach(s => {
-            const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
-            // หาชื่อตัวละครจาก array ที่โหลดมา
-            const ownerChar = chars.find(c => c.id === s.character_id);
-            const charName = ownerChar ? ownerChar.name : 'Unknown';
-            
-            latestCharsList.innerHTML += `
-                <div class="p-3 bg-gray-700 rounded flex justify-between items-center hover:bg-gray-600 transition duration-150">
-                    <div>
-                        <p class="font-medium text-white max-w-[120px] truncate">${charName}</p>
-                        <p class="text-xs text-gray-400 truncate max-w-[150px]">${s.name || 'Session'}</p>
-                    </div>
-                    <p class="text-xs text-gray-300 ml-2 whitespace-nowrap">${dateStr}</p>
-                </div>
-            `;
-        });
-      }
-
-      // --- All Characters Table ---
-      const tableBody = document.getElementById('allCharsTable');
-      tableBody.innerHTML = '';
-
-      if (chars.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">ไม่มีตัวละครในระบบ</td></tr>`;
         return;
       }
       
-      // เรียงตาม Level (จากข้อมูลที่คำนวณแล้ว)
-      chars.sort((a, b) => b.calculated_level - a.calculated_level);
-
-      chars.forEach(char => {
-          const row = document.createElement('tr');
-          row.className = 'hover:bg-gray-700 transition duration-150';
-          row.innerHTML = `
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white max-w-[150px] truncate">${char.name}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.calculated_level}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">${char.total_gold_num.toLocaleString()} gp</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[150px] truncate">${char.user_id || 'N/A'}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
-                      View/Edit
-                  </a>
-                  <button onclick="deleteChar('${char.id}', '${char.name}')" class="text-red-400 hover:text-red-300">
-                      Delete
-                  </button>
-              </td>
+      const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' });
+      // แสดง 10 รายการล่าสุด
+      sessions.slice(0, 10).forEach(s => {
+          const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
+          // หาชื่อตัวละครจาก array ที่โหลดมา (เพราะเรามีครบแล้ว)
+          const ownerChar = chars.find(c => c.id === s.character_id);
+          const charName = ownerChar ? ownerChar.name : 'Unknown';
+          
+          latestCharsList.innerHTML += `
+              <div class="p-3 bg-gray-700 rounded flex justify-between items-center hover:bg-gray-600 transition duration-150">
+                  <div>
+                      <p class="font-medium text-white max-w-[120px] truncate">${charName}</p>
+                      <p class="text-xs text-gray-400 truncate max-w-[150px]">${s.name || 'Session'}</p>
+                  </div>
+                  <p class="text-xs text-gray-300 ml-2 whitespace-nowrap">${dateStr}</p>
+              </div>
           `;
-          tableBody.appendChild(row);
       });
+    }
+
+    // --- Render Table with Pagination (Client-side) ---
+    function renderAdminTable(page) {
+        currentAdminPage = page;
+        const from = (page - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE;
+        
+        // เรียงลำดับก่อนตัด (ตาม Level มากไปน้อย)
+        allCharacters.sort((a, b) => b.calculated_level - a.calculated_level);
+        
+        const pageData = allCharacters.slice(from, to);
+        const totalPages = Math.ceil(allCharacters.length / ITEMS_PER_PAGE);
+
+        const tbody = document.getElementById('allCharsTable');
+        tbody.innerHTML = '';
+
+        if (allCharacters.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">ไม่มีตัวละครในระบบ</td></tr>`;
+            return;
+        }
+
+        pageData.forEach(char => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-700 transition duration-150';
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white max-w-[150px] truncate">${char.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.calculated_level}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">${char.total_gold_num.toLocaleString()} gp</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[150px] truncate">${char.user_id || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
+                        View/Edit
+                    </a>
+                    <button onclick="deleteChar('${char.id}', '${char.name}')" class="text-red-400 hover:text-red-300">
+                        Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Render Pagination Buttons
+        const container = document.getElementById('adminPagination');
+        container.innerHTML = '';
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                // สไตล์ปุ่ม: Active = สีฟ้า, Inactive = สีเทา
+                btn.className = `w-8 h-8 rounded-md text-sm font-medium transition ${i === currentAdminPage ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
+                btn.onclick = () => renderAdminTable(i);
+                container.appendChild(btn);
+            }
+        }
     }
 
     async function deleteChar(charId, charName) {
