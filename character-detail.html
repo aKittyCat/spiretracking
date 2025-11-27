@@ -248,9 +248,10 @@
       
       const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
       const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.level, totalHours);
+      const displayTotalHours = totalHours + 10.5;
 
       document.getElementById('charCurrentLevel').textContent = currentLevel;
-      document.getElementById('charTotalHours').textContent = totalHours.toFixed(1);
+      document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(1);
       document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(1)} ชม.`;
       document.getElementById('charTier').textContent = getTierFromLevel(currentLevel);
       
