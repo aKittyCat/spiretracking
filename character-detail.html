@@ -534,7 +534,7 @@
       const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
 
       const { error } = await supabase.from('characters').update({
-          name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace
+          name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace, sheet_link: newSheetLink
       }).eq('id', currentCharId);
 
       if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
