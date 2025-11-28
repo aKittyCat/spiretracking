@@ -199,12 +199,9 @@
   let currentCharId = new URLSearchParams(window.location.search).get('charId');
   let currentCharData = null;
   
-  // Pagination Config
   const ITEMS_PER_PAGE = 10;
   let pageState = { session: 1, gold: 1, favor: 1, dm: 1 };
   let sessionsData = [], goldData = [], favorData = [], dmData = [];
-  
-  // Edit Session
   let editingSessionId = null;
 
   async function init() {
@@ -258,7 +255,9 @@
       document.getElementById('charClass').textContent = c.class || '-';
       document.getElementById('charRace').textContent = c.race || '-';
       document.getElementById('charGoldStart').textContent = c.gold_start;
-      document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
+      
+      // แสดงผลรวมทองแบบทศนิยม 2 ตำแหน่ง ถ้าจำเป็น (ปกติ DB เก็บ numeric อยู่แล้ว)
+      document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
       document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
       
       if(c.sheet_link) { const el = document.getElementById('sheetLink'); el.textContent = c.sheet_link; el.href = c.sheet_link; }
@@ -329,7 +328,7 @@
     if (!name) return alert('ใส่ชื่อ Session');
     const hours = parseFloat(document.getElementById('hours').value) || 0;
     const noGold = document.getElementById('noGold').checked;
-    const autoGold = noGold ? 0 : parseInt(document.getElementById('autoGoldAmount').textContent.replace(/,/g,''));
+    const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,'')); // Use float
     const autoFavor = Math.floor(hours * 2);
 
     const payload = {
@@ -399,15 +398,25 @@
 
   function calculateAutoGold() {
       const hours = parseFloat(document.getElementById('hours').value) || 0;
-      if(document.getElementById('noGold').checked) { document.getElementById('autoGoldAmount').textContent='0'; document.getElementById('autoFavorAmount').textContent='0'; return; }
+      if(document.getElementById('noGold').checked) { 
+          document.getElementById('autoGoldAmount').textContent='0'; 
+          document.getElementById('autoFavorAmount').textContent='0'; 
+          return; 
+      }
       
       const c = currentCharData || {};
-      const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-      const { level } = calculateCurrentLevel(c.level, totalHours);
-      const multiplier = getGoldMultiplier(level);
+      const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+      const projectedTotalHours = currentTotalHours + hours;
+
+      const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
+      const multiplier = getGoldMultiplier(currentLevel);
       
-      document.getElementById('autoGoldAmount').textContent = (Math.floor(hours * 100 * multiplier)).toLocaleString();
-      document.getElementById('autoFavorAmount').textContent = Math.floor(hours * 2);
+      // ✅ แก้ไข: ตัด Math.floor ออกเพื่อให้ทองมีทศนิยม
+      const gold = hours * 100 * multiplier;
+      const favor = Math.floor(hours * 2); 
+      
+      document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
+      document.getElementById('autoFavorAmount').textContent = favor;
   }
 
   // --- 4. Other Logs ---
@@ -417,14 +426,8 @@
       
       const type = document.getElementById('goldType').value;
       let finalAmount = amount;
-      
-      // ถ้าใช้จ่าย ให้แปลงเป็นค่าติดลบ
-      if(type === 'spend') {
-          finalAmount = -Math.abs(amount);
-      } else {
-          // ถ้าได้รับ ให้เป็นค่าบวก
-          finalAmount = Math.abs(amount);
-      }
+      if(type === 'spend') finalAmount = -Math.abs(amount);
+      else finalAmount = Math.abs(amount);
 
       const { error } = await supabase.from('gold_logs').insert({
           character_id: currentCharId, 
@@ -437,7 +440,6 @@
       if (error) alert(error.message); 
       else { 
           alert('✅ บันทึกสำเร็จ'); 
-          // Clear form
           document.getElementById('goldDesc').value = '';
           document.getElementById('goldAmount').value = '';
           refreshAllData(); 
@@ -446,6 +448,7 @@
 
   async function addFavorEntry() {
       const amount = parseFloat(document.getElementById('favorAmount').value);
+      const finalAmount = -Math.abs(amount); 
       const { error } = await supabase.from('favor_logs').insert({
           character_id: currentCharId, user_id: currentUser.id,
           description: document.getElementById('favorDesc').value, amount: -Math.abs(amount)
@@ -454,20 +457,24 @@
   }
 
   async function addDmLog() {
-      const c = currentCharData;
-      const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-      const { level } = calculateCurrentLevel(c.level, totalHours);
-      const mult = getGoldMultiplier(level);
-
       const hours = parseFloat(document.getElementById('dmHours').value) || 0;
       const solo = document.getElementById('soloQuest').checked;
       const double = document.getElementById('doubleReward').checked;
 
-      let finalHours = hours * 1.5; if(double) finalHours *= 2;
-      let autoGold = 0, autoFavor = 0;
+      const c = currentCharData || {};
+      const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+      
+      let finalHours = hours * 1.5; 
+      if(double) finalHours *= 2;
 
+      const projectedTotalHours = currentTotalHours + finalHours;
+      const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
+      const mult = getGoldMultiplier(currentLevel);
+
+      let autoGold = 0, autoFavor = 0;
       if (!solo) {
-          autoGold = Math.floor(hours * 100 * mult * 1.5);
+          // ✅ แก้ไข: ตัด Math.floor ออกเพื่อให้ทองมีทศนิยม
+          autoGold = hours * 100 * mult * 1.5;
           autoFavor = Math.floor(hours * 4);
           if (double) { autoGold *= 2; autoFavor *= 2; }
       }
@@ -489,19 +496,22 @@
       const double = document.getElementById('doubleReward').checked;
       
       const c = currentCharData || {};
-      const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-      const { level } = calculateCurrentLevel(c.level, totalHours);
+      const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+      let finalHours = hours * 1.5; 
+      if(double) finalHours *= 2;
+      const projectedTotalHours = currentTotalHours + finalHours;
+
+      const { level } = calculateCurrentLevel(c.level, projectedTotalHours);
       const mult = getGoldMultiplier(level);
 
-      let finalHours = hours * 1.5; if(double) finalHours *= 2;
       let gold = 0, favor = 0;
-      
       if(!solo) {
-          gold = Math.floor(hours * 100 * mult * 1.5);
+          // ✅ แก้ไข: ตัด Math.floor ออกเพื่อแสดงทศนิยม
+          gold = hours * 100 * mult * 1.5;
           favor = Math.floor(hours * 4);
           if(double) { gold *= 2; favor *= 2; }
       }
-      document.getElementById('dmAutoGold').textContent = gold.toLocaleString();
+      document.getElementById('dmAutoGold').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
       document.getElementById('dmAutoFavor').textContent = favor;
       document.getElementById('dmAutoHours').textContent = finalHours;
   }
@@ -566,8 +576,9 @@
     if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
     goldData.forEach(item => {
         const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
+        const typeLabel = item.type === 'receive' ? 'ได้รับ' : 'ใช้จ่าย';
         const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
-        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description} <span class="text-gray-500 text-xs">(${typeLabel})</span></td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
     });
     renderPaginationUI('goldPagination', count, pageState.gold, loadGold);
