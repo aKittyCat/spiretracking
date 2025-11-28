@@ -531,6 +531,7 @@
 
       const newClass = prompt('อาชีพ:', c.class) || c.class;
       const newRace = prompt('เผ่า:', c.race) || c.race;
+      const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
 
       const { error } = await supabase.from('characters').update({
           name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace
