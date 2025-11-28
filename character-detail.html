@@ -311,7 +311,7 @@
   }
 
   function calculateCurrentLevel(startLevel, totalHours) {
-      const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 70, 91, 115.5, 143.5, 175, 210, 248.5, 290.5, 336, 385, 437.5, 493.5, 553, 616, 682.5, 752.5, 826, 903, 983.5, 1067.5, 1155, 1246, 1340.5, 1438.5, 1540];
+      const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
       let currentLevel = startLevel;
       const total = (LEVEL_HOURS[startLevel] || 0) + totalHours;
       for(let i = startLevel + 1; i <= 30; i++) { if(total >= LEVEL_HOURS[i]) currentLevel = i; else break; }
