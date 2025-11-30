@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Admin Dashboard</title>
   <style>
-    /* ปรับ Scrollbar ให้เข้ากับธีมมืด */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #1f2937; }
     ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
@@ -30,8 +29,8 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <span class="text-gray-200 text-sm font-medium hidden sm:inline">
-          ผู้ดูแล: <span id="userEmail">...</span>
+        <span class="text-gray-400 text-sm font-medium hidden sm:inline">
+          ผู้ดูแล: <span id="userEmail" class="text-gray-200">...</span>
         </span>
         <button onclick="location.href='characters.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">
           กลับหน้าตัวละคร
@@ -106,7 +105,7 @@
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ชื่อ</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">เลเวล</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gold</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ผู้สร้าง (ID)</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ผู้สร้าง (Email)</th>
               <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"></th>
             </tr>
           </thead>
@@ -169,20 +168,27 @@
         try {
             console.log("🔄 Admin Loading: Fetching Raw Data...");
             
-            // 1. ดึงข้อมูลดิบทั้งหมด
-            const [chars, sessions, dmlogs, golds, favors] = await Promise.all([
+            // 1. ดึงข้อมูลดิบทั้งหมด และดึง Email ผู้ใช้
+            const [chars, sessions, dmlogs, golds, favors, users] = await Promise.all([
                 supabase.from('characters').select('*'),
                 supabase.from('sessions').select('*').order('created_at', { ascending: false }),
                 supabase.from('dm_logs').select('*'),
                 supabase.from('gold_logs').select('*'),
-                supabase.from('favor_logs').select('*')
+                supabase.from('favor_logs').select('*'),
+                supabase.rpc('get_all_user_emails') // ⭐ เรียก SQL Function ดึงอีเมล
             ]);
 
             if (chars.error) throw chars.error;
+            
+            // 2. สร้าง Map สำหรับ UserID -> Email
+            const userMap = {};
+            if (users.data) {
+                users.data.forEach(u => userMap[u.id] = u.email);
+            }
 
             console.log(`✅ Loaded: ${chars.data.length} chars`);
 
-            // 2. ประมวลผลข้อมูลใน JS (Aggregation)
+            // 3. ประมวลผลข้อมูลใน JS (Aggregation)
             const aggregatedChars = chars.data.map(c => {
                 const mySessions = sessions.data.filter(s => s.character_id === c.id);
                 const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
@@ -208,8 +214,8 @@
                     ...c,
                     calculated_level: currentLevel,
                     total_gold_num: totalGold,
-                    // เพิ่มชื่อสำหรับการแสดงผล Activity (กรณีไม่ได้ join)
-                    latest_activity: mySessions.length > 0 ? mySessions[0].created_at : null
+                    latest_activity: mySessions.length > 0 ? mySessions[0].created_at : null,
+                    user_email: userMap[c.user_id] || 'Unknown ID: ' + c.user_id.substring(0,6) // ⭐ ใส่อีเมล
                 };
             });
             
@@ -359,7 +365,6 @@
       // แสดง 10 รายการล่าสุด
       sessions.slice(0, 10).forEach(s => {
           const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
-          // หาชื่อตัวละครจาก array ที่โหลดมา (เพราะเรามีครบแล้ว)
           const ownerChar = chars.find(c => c.id === s.character_id);
           const charName = ownerChar ? ownerChar.name : 'Unknown';
           
@@ -402,7 +407,9 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white max-w-[150px] truncate">${char.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${char.calculated_level}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">${char.total_gold_num.toLocaleString()} gp</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[150px] truncate">${char.user_id || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 max-w-[200px] truncate" title="${char.user_email}">
+                    ${char.user_email}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
                         View/Edit
@@ -422,7 +429,6 @@
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button');
                 btn.innerText = i;
-                // สไตล์ปุ่ม: Active = สีฟ้า, Inactive = สีเทา
                 btn.className = `w-8 h-8 rounded-md text-sm font-medium transition ${i === currentAdminPage ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
                 btn.onclick = () => renderAdminTable(i);
                 container.appendChild(btn);
@@ -436,13 +442,10 @@
       if (!confirm(`⚠️ Admin Delete: ยืนยันการลบตัวละคร "${charName}"?`)) return;
       
       try {
-        // ลบจาก characters (Cascade ลบลูกให้เอง)
         const { error } = await supabase.from('characters').delete().eq('id', charId);
-        
         if (error) throw error;
-        
         alert('ลบเรียบร้อย');
-        loadDashboardDataManual(); // รีโหลดข้อมูล
+        loadDashboardDataManual(); 
       } catch (error) {
           alert('❌ การลบล้มเหลว: ' + error.message);
       }
