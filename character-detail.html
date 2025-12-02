@@ -442,7 +442,8 @@
           character_id: currentCharId, 
           user_id: currentUser.id,
           description: document.getElementById('goldDesc').value, 
-          amount: finalAmount
+          amount: finalAmount, 
+          type: type
       });
 
       if (error) alert(error.message); 
