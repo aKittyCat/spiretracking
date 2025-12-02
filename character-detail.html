@@ -443,7 +443,6 @@
           user_id: currentUser.id,
           description: document.getElementById('goldDesc').value, 
           amount: finalAmount, 
-          type: type
       });
 
       if (error) alert(error.message); 
@@ -460,7 +459,6 @@
       const type = document.getElementById('favorType').value;
       let finalAmount = amount;
       
-      // ⭐ ตรวจสอบ Dropdown Favor
       if(type === 'spend') {
           finalAmount = -Math.abs(amount);
       } else {
