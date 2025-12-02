@@ -139,10 +139,17 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
         <h2 class="text-xl font-semibold mb-4 text-white">✨ บันทึก Favor</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <input id="favorDesc" placeholder="คำอธิบาย" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+          
+          <select id="favorType" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="spend">✨ ใช้ Favor (-)</option>
+              <option value="receive">🌟 ได้รับ Favor (+)</option>
+          </select>
+
           <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+          
+          <input id="favorDesc" placeholder="คำอธิบาย" class="col-span-1 md:col-span-2 p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
         </div>
-        <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
+        <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
       </div>
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
         <div id="favorTable" class="overflow-x-auto rounded-lg border border-gray-700">
@@ -256,7 +263,6 @@
       document.getElementById('charRace').textContent = c.race || '-';
       document.getElementById('charGoldStart').textContent = c.gold_start;
       
-      // แสดงผลรวมทองแบบทศนิยม 2 ตำแหน่ง ถ้าจำเป็น (ปกติ DB เก็บ numeric อยู่แล้ว)
       document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
       document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
       
@@ -328,7 +334,7 @@
     if (!name) return alert('ใส่ชื่อ Session');
     const hours = parseFloat(document.getElementById('hours').value) || 0;
     const noGold = document.getElementById('noGold').checked;
-    const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,'')); // Use float
+    const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,''));
     const autoFavor = Math.floor(hours * 2);
 
     const payload = {
@@ -411,8 +417,7 @@
       const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
       const multiplier = getGoldMultiplier(currentLevel);
       
-      // ✅ แก้ไข: ตัด Math.floor ออกเพื่อให้ทองมีทศนิยม
-      const gold = hours * 100 * multiplier;
+      const gold = Math.floor(hours * 100 * multiplier);
       const favor = Math.floor(hours * 2); 
       
       document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
@@ -426,8 +431,12 @@
       
       const type = document.getElementById('goldType').value;
       let finalAmount = amount;
-      if(type === 'spend') finalAmount = -Math.abs(amount);
-      else finalAmount = Math.abs(amount);
+      
+      if(type === 'spend') {
+          finalAmount = -Math.abs(amount);
+      } else {
+          finalAmount = Math.abs(amount);
+      }
 
       const { error } = await supabase.from('gold_logs').insert({
           character_id: currentCharId, 
@@ -448,10 +457,19 @@
 
   async function addFavorEntry() {
       const amount = parseFloat(document.getElementById('favorAmount').value);
-      const finalAmount = -Math.abs(amount); 
+      const type = document.getElementById('favorType').value;
+      let finalAmount = amount;
+      
+      // ⭐ ตรวจสอบ Dropdown Favor
+      if(type === 'spend') {
+          finalAmount = -Math.abs(amount);
+      } else {
+          finalAmount = Math.abs(amount);
+      }
+
       const { error } = await supabase.from('favor_logs').insert({
           character_id: currentCharId, user_id: currentUser.id,
-          description: document.getElementById('favorDesc').value, amount: -Math.abs(amount)
+          description: document.getElementById('favorDesc').value, amount: finalAmount
       });
       if (error) alert(error.message); else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
   }
@@ -473,7 +491,7 @@
 
       let autoGold = 0, autoFavor = 0;
       if (!solo) {
-          // ✅ แก้ไข: ตัด Math.floor ออกเพื่อให้ทองมีทศนิยม
+          // ไม่ใช้ Math.floor เพื่อให้ได้ทศนิยม
           autoGold = hours * 100 * mult * 1.5;
           autoFavor = Math.floor(hours * 4);
           if (double) { autoGold *= 2; autoFavor *= 2; }
@@ -496,6 +514,7 @@
       const double = document.getElementById('doubleReward').checked;
       
       const c = currentCharData || {};
+      // ใช้ Level ปัจจุบัน
       const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
       let finalHours = hours * 1.5; 
       if(double) finalHours *= 2;
@@ -506,7 +525,7 @@
 
       let gold = 0, favor = 0;
       if(!solo) {
-          // ✅ แก้ไข: ตัด Math.floor ออกเพื่อแสดงทศนิยม
+          // ไม่ใช้ Math.floor
           gold = hours * 100 * mult * 1.5;
           favor = Math.floor(hours * 4);
           if(double) { gold *= 2; favor *= 2; }
@@ -591,7 +610,8 @@
     favorData.forEach(item => {
         const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
         const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
-        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description}</td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteFavor('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+        const typeLabel = item.amount >= 0 ? 'ได้รับ' : 'ใช้';
+        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description} <span class="text-gray-500 text-xs">(${typeLabel})</span></td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteFavor('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
     });
     renderPaginationUI('favorPagination', count, pageState.favor, loadFavor);
