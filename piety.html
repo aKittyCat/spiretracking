@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Spire Pantheon Rules</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Sarabun:wght@300;400;600&family=Taviraj:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dnd: {
+                            dark: '#111827', // gray-900
+                            panel: '#1f2937', // gray-800
+                            accent: '#d97706', // amber-600
+                            gold: '#fbbf24', // amber-400
+                            text: '#e5e7eb', // gray-200
+                            muted: '#9ca3af', // gray-400
+                            border: '#4b5563', // gray-600
+                        }
+                    },
+                    fontFamily: {
+                        'fantasy': ['"Cinzel"', 'serif'],
+                        'thai-heading': ['"Taviraj"', 'serif'],
+                        'thai-body': ['"Sarabun"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d97706; 
+        }
+
+        /* D&D Decorative Elements */
+        .fancy-border {
+            position: relative;
+            border: 2px solid #4b5563;
+        }
+        .fancy-border::before {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border: 1px solid #1f2937;
+            z-index: -1;
+        }
+        
+        .corner-decoration {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 2px solid #fbbf24;
+            transition: all 0.3s ease;
+        }
+        .top-left { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .top-right { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .bottom-right { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .card:hover .corner-decoration {
+            width: 20px;
+            height: 20px;
+            border-color: #d97706;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 2rem 0;
+            color: #d97706;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #4b5563;
+        }
+        .divider span {
+            padding: 0 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-dnd-dark text-dnd-text font-thai-body leading-relaxed min-h-screen selection:bg-dnd-accent selection:text-white">
+
+    <!-- Decorative Background Overlay -->
+    <div class="fixed inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 50% 50%, #374151 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+    <div class="relative max-w-5xl mx-auto px-4 py-12">
+        
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-fantasy text-dnd-gold mb-2 text-shadow-lg drop-shadow-lg">
+                The Gods of The Spire
+            </h1>
+            <h2 class="text-2xl font-thai-heading text-dnd-accent mt-2">เทพแห่ง The Spire</h2>
+            <div class="w-24 h-1 bg-gradient-to-r from-transparent via-dnd-gold to-transparent mx-auto mt-6"></div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+
+            <!-- Lore Section (Full Width) -->
+            <div class="md:col-span-12">
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg fancy-border relative group">
+                    <div class="corner-decoration top-left"></div>
+                    <div class="corner-decoration top-right"></div>
+                    <div class="corner-decoration bottom-left"></div>
+                    <div class="corner-decoration bottom-right"></div>
+                    
+                    <h3 class="text-xl font-thai-heading text-dnd-gold mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        ตำนานและที่มา
+                    </h3>
+                    <p class="text-dnd-text/90 indent-8">
+                        เหล่าเทพใน The Spire ค่อนข้างให้ความสนใจกับคนที่นับถือพวกเขามากกว่าเหล่า Deities ส่วนใหญ่ในโลกของ D&D และมีอิทธิพลที่ส่งผลไปถึงมิติต่างๆอีกด้วย แต่ว่าพวกเขานั้นไม่ได้เป็นสิ่งมีชีวิตธรรมดาๆอย่างมนุษย์หรือพวกมอนส์เตอร์ที่สามารถต่อกรได้
+                    </p>
+                    <p class="text-dnd-text/90 mt-4 indent-8">
+                        ทฤษฐีเกี่ยวกับการมีอยู่ของเหล่าเทพใน The Spire เริ่มแพร่ขยายอย่างกว้างขวางขึ้นเรื่อยๆแต่ว่าแค่นั้นก็ไม่ได้ทำให้พวกเขามีตัวตนขึ้นมา แต่เป็นความศรัทธาที่เหมือนๆกันที่สร้างพวกเขาขึ้นมา
+                    </p>
+                </div>
+            </div>
+
+            <!-- Left Column: Registration & Service -->
+            <div class="md:col-span-12 lg:col-span-5 space-y-8">
+                
+                <!-- Registration -->
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg border border-dnd-border">
+                    <h3 class="text-lg font-thai-heading text-dnd-gold mb-3 border-b border-dnd-border pb-2">ลงบันทึกเทพที่นับถือ</h3>
+                    <p class="text-sm mb-4">ก่อนที่ผู้เล่นจะทำการ Religious Service ได้ ผู้เล่นจะต้องลงบันทึกเพื่อเป็นการเริ่มต้นก่อน โดยใช้ Template ดังนี้</p>
+                    <div class="bg-black/30 p-4 rounded border border-dnd-border font-mono text-dnd-accent text-sm">
+                        ชื่อตัวละคร: <br>
+                        ชื่อเทพ:
+                    </div>
+                </div>
+
+                <!-- Religious Service -->
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg border border-dnd-border">
+                    <h3 class="text-lg font-thai-heading text-dnd-gold mb-3 border-b border-dnd-border pb-2">Religious Service</h3>
+                    <p class="text-sm mb-4">
+                        ตัวละครสามารถทำการ Religious Service เพื่อได้รับ Favor จากเทพองค์ใดองค์นึโดยการใช้คำสั่ง <code class="bg-black/50 px-1 rounded text-dnd-gold">!service</code> เพื่อทอย Religion Check และในแต่ละครั้งจะใช้ Favor เป็นจำนวน 5 แต้ม จากนั้นดูผลลัพธ์โดยสามารถดูได้จากด้านล่าง
+                    </p>
+                    
+                    <table class="w-full text-sm mb-4 border-collapse">
+                        <thead>
+                            <tr class="bg-black/40 text-dnd-gold border-b border-dnd-border">
+                                <th class="p-2 text-left">Check Result</th>
+                                <th class="p-2 text-right">Reward</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-dnd-border/50">
+                            <tr>
+                                <td class="p-2">DC 1-10</td>
+                                <td class="p-2 text-right text-dnd-muted">0 Piety Favor</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2">DC 11-20</td>
+                                <td class="p-2 text-right text-white">1 Piety Favor</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-bold text-dnd-accent">DC 21+</td>
+                                <td class="p-2 text-right font-bold text-dnd-accent">2 Piety Favor</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="bg-dnd-dark/50 p-3 rounded text-xs border-l-4 border-dnd-gold">
+                        <p class="mb-2">ผู้เล่นต้องทำการพิมพ์ลงบันทึกลงในช่อง <span class="text-blue-400">#sanctum</span> โดยระบุว่าจะ Check กี่ครั้งและใช้ Favor ไปเท่าไหร</p>
+                        <p class="italic text-dnd-muted">ตัวอย่าง - ใจดำ แสนดี ใช้ 15 Favor เพื่อ Religious Service 3 ครั้ง</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Piety & Blessings -->
+            <div class="md:col-span-12 lg:col-span-7">
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg fancy-border h-full relative group">
+                    <div class="corner-decoration top-left"></div>
+                    <div class="corner-decoration top-right"></div>
+                    <div class="corner-decoration bottom-left"></div>
+                    <div class="corner-decoration bottom-right"></div>
+
+                    <h3 class="text-xl font-thai-heading text-dnd-gold mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Piety Blessing & Ranks
+                    </h3>
+
+                    <p class="text-sm mb-4">
+                        เหล่าเทพสามารถประทานพรให้กับ Champion หรือผู้ที่ศรัทธาพวกเขา แรงศรัทธาของตัวละครวัดจากแต้ม Piety Favor โดยยิ่งแต้มนี้มีเยอะเท่าไหร พรที่จะได้จากเทพที่นับถือก็ยิ่งเยอะขึ้นเท่านั้น
+                    </p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 text-center">
+                        <div class="p-2 bg-black/40 border border-dnd-border rounded">
+                            <div class="text-xs text-dnd-muted uppercase">Devotee</div>
+                            <div class="text-lg font-bold text-dnd-accent">3+</div>
+                            <div class="text-[10px] text-dnd-muted">Piety</div>
+                        </div>
+                        <div class="p-2 bg-black/40 border border-dnd-border rounded">
+                            <div class="text-xs text-dnd-muted uppercase">Votary</div>
+                            <div class="text-lg font-bold text-dnd-accent">10+</div>
+                            <div class="text-[10px] text-dnd-muted">Piety</div>
+                        </div>
+                        <div class="p-2 bg-black/40 border border-dnd-border rounded">
+                            <div class="text-xs text-dnd-muted uppercase">Disciple</div>
+                            <div class="text-lg font-bold text-dnd-accent">25+</div>
+                            <div class="text-[10px] text-dnd-muted">Piety</div>
+                        </div>
+                        <div class="p-2 bg-black/40 border border-dnd-gold rounded shadow-[0_0_10px_rgba(251,191,36,0.2)]">
+                            <div class="text-xs text-dnd-gold uppercase font-bold">Champion</div>
+                            <div class="text-lg font-bold text-dnd-gold">50+</div>
+                            <div class="text-[10px] text-dnd-gold">Piety</div>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-dnd-muted italic mb-4">*ตัวละครสามารถได้รับพรจากเทพได้ครั้งละ 1 องค์เท่านั้น ผู้เล่นสามารถตรวจสอบรายละเอียดได้ในหน้า Deities Info</p>
+
+                    <div class="bg-dnd-dark/40 p-4 rounded border border-dnd-border">
+                        <h4 class="font-thai-heading text-dnd-text text-md mb-2">เงื่อนไขการปลดล็อกพร</h4>
+                        <p class="text-sm mb-3">เมื่อแต้ม Piety Favor เพียงพอ การจะปลดล็อกพรของเทพได้จะมีเงื่อนไขคือ <strong>ต้องมีตัวละครที่ Piety Favor ในระดับเดียวกันและจำนวนของตัวละครเหล่านั้นต้องเท่ากันกับแต้ม Piety Favor เช่นกัน</strong></p>
+                        
+                        <div class="bg-dnd-dark/80 p-3 rounded text-sm text-dnd-text/80 border-l-2 border-dnd-accent">
+                            <span class="text-dnd-accent font-bold block mb-1">ตัวอย่าง:</span>
+                            สมศรี มี 10 แต้ม Piety Favor และอยากขึ้นไปเป็นระดับ Votary สมศรีต้องการตัวละครอีก 9 ตัวที่มี 10 Piety Favor เป็นอย่างต่ำที่นับถือเทพองค์เดียวกันเพื่อปลดล็อกพรระดับ Votary เมื่อปลดล็อกได้แล้ว ตัวละครอื่นจะได้รับพรทันทีเมื่อ Piety Favor ถึง 10 แต้ม พรทุกอย่างจะไม่สามารถรับได้จนกว่าจำนวนของตัวละครและ Piety Favor จะถึงจำนวนที่กำหนด
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Sections: Conduct & Changes -->
+            <div class="md:col-span-12 lg:col-span-6">
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg border border-dnd-border h-full">
+                    <h3 class="text-lg font-thai-heading text-red-400 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        แนวทางปฏิบัติตนต่อเทพที่นับถือ
+                    </h3>
+                    <p class="text-sm mb-4">
+                        พลังของเหล่าเทพมาจากการปฏิบัติตนตามหลักการความเชื่อของเทพที่ผู้คนนับถือ ถ้าตัวละครทำการกรระทำภายในเซสชั่นที่ขัดต่อหลักการของเทพนั้นๆที่ได้ระบุไว้ ตัวละครอาจเสียแต้ม Piety Favor ได้
+                    </p>
+                    
+                    <div class="bg-black/30 rounded overflow-hidden mb-4">
+                        <div class="flex justify-between items-center p-2 border-b border-dnd-border/30">
+                            <span class="text-dnd-text text-sm">ขัดหลักคำสอนเล็กน้อย</span>
+                            <span class="text-red-400 font-mono">-1</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 border-b border-dnd-border/30">
+                            <span class="text-dnd-text text-sm">ขัดหลักคำสอนทั่วไป</span>
+                            <span class="text-red-400 font-mono">-3</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2">
+                            <span class="text-dnd-text text-sm font-bold">ขัดหลักคำสอนร้ายแรง</span>
+                            <span class="text-red-500 font-mono font-bold">-5</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-dnd-muted">การเสียแต้ม Piety Favor แต่ละครั้งจะถูกบันทึกไว้ใน #sanctum โดย DM สามารถใช้ Template ในปักหมุดในดิสคอร์ทได้เลย</p>
+                </div>
+            </div>
+
+            <div class="md:col-span-12 lg:col-span-6 space-y-6">
+                <!-- Changing Deity -->
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg border border-dnd-border">
+                    <h3 class="text-lg font-thai-heading text-dnd-gold mb-3">การเปลี่ยนเทพที่นับถือ</h3>
+                    <p class="text-sm mb-0">
+                        ตัวละครสามารถเปลี่ยนเทพที่นับถือได้ตลอดโดยการลงบันทึกใหม่ภายใน <span class="text-blue-400">#sanctum</span> แต่แต้ม Piety Favor จะไม่สามารถส่งต่อไปยังเทพองค์อื่นได้ แต่ถ้าเปลี่ยนกลับมานับถือเทพองค์เดิม แต้ม Piety Favor ก็ยังคงอยู่เหมือนเดิมไม่ได้หายไป แต่การเปลี่ยนเทพไปมาบ่อยๆก็จะมีผลตามมาเช่นกัน เพราะการนับถือเทพนั้นไม่ใช่เรื่องเล่นๆ
+                    </p>
+                </div>
+
+                <!-- Other Deities -->
+                <div class="card bg-dnd-panel p-6 rounded shadow-lg border border-dnd-border border-l-4 border-l-purple-500">
+                    <h3 class="text-lg font-thai-heading text-purple-400 mb-3">การนับถือเทพองค์อื่นนอกเหนือจากนี้</h3>
+                    <p class="text-sm mb-0">
+                        หากผู้เล่นต้องการนับถือเทพอื่นๆที่ไม่อยู่ในรายการนี้ ผู้เล่นก็สามารถทำได้เช่นกัน แต่การจะได้รับพรนั้นผู้เล่นจะต้องมีจำนวนตัวละครที่นนับถือเทพองค์เดียวกัน 25 คนและค่า Piety Favor ของตัวละครเหล่านั้นจะต้องมีอย่างน้อย 10 แต้ม เมื่อตรงตามเงื่อนไขแล้ว เทพองค์นั้นจะถูกเพิ่มเข้ามาเป็นหนึ่งในเทพของ The Spire และทางสตาฟจะออกแบบพรที่จะได้ให้ในภายหลัง
+                    </p>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="col-span-12 divider">
+                <span>✧ Deities Champion ✧</span>
+            </div>
+
+            <!-- Champion Section (Full Width) -->
+            <div class="col-span-12">
+                <div class="bg-gradient-to-r from-dnd-panel via-dnd-dark to-dnd-panel p-6 rounded border-y-2 border-dnd-gold relative overflow-hidden">
+                    <!-- Background texture icon -->
+                    <div class="absolute -right-10 -bottom-10 opacity-5 text-dnd-gold pointer-events-none">
+                        <svg width="200" height="200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                    </div>
+
+                    <h3 class="text-xl font-thai-heading text-dnd-gold mb-4">Deities Champion</h3>
+                    <p class="mb-4 text-dnd-text">
+                        เหล่าเทพสามารถมองเห็นได้ว่าใครเป็นคนที่ศรัทธาหรือทุ่มเทให้กับพวกเขามากที่สุด ในทุกๆ 1 เดือน ตัวละครที่มีค่า Piety Favor สูงที่สุดสำหรับเทพแต่ละองค์จะกลายเป็น Champion ของพวกเขา โดยมีเงื่อนไขดังนี้
+                    </p>
+                    
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            เทพองค์นั้นต้องมีระดับ Votary ขึ้นไป
+                        </li>
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            เมื่อ Champion ได้รับการแต่งตั้ง ตัวละครที่ค่า Piety Favor สูงกว่า 50 จะถูกลดลงเหลือ 50
+                        </li>
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            Champion จะไม่ถูกเปลี่ยนจนกว่าจนครบ 1 เดือน
+                        </li>
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            ตัวละครที่เป็น Champion จะได้รับพรทั้งหมดของเทพองค์นั้น แม้จะยังไม่มีตัวละครที่มีค่า Piety Favor 50 แต้มครบ 50 ตัว
+                        </li>
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            หากเทพองค์นั้นอยู่ในระดับ Champion ซึ่งทุกตัวละครจะได้รับพรทั้งหมดอยู่แล้ว ตำแหน่ง Champion จะเป็นเหมือนยศประดับไว้ให้ตัวละคร
+                        </li>
+                        <li class="flex items-start bg-black/20 p-3 rounded">
+                            <span class="text-dnd-accent mr-2">✦</span>
+                            ในกรณีที่แต้ม Piety Favor ของตัวละครเท่ากัน Champion จะไม่ได้รับการแต่งตั้ง
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-16 text-center text-dnd-muted text-xs">
+            <p>The Spire Pantheon Rules &copy; Dungeons & Dragons Custom Campaign</p>
+        </footer>
+    </div>
+
+</body>
+</html>
