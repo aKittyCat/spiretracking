@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deities Status - The Spire</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="supabase-config.js"></script>
+    
+    <style>
+        /* Theme CSS */
+        body { background-color: #111827; color: #d1d5db; font-family: sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        
+        .god-card { transition: transform 0.2s; }
+        .god-card:hover { transform: translateY(-5px); }
+        
+        /* Rank Colors */
+        .rank-champion { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); } /* Red Glow */
+        .rank-disciple { color: #a855f7; } /* Purple */
+        .rank-votary { color: #3b82f6; } /* Blue */
+        .rank-devotee { color: #10b981; } /* Green */
+        .rank-none { color: #6b7280; } /* Gray */
+
+        .tab-active { border-bottom: 2px solid #f59e0b; color: #f59e0b; }
+        .tab-inactive { color: #9ca3af; }
+    </style>
+</head>
+<body class="p-4 sm:p-6 min-h-screen">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-700 pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-amber-500"><i class="fa-solid fa-place-of-worship mr-2"></i>Deities Status</h1>
+                <p class="text-sm text-gray-400">สถานะความศรัทธาและทำเนียบเทพเจ้า</p>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="switchTab('view')" id="tab-view" class="text-lg font-bold px-4 py-2 tab-active transition">👁️ มุมมองผู้เล่น</button>
+                <button onclick="switchTab('admin')" id="tab-admin" class="text-lg font-bold px-4 py-2 tab-inactive transition hidden">⚙️ แก้ไขข้อมูล (Admin)</button>
+                <a href="index.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition flex items-center">
+                    <i class="fa-solid fa-home mr-2"></i> กลับหน้าหลัก
+                </a>
+            </div>
+        </div>
+
+        <div id="loading" class="text-center py-12">
+            <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-500"></i>
+            <p class="mt-2 text-gray-400">กำลังรวบรวมพลังศรัทธา...</p>
+        </div>
+
+        <div id="view-mode" class="hidden fade-in">
+            <div id="gods-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                </div>
+        </div>
+
+        <div id="admin-mode" class="hidden fade-in">
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-white">จัดการผู้ศรัทธา</h2>
+                    <div class="relative">
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="ค้นหาชื่อตัวละคร..." class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-amber-500 pl-10">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ชื่อตัวละคร</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">เทพที่นับถือ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">แต้ม Favor</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="char-table-body" class="divide-y divide-gray-700 bg-gray-800">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="mt-4 flex justify-center gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // รายชื่อเทพ 15 องค์
+        const GODS_LIST = [
+            "Athreos", "Ephara", "Erebos", "Heliod", "Iroas", 
+            "Karametra", "Keranos", "Klothys", "Kruphix", "Mogis", 
+            "Nylea", "Pharika", "Phenax", "Purphoros", "Thassa"
+        ];
+
+        let allCharacters = [];
+        let isAdmin = false;
+        const ITEMS_PER_PAGE = 10;
+        let currentPage = 1;
+
+        // --- Init ---
+        async function init() {
+            // Check Admin
+            const { data: adminStatus } = await supabase.rpc('is_admin');
+            if (adminStatus) {
+                isAdmin = true;
+                document.getElementById('tab-admin').classList.remove('hidden');
+            }
+
+            await loadData();
+        }
+        init();
+
+        // --- Load Data ---
+        async function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('view-mode').classList.add('hidden');
+            
+            // ดึงข้อมูล ID, Name, Deity, Piety จากตาราง characters
+            const { data, error } = await supabase
+                .from('characters')
+                .select('id, name, deity, piety');
+
+            if (error) {
+                console.error(error);
+                alert('โหลดข้อมูลล้มเหลว');
+                return;
+            }
+
+            allCharacters = data || [];
+            
+            renderGodsView();
+            renderAdminTable();
+            
+            document.getElementById('loading').style.display = 'none';
+            if(document.getElementById('tab-view').classList.contains('tab-active')) {
+                document.getElementById('view-mode').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-mode').classList.remove('hidden');
+            }
+        }
+
+        // --- View Mode Logic ---
+        function renderGodsView() {
+            const grid = document.getElementById('gods-grid');
+            grid.innerHTML = '';
+
+            GODS_LIST.forEach(godName => {
+                // 1. หาผู้ติดตามทั้งหมดของเทพองค์นี้
+                const followers = allCharacters.filter(c => c.deity === godName);
+                const count = followers.length;
+
+                // 2. คำนวณระดับความศรัทธา (Deity Rank)
+                let rankName = "ยังไม่ได้รับพร";
+                let rankClass = "rank-none";
+                if (count >= 50) { rankName = "Champion"; rankClass = "rank-champion"; }
+                else if (count >= 25) { rankName = "Disciple"; rankClass = "rank-disciple"; }
+                else if (count >= 10) { rankName = "Votary"; rankClass = "rank-votary"; }
+                else if (count >= 3) { rankName = "Devotee"; rankClass = "rank-devotee"; }
+
+                // 3. หา Champion ตัวละคร (Piety สูงสุด)
+                let championName = "-";
+                let maxPiety = -1;
+                
+                if (followers.length > 0) {
+                    // เรียงลำดับ piety มากไปน้อย
+                    followers.sort((a, b) => (b.piety || 0) - (a.piety || 0));
+                    const topOne = followers[0];
+                    if (topOne.piety > 0) {
+                        championName = `${topOne.name} (${topOne.piety})`;
+                        maxPiety = topOne.piety;
+                    }
+                }
+
+                // 4. สร้าง Card HTML
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg god-card relative overflow-hidden";
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i class="fa-solid fa-star text-6xl"></i>
+                    </div>
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-bold text-white font-serif tracking-wide">${godName}</h2>
+                        <span class="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-600">
+                            <i class="fa-solid fa-users mr-1"></i> ${count} คน
+                        </span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-xs text-gray-400 uppercase mb-1">Faith Rank</p>
+                        <p class="text-lg font-bold ${rankClass}">
+                            ${rankName === 'Champion' ? '<i class="fa-solid fa-crown mr-1"></i>' : ''} ${rankName}
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-900/50 p-3 rounded border border-gray-700">
+                        <p class="text-xs text-gray-500 uppercase mb-1">Current Champion</p>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold mr-3">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <span class="text-amber-100 font-medium truncate">${championName}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- Admin Mode Logic ---
+        function renderAdminTable(page = 1, filter = "") {
+            const tbody = document.getElementById('char-table-body');
+            tbody.innerHTML = '';
+
+            // Filter
+            let filteredData = allCharacters.filter(c => 
+                c.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            // Sort by name
+            filteredData.sort((a, b) => a.name.localeCompare(b.name));
+
+            // Pagination
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const pageData = filteredData.slice(start, start + ITEMS_PER_PAGE);
+
+            pageData.forEach(char => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-700/50 transition";
+                
+                // สร้างตัวเลือก Dropdown เทพ
+                let options = `<option value="">- ไม่นับถือ -</option>`;
+                GODS_LIST.forEach(g => {
+                    const selected = char.deity === g ? 'selected' : '';
+                    options += `<option value="${g}" ${selected}>${g}</option>`;
+                });
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm font-medium text-white">${char.name}</td>
+                    <td class="px-6 py-4">
+                        <select id="deity-${char.id}" class="bg-gray-900 text-white text-sm rounded border border-gray-600 p-1 focus:border-amber-500 outline-none w-full">
+                            ${options}
+                        </select>
+                    </td>
+                    <td class="px-6 py-4">
+                        <input id="piety-${char.id}" type="number" value="${char.piety || 0}" class="bg-gray-900 text-white text-sm rounded border border-gray-600 p-1 w-20 text-center focus:border-amber-500 outline-none">
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="saveData('${char.id}')" class="text-green-500 hover:text-green-400 font-bold text-sm border border-green-600 px-3 py-1 rounded hover:bg-green-900/30 transition">
+                            บันทึก
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination(totalPages, page, filter);
+        }
+
+        function renderPagination(totalPages, currentPage, filter) {
+            const container = document.getElementById('pagination');
+            container.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `w-8 h-8 rounded text-sm font-bold ${i === currentPage ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
+                btn.onclick = () => renderAdminTable(i, filter);
+                container.appendChild(btn);
+            }
+        }
+
+        function filterTable() {
+            const text = document.getElementById('searchInput').value;
+            renderAdminTable(1, text);
+        }
+
+        // --- Save Function ---
+        async function saveData(charId) {
+            const newDeity = document.getElementById(`deity-${charId}`).value || null;
+            const newPiety = parseInt(document.getElementById(`piety-${charId}`).value) || 0;
+
+            const { error } = await supabase
+                .from('characters')
+                .update({ deity: newDeity, piety: newPiety })
+                .eq('id', charId);
+
+            if (error) {
+                alert('บันทึกไม่สำเร็จ: ' + error.message);
+            } else {
+                alert('✅ บันทึกข้อมูลเรียบร้อย');
+                // อัปเดตข้อมูลใน Local Array ไม่ต้องโหลดใหม่ทั้งหน้า
+                const index = allCharacters.findIndex(c => c.id === charId);
+                if (index !== -1) {
+                    allCharacters[index].deity = newDeity;
+                    allCharacters[index].piety = newPiety;
+                }
+                renderGodsView(); // รีเฟรชหน้า View Mode
+            }
+        }
+
+        // --- Tab Switch ---
+        function switchTab(mode) {
+            const viewBtn = document.getElementById('tab-view');
+            const adminBtn = document.getElementById('tab-admin');
+            const viewDiv = document.getElementById('view-mode');
+            const adminDiv = document.getElementById('admin-mode');
+
+            if (mode === 'view') {
+                viewBtn.classList.add('tab-active'); viewBtn.classList.remove('tab-inactive');
+                adminBtn.classList.remove('tab-active'); adminBtn.classList.add('tab-inactive');
+                viewDiv.classList.remove('hidden');
+                adminDiv.classList.add('hidden');
+            } else {
+                adminBtn.classList.add('tab-active'); adminBtn.classList.remove('tab-inactive');
+                viewBtn.classList.remove('tab-active'); viewBtn.classList.add('tab-inactive');
+                adminDiv.classList.remove('hidden');
+                viewDiv.classList.add('hidden');
+            }
+        }
+
+    </script>
+</body>
+</html>
