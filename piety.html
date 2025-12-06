@@ -398,13 +398,13 @@
                 loss: [
                     "Denying a dying person their final rites",
                     "Removing wealth from a corpse or defiling a tomb",
-                    "Aiding those who seek to escape from the Underworld"
+                    "Aiding those who seek to escape from the Underworld, or who already have"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>gentle repose</b> (Wisdom modifier times/long rest). No material components." },
-                    { piety: 10, text: "Cast <b>speak with dead</b> (Once/long rest). No material components." },
-                    { piety: 25, text: "Cast <b>false life</b> (Once/long rest). Gain additional 25 temp HP." },
-                    { piety: 50, text: "Increase Intelligence or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "Your life is intertwined with the fate of the dead. You can cast gentle repose with this trait, requiring no material components, a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast speak with dead with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You can cast false life with this trait, requiring no material components. When you do so, you gain an additional 25 temporary hit points. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 50, text: "You can increase your Intelligence or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -424,10 +424,10 @@
                     "Willfully breaking just laws for personal gain"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>comprehend languages</b> (Int mod times/long rest)." },
-                    { piety: 10, text: "Advantage on Persuasion checks within a city. Reroll failed Int check/save (Once/long rest)." },
-                    { piety: 25, text: "Cast <b>Mordenkainen's private sanctum</b> (Once/long rest)." },
-                    { piety: 50, text: "Increase Intelligence or Charisma score by 2 (and max by 2)." }
+                    { piety: 3, text: "Ephara grants you insight into how people communicate. You can cast comprehend languages with this trait, requiring no material component, a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You gain advantage on Charisma (Persuasion) checks while you are within a city. In addition, when you fail an Intelligence check or Intelligence saving throw, you can reroll the die, and you must use the new roll. Once you use this reroll, you can't do so again until you finish a long rest." },
+                    { piety: 25, text: "You can cast Mordenkainen's private sanctum with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 50, text: "You can increase your Intelligence or Charisma score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -448,10 +448,10 @@
                     "Allowing a soul to escape the Underworld"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>bane</b> (Wisdom modifier times/long rest)." },
-                    { piety: 10, text: "Cast <b>vampiric touch</b> (Once/long rest)." },
-                    { piety: 25, text: "Reaction when creature dies within 10ft: Gain temp HP equal to level." },
-                    { piety: 50, text: "Increase Constitution or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Erebos, you have proven yourself an executor of the Underworld's grim laws. You can call on Erebos's favor to cast bane with this trait, requiring no material components, a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast vampiric touch with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "When a soul is sent to its rightful place, you can draw on the energy of the Underworld to empower you. When a creature dies within 10 feet of you, you can use your reaction to gain a number of temporary hit points equal to your level." },
+                    { piety: 50, text: "You can increase your Constitution or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -472,10 +472,10 @@
                     "Putting others at risk through your own cowardice"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>bless</b> (Wis mod times/long rest). Targets shed dim light." },
-                    { piety: 10, text: "Cast <b>daylight</b> (Once/long rest)." },
-                    { piety: 25, text: "Advantage on saves vs blinded. Resistance to fire damage." },
-                    { piety: 50, text: "Increase Strength or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Heliod, you have proven yourself a worthy champion of the sun god. You can call on Heliod's favor and cast bless with this trait, requiring no material components. Heliod's blessing manifests as a nimbus around the affected creatures, causing them to shed dim light in a 5-foot radius until the spell ends. You can cast the spell in this way a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast daylight with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You grow accustomed to the blazing radiance of the sun; you have advantage on saving throws against being blinded, and you have resistance to fire damage." },
+                    { piety: 50, text: "You can increase your Strength or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -496,10 +496,10 @@
                     "Harming innocents or noncombatants"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>compelled duel</b> (Cha mod times/long rest)." },
-                    { piety: 10, text: "Cast <b>crusader's mantle</b> (Once/long rest). Advantage vs frightened." },
-                    { piety: 25, text: "Bonus Action: Creatures within 30ft can't gain advantage on attacks against you (1 min/long rest)." },
-                    { piety: 50, text: "Increase Strength or Charisma score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Iroas, you have earned his favor through victories won in his name. You can cast compelled duel with this trait a number of times equal to your Charisma modifier (minimum of once). You regain all expended uses when you finish a long rest. Charisma is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast crusader's mantle with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Charisma is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being frightened." },
+                    { piety: 25, text: "As a bonus action, you can call on Iroas's blessing, gaining the following benefit for 1 minute or until you are incapacitated: creatures within 30 feet of you can't gain advantage on attack rolls against you. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 50, text: "You can increase your Strength or Charisma score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -521,10 +521,10 @@
                     "Starting a fire that threatens a settlement"
                 ],
                 benefits: [
-                    { piety: 3, text: "Bonus Action: +1 AC for 1 minute (Once/long rest)." },
-                    { piety: 10, text: "Cast <b>create food and water</b> (Once/long rest). Advantage vs poisoned." },
-                    { piety: 25, text: "Ritual (1 hour): Create 3 vials of wine acting as potions of healing (last 24h)." },
-                    { piety: 50, text: "Increase Constitution or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Karametra, you have proven yourself a worthy potential champion of the harvest god. As a bonus action, you can invoke her protection; spectral plants cover you, providing you with a +1 bonus to AC for 1 minute. Once you use this trait, you can't use it again until you finish a long rest." },
+                    { piety: 10, text: "You can cast create food and water with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being poisoned." },
+                    { piety: 25, text: "By performing an hour-long ritual, you can conjure enough grapes to fill three vials (4 ounces each) of wine. Each vial serves as a potion of healing for 24 hours, after which it loses this property. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 50, text: "You can increase your Constitution or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -546,10 +546,10 @@
                     "Giving in to wanton fury and destruction"
                 ],
                 benefits: [
-                    { piety: 3, text: "On hit: Deal extra 1d6 lightning damage (Int mod times/long rest)." },
-                    { piety: 10, text: "Reroll failed Int or Wis save (Once/long rest)." },
-                    { piety: 25, text: "Advantage on initiative rolls." },
-                    { piety: 50, text: "Increase Intelligence or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Keranos, you have proven your wisdom and your allegiance to the storm lord. Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d6 lightning damage to the target. You can use this trait a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest." },
+                    { piety: 10, text: "When you fail an Intelligence or a Wisdom saving throw, you can reroll the die, and you must use the new roll. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 25, text: "The energy of the storm fills your being, granting you advantage on initiative rolls." },
+                    { piety: 50, text: "You can increase your Intelligence or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -560,19 +560,19 @@
                 alignment: "Neutral",
                 conduct: [
                     "Defeating a creature that has stepped out of its place",
-                    "Repairing a significant wound dealt to destiny",
+                    "Repairing a significant wound dealt to destiny by the gods' ambitions",
                     "Teaching people about Klothys, her nature, and her return"
                 ],
                 loss: [
-                    "Undoing a deserved punishment or curse",
+                    "Undoing a deserved punishment or curse suffered by another creature",
                     "Willfully destroying a natural wonder",
-                    "Assisting a creature in undermining the natural order"
+                    "Assisting a creature in undermining the natural order or exploiting destiny"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>command</b> (Wis mod times/long rest)." },
-                    { piety: 10, text: "Cast <b>clairvoyance</b> (Once/long rest). Advantage vs charmed." },
-                    { piety: 25, text: "You can't be surprised (unless incapacitated)." },
-                    { piety: 50, text: "Increase Strength or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Klothys, you can manipulate the bonds of destiny that invisibly entangle every living thing. You can cast command with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast clairvoyance with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being charmed." },
+                    { piety: 25, text: "You develop a second sense, allowing you to intuit the tug and pull of destiny. You can't be surprised, provided you aren't incapacitated." },
+                    { piety: 50, text: "You can increase your Strength or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -590,13 +590,14 @@
                 loss: [
                     "Revealing a secret that should remain unknown",
                     "Selfishly refusing to share information",
-                    "Showing favoritism toward any other god or group"
+                    "Showing favoritism toward any other god or group",
+                    "Furthering the aims of another god in defiance of Kruphix's will"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>detect magic</b> (Int mod times/long rest). Learn <b>mage hand</b>." },
-                    { piety: 10, text: "Cast <b>detect thoughts</b> (Once/long rest). Advantage vs charmed." },
-                    { piety: 25, text: "If mage hand is within 5ft, gain +2 AC vs ranged attacks." },
-                    { piety: 50, text: "Increase Constitution or Intelligence score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Kruphix, you have proven yourself a devotee of reality's mysteries and laws. You can cast detect magic with this trait a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. In addition, you know the mage hand cantrip. Intelligence is your spellcasting ability for these spells." },
+                    { piety: 10, text: "You can cast detect thoughts with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being charmed." },
+                    { piety: 25, text: "As a true champion of Kruphix, you can use your mage hand cantrip to protect yourself. While your spectral hand is within 5 feet of you, you gain a +2 bonus to your AC against ranged attacks." },
+                    { piety: 50, text: "You can increase your Constitution or Intelligence score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -609,7 +610,7 @@
                     "Defeating a champion of Iroas",
                     "Taking vengeance against a powerful foe",
                     "Burning a polis or a settlement to the ground",
-                    "Desecrating a temple to Iroas"
+                    "Desecrating a temple to Iroas as an offering to Mogis"
                 ],
                 loss: [
                     "Failing to carry out a sworn vendetta",
@@ -617,10 +618,10 @@
                     "Rejecting a duel or a challenge out of fear"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>wrathful smite</b> (Con mod times/long rest). Weapon sheds red light." },
-                    { piety: 10, text: "Cast <b>blinding smite</b> (Once/long rest)." },
-                    { piety: 25, text: "Advantage on saves vs charmed or frightened." },
-                    { piety: 50, text: "Increase Strength or Constitution score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Mogis, you have shown yourself to be a brutal combatant. You can call on Mogis's favor and cast wrathful smite with this trait. Mogis's blessing manifest as a blood-red glow around your weapon, causing it to shed dim light in a 5-foot radius until the spell ends. You can cast the spell in this way a number of times equal to your Constitution modifier (minimum of once). You regain all expended uses when you finish a long rest. Constitution is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast blinding smite with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Constitution is your spellcasting ability for this spell." },
+                    { piety: 25, text: "Countless battles and vicious visions have given you focus. You have advantage on saving throws against being charmed or frightened." },
+                    { piety: 50, text: "You can increase your Strength or Constitution score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -637,14 +638,14 @@
                 ],
                 loss: [
                     "Killing an animal for any reason other than necessity",
-                    "Dedicating a building or making a sacrifice to any god",
+                    "Dedicating a building or making a sacrifice to any god, including Nylea",
                     "Protecting a city or farm from natural dangers"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>hunter's mark</b> (Wis mod times/long rest)." },
-                    { piety: 10, text: "Cast <b>speak with animals</b> (Wis mod times/long rest). Advantage vs poisoned." },
-                    { piety: 25, text: "Beast attack reaction: DC 15 Wis save or attack misses." },
-                    { piety: 50, text: "Increase Dexterity or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Nylea, you have proven yourself a guardian of the wilds. You can cast hunter's mark with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast speak with animals with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being poisoned." },
+                    { piety: 25, text: "When a beast is about to attack you, it must make a DC 15 Wisdom saving throw. On a failed save, the creature must choose a different target, or the attack automatically misses you. On a successful save, the creature is immune to this trait for 24 hours." },
+                    { piety: 50, text: "You can increase your Dexterity or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -656,19 +657,19 @@
                 conduct: [
                     "Creating a cure for a dangerous affliction",
                     "Defeating a powerful foe by using poison",
-                    "Discovering or documenting an unknown people or creature",
-                    "Building or restoring a temple to Pharika"
+                    "Discovering or documenting an unknown people or a poorly understood creature",
+                    "Building or restoring a temple to Pharika, or a site that glorifies serpentine creatures"
                 ],
                 loss: [
                     "Destroying alchemical, medical, or pathological research",
-                    "Performing a notable act of healing without exacting a price",
+                    "Performing a notable act of healing without exacting a significant price",
                     "Slaying a medusa or serpent"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>ray of sickness</b> (Wis mod times/long rest)." },
-                    { piety: 10, text: "Advantage vs poisoned. Immune to disease." },
-                    { piety: 25, text: "Pharika's Balm (Action, Wis mod/rest): Cure disease/poison + heal OR weaken enemy." },
-                    { piety: 50, text: "Increase Dexterity or Wisdom score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Pharika, you have power over affliction. You can cast ray of sickness with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "Pharika's blessing shields you from most maladies. You have advantage on saving throws against being poisoned, and you are immune to disease." },
+                    { piety: 25, text: "Pharika blesses you with Pharika's Balm, an effect that can cure or enfeeble. As an action, you can touch a creature and choose one of the following:<br>- The target regains hit points equal to 1d8 + your Wisdom modifier, and you can cure the target of one disease or neutralize one poison affecting it.<br>- The target must succeed on a DC 15 Constitution saving throw, or for 1 minute, the target deals only half damage with weapon attacks. The target can repeat the saving throw at the end of each of its turns, ending the effect on a success.<br>You can use this action a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest." },
+                    { piety: 50, text: "You can increase your Dexterity or Wisdom score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -689,10 +690,10 @@
                     "Bringing order in times of chaos"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>disguise self</b> (Cha mod times/long rest)." },
-                    { piety: 10, text: "Advantage on Charisma (Deception) checks." },
-                    { piety: 25, text: "Missed attacks from hidden position do not reveal your position." },
-                    { piety: 50, text: "Increase Dexterity or Charisma score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Phenax, you have proven yourself accomplished at deception. You can call on Phenax's blessing and cast disguise self with this trait. While the spell is active, your shadow still resembles your original form. You can cast the spell in this way a number of times equal to your Charisma modifier (minimum of once). You regain all expended uses when you finish a long rest. Charisma is your spellcasting ability for this spell." },
+                    { piety: 10, text: "Your words are inspired by Theros's greatest liar. You have advantage on Charisma (Deception) checks." },
+                    { piety: 25, text: "When you are hidden from a creature and miss it with an attack, making the attack doesn't reveal your position." },
+                    { piety: 50, text: "You can increase your Dexterity or Charisma score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -713,10 +714,10 @@
                     "Backing down from a fight or a contest"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>shield of faith</b> (Int mod times/long rest). Learn <b>mending</b>." },
-                    { piety: 10, text: "Cast <b>heat metal</b> (Once/long rest). Advantage vs prone." },
-                    { piety: 25, text: "Reaction: If pushed 1ft+, you can choose not to be pushed." },
-                    { piety: 50, text: "Increase Strength or Intelligence score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Purphoros, you have drawn the notice of the forge god with your skill. You can cast shield of faith with this trait, requiring no material components, a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. In addition, you know the mending cantrip. Intelligence is your spellcasting ability for these spells." },
+                    { piety: 10, text: "You can cast heat metal with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being knocked prone." },
+                    { piety: 25, text: "While you are standing and an effect would push you 1 foot or more, you can use your reaction to not be pushed." },
+                    { piety: 50, text: "You can increase your Strength or Intelligence score by 2 and also increase your maximum for that score by 2." }
                 ]
             },
             {
@@ -738,10 +739,10 @@
                     "Bowing to the desires or demands of another god"
                 ],
                 benefits: [
-                    { piety: 3, text: "Cast <b>fog cloud</b> (Int mod times/long rest). Smells of sea." },
-                    { piety: 10, text: "Cast <b>blink</b> (Once/long rest)." },
-                    { piety: 25, text: "Advantage on saves vs charmed or restrained." },
-                    { piety: 50, text: "Increase Dexterity or Intelligence score by 2 (and max by 2)." }
+                    { piety: 3, text: "As a devotee of Thassa, you have proven yourself a worthy representative of the god of the sea. You can cast fog cloud with this trait. Fog created in this way smells strongly of the sea. You can cast the spell in this way a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast blink with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You are inspired by the tempestuous, uncontrollable nature of the sea; you have advantage on saving throws against being charmed or restrained." },
+                    { piety: 50, text: "You can increase your Dexterity or Intelligence score by 2 and also increase your maximum for that score by 2." }
                 ]
             }
         ];
