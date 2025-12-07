@@ -166,9 +166,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- Column 1: Registration & Service -->
             <div class="lg:col-span-4 space-y-6">
-                <!-- Registration -->
                 <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 card-glow relative overflow-hidden">
                      <div class="absolute top-0 right-0 p-4 opacity-10">
                         <i class="fa-solid fa-scroll text-6xl"></i>
@@ -184,7 +182,6 @@
                     </div>
                 </div>
 
-                <!-- Religious Service -->
                 <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 card-glow">
                     <h2 class="text-2xl text-amber-400 font-bold mb-4 border-b border-gray-700 pb-2">
                         <i class="fa-solid fa-dice-d20 mr-2 text-sm"></i> Religious Service
@@ -213,7 +210,6 @@
                     </div>
                 </div>
 
-                <!-- Changing Deity -->
                 <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 card-glow">
                     <h2 class="text-xl text-amber-400 font-bold mb-3 border-b border-gray-700 pb-2">
                         <i class="fa-solid fa-shuffle mr-2 text-sm"></i> การเปลี่ยนเทพที่นับถือ
@@ -224,9 +220,7 @@
                 </div>
             </div>
 
-            <!-- Column 2: Piety, Champion & Others -->
             <div class="lg:col-span-8 space-y-6">
-                <!-- Piety System -->
                 <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 card-glow">
                     <div class="flex items-center mb-4 border-b border-gray-700 pb-2">
                         <i class="fa-solid fa-hands-praying text-amber-500 text-2xl mr-3"></i>
@@ -266,7 +260,6 @@
                     </p>
                 </div>
 
-                <!-- Champion System -->
                 <div class="bg-gray-800 border border-amber-700/30 rounded-lg p-6 card-glow relative">
                     <div class="absolute -top-3 -right-3 bg-amber-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform rotate-12">
                         <i class="fa-solid fa-trophy"></i>
@@ -287,7 +280,6 @@
                     </ul>
                 </div>
 
-                <!-- Conduct & Other Gods -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-gray-800 border border-red-900/30 rounded-lg p-6 card-glow">
                         <h2 class="text-xl text-red-400 font-bold mb-3 border-b border-gray-700 pb-2">
@@ -334,7 +326,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-700 pb-4 gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-amber-500"><i class="fa-solid fa-place-of-worship mr-2"></i>Deities Status</h1>
-                    <p class="text-sm text-gray-400">สถานะความศรัทธาและทำเนียบเทพเจ้า (Live Data)</p>
+                    <p class="text-sm text-gray-400">สถานะความศรัทธา</p>
                 </div>
                 <div class="flex gap-4">
                     <button onclick="switchStatusMode('view')" id="subtab-view" class="text-lg font-bold px-4 py-2 subtab-active transition">👁️ มุมมองผู้เล่น</button>
@@ -362,11 +354,9 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-1">ชื่อตัวละคร</label>
-                            <div class="flex gap-2">
-                                 <input type="text" id="inputCharName" placeholder="ระบุชื่อตัวละคร..." class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition">
-                                 <button onclick="searchChar()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded font-bold"><i class="fa-solid fa-search"></i></button>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">*ค้นหาเพื่อดึงข้อมูลเก่า หรือพิมพ์ใหม่เพื่อสร้าง</p>
+                            <input type="text" id="inputCharName" list="charList" oninput="onCharNameChange()" class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition" placeholder="พิมพ์หรือเลือกชื่อตัวละคร...">
+                            <datalist id="charList"></datalist>
+                            <p class="text-xs text-gray-400 mt-1" id="nameHelpText">*พิมพ์ชื่อเพื่อสร้างใหม่ หรือเลือกจากรายการเพื่อแก้ไข</p>
                         </div>
 
                         <div>
@@ -868,6 +858,10 @@
         // ---------------------------------------------------------
         async function initSupabase() {
             try {
+                if (typeof supabase === 'undefined') {
+                    console.log("Supabase not initialized");
+                    return;
+                }
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
                     currentUser = session.user;
@@ -892,6 +886,20 @@
             GODS_LIST.forEach(g => {
                 select.innerHTML += `<option value="${g}">${g}</option>`;
             });
+            // Update Datalist
+            updateCharDatalist();
+        }
+
+        function updateCharDatalist() {
+            const datalist = document.getElementById('charList');
+            if(!datalist) return;
+            datalist.innerHTML = '';
+            const sorted = [...allCharacters].sort((a,b) => a.name.localeCompare(b.name));
+            sorted.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.name;
+                datalist.appendChild(option);
+            });
         }
 
         async function loadData() {
@@ -899,14 +907,14 @@
             if(loading) loading.style.display = 'block';
             
             try {
-                const { data, error } = await supabase
-                    .from('characters')
-                    .select('id, name, deity, piety, is_champion');
+                // ✅ แก้ไข: เรียก RPC แทนการเรียก Table ตรงๆ เพื่อแก้ปัญหา RLS
+                const { data, error } = await supabase.rpc('get_all_characters_public');
 
                 if (error) throw error;
 
                 allCharacters = data || [];
                 renderGodsView();
+                updateCharDatalist();
                 
             } catch (err) {
                 console.error(err);
@@ -994,21 +1002,28 @@
             input.value = current + val;
         }
 
-        function searchChar() {
+        function onCharNameChange() {
             const name = document.getElementById('inputCharName').value.trim();
-            if(!name) return alert('ใส่ชื่อเพื่อค้นหา');
+            if(!name) return;
+
             const found = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
+            const helpText = document.getElementById('nameHelpText');
             
             if(found) {
                 document.getElementById('inputDeity').value = found.deity || "";
                 document.getElementById('inputPiety').value = found.piety || 0;
                 document.getElementById('inputIsChampion').checked = found.is_champion || false;
-                document.getElementById('statusMsg').innerHTML = `<span class="text-blue-400">🔍 พบข้อมูล: ${found.name}</span>`;
+                document.getElementById('statusMsg').innerHTML = `<span class="text-blue-400">🔍 กำลังแก้ไข: ${found.name}</span>`;
+                helpText.innerHTML = "✅ พบข้อมูลเดิมในระบบ (แก้ไข)";
+                helpText.className = "text-xs text-green-400 mt-1";
             } else {
-                document.getElementById('statusMsg').innerHTML = `<span class="text-gray-400">ℹ️ ไม่พบชื่อนี้ (จะสร้างใหม่เมื่อกดบันทึก)</span>`;
+                document.getElementById('statusMsg').innerHTML = `<span class="text-gray-400">ℹ️ ข้อมูลใหม่ (สร้าง)</span>`;
+                // Optional: Reset values or keep them
                 document.getElementById('inputDeity').value = "";
                 document.getElementById('inputPiety').value = 1;
                 document.getElementById('inputIsChampion').checked = false;
+                helpText.innerHTML = "✨ ชื่อใหม่ (จะสร้างเมื่อกดบันทึก)";
+                helpText.className = "text-xs text-blue-400 mt-1";
             }
         }
 
@@ -1054,6 +1069,9 @@
                 document.getElementById('inputCharName').value = '';
                 document.getElementById('inputPiety').value = '1';
                 document.getElementById('inputIsChampion').checked = false;
+                document.getElementById('nameHelpText').innerHTML = "*พิมพ์ชื่อเพื่อสร้างใหม่ หรือเลือกจากรายการเพื่อแก้ไข";
+                document.getElementById('nameHelpText').className = "text-xs text-gray-400 mt-1";
+                
                 await loadData();
             }
         }
