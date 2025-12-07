@@ -37,7 +37,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-700 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-amber-500"><i class="fa-solid fa-place-of-worship mr-2"></i>Deities Status</h1>
-                <p class="text-sm text-gray-400">สถานะความศรัทธา</p>
+                <p class="text-sm text-gray-400">สถานะความศรัทธาและทำเนียบเทพเจ้า</p>
             </div>
             <div class="flex gap-4">
                 <button onclick="switchTab('view')" id="tab-view" class="text-lg font-bold px-4 py-2 tab-active transition">👁️ มุมมองผู้เล่น</button>
@@ -67,8 +67,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-1">ชื่อตัวละคร</label>
-                        <input type="text" id="inputCharName" placeholder="ระบุชื่อตัวละคร..." class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition">
-                        <p class="text-xs text-gray-500 mt-1">*ถ้าชื่อนี้ไม่มีในระบบ จะสร้างตัวละครใหม่ให้ทันที</p>
+                        <div class="flex gap-2">
+                             <input type="text" id="inputCharName" placeholder="ระบุชื่อตัวละคร..." class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition">
+                             <button onclick="searchChar()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded font-bold"><i class="fa-solid fa-search"></i></button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">*ค้นหาเพื่อดึงข้อมูลเก่า หรือพิมพ์ใหม่เพื่อสร้าง</p>
                     </div>
 
                     <div>
@@ -84,6 +87,13 @@
                              <input type="number" id="inputPiety" value="1" class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 text-center font-bold focus:border-amber-500 outline-none">
                              <button onclick="adjustPiety(1)" class="bg-gray-700 w-10 h-10 rounded hover:bg-green-500 transition font-bold text-lg">+</button>
                         </div>
+                    </div>
+
+                    <div class="bg-gray-700/30 p-3 rounded border border-gray-600 flex items-center justify-between cursor-pointer" onclick="document.getElementById('inputIsChampion').click()">
+                        <label class="text-sm font-bold text-amber-400 cursor-pointer select-none">
+                            <i class="fa-solid fa-crown mr-1"></i> แต่งตั้งเป็น Champion
+                        </label>
+                        <input type="checkbox" id="inputIsChampion" class="w-5 h-5 text-amber-600 rounded border-gray-500 focus:ring-amber-500 bg-gray-900">
                     </div>
 
                     <button onclick="saveAdminData()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2">
@@ -116,7 +126,6 @@
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 currentUser = session.user;
-                // Check Admin
                 const { data: adminStatus } = await supabase.rpc('is_admin');
                 if (adminStatus) {
                     isAdmin = true;
@@ -132,10 +141,7 @@
         function setupForm() {
             const select = document.getElementById('inputDeity');
             select.innerHTML = '<option value="">- เลือกเทพ -</option>';
-            
-            // ⭐ เพิ่มตัวเลือก "ไม่นับถือเทพ"
             select.innerHTML += '<option value="None" class="text-red-400 font-bold bg-gray-800">❌ ไม่นับถือเทพ (ลบออก)</option>';
-            
             GODS_LIST.forEach(g => {
                 select.innerHTML += `<option value="${g}">${g}</option>`;
             });
@@ -145,10 +151,10 @@
         async function loadData() {
             document.getElementById('loading').style.display = 'block';
             
-            // ดึงข้อมูล
+            // ⭐ ดึง is_champion มาด้วย
             const { data, error } = await supabase
                 .from('characters')
-                .select('id, name, deity, piety');
+                .select('id, name, deity, piety, is_champion');
 
             if (error) {
                 console.error(error);
@@ -161,7 +167,6 @@
             renderGodsView();
             document.getElementById('loading').style.display = 'none';
             
-            // Toggle view based on active tab
             if(document.getElementById('tab-view').classList.contains('tab-active')) {
                 document.getElementById('view-mode').classList.remove('hidden');
             } else {
@@ -175,11 +180,10 @@
             grid.innerHTML = '';
 
             GODS_LIST.forEach(godName => {
-                // 1. หาผู้ติดตาม
                 const followers = allCharacters.filter(c => c.deity === godName);
                 const count = followers.length;
 
-                // 2. Rank
+                // Rank
                 let rankName = "ยังไม่ได้รับพร";
                 let rankClass = "rank-none";
                 if (count >= 50) { rankName = "Champion"; rankClass = "rank-champion"; }
@@ -187,39 +191,49 @@
                 else if (count >= 10) { rankName = "Votary"; rankClass = "rank-votary"; }
                 else if (count >= 3) { rankName = "Devotee"; rankClass = "rank-devotee"; }
 
-                // 3. Champion
+                // Champion Logic
                 let championName = "-";
-                if (followers.length > 0) {
+                
+                // 1. หาคนที่ Admin แต่งตั้งไว้ก่อน (is_champion = true)
+                let champion = followers.find(c => c.is_champion);
+                
+                // 2. ถ้าไม่มีคนแต่งตั้ง ให้หาจาก Piety สูงสุด
+                if (!champion && followers.length > 0) {
                     followers.sort((a, b) => (b.piety || 0) - (a.piety || 0));
-                    if (followers[0].piety > 0) championName = `${followers[0].name} (${followers[0].piety})`;
+                    if (followers[0].piety > 0) champion = followers[0];
                 }
 
-                // 4. รายชื่อผู้ศรัทธา
+                if (champion) {
+                    championName = `${champion.name} (${champion.piety})`;
+                    // ถ้ามาจากการแต่งตั้ง ให้ใส่ไอคอนมงกุฎเพิ่ม
+                    if (champion.is_champion) championName = `👑 ${championName}`;
+                }
+
+                // Followers List
                 followers.sort((a, b) => a.name.localeCompare(b.name));
                 const followerListHTML = followers.length > 0 
-                    ? followers.map(c => `<span class="inline-block bg-gray-900 px-2 py-1 rounded text-xs text-gray-300 mr-1 mb-1 border border-gray-700">${c.name} (${c.piety||0})</span>`).join('')
+                    ? followers.map(c => {
+                        const style = c.is_champion ? 'border-amber-500 text-amber-200' : 'border-gray-700 text-gray-300';
+                        return `<span class="inline-block bg-gray-900 px-2 py-1 rounded text-xs mr-1 mb-1 border ${style}">${c.name} (${c.piety||0})</span>`;
+                    }).join('')
                     : '<span class="text-gray-600 text-xs italic">ยังไม่มีผู้ศรัทธา</span>';
 
-                // 5. Card HTML
+                // Card
                 const card = document.createElement('div');
                 card.className = "bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg god-card relative overflow-hidden flex flex-col";
                 card.innerHTML = `
                     <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-star text-6xl"></i></div>
-                    
                     <div class="flex justify-between items-start mb-2">
                         <h2 class="text-2xl font-bold text-white font-serif tracking-wide">${godName}</h2>
                         <span class="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-600"><i class="fa-solid fa-users mr-1"></i> ${count}</span>
                     </div>
-                    
                     <div class="mb-4">
                         <p class="text-lg font-bold ${rankClass}">${rankName === 'Champion' ? '👑' : ''} ${rankName}</p>
                     </div>
-
                     <div class="bg-gray-900/50 p-2 rounded border border-gray-700 mb-3">
                         <p class="text-[10px] text-gray-500 uppercase">Current Champion</p>
                         <div class="text-amber-100 font-medium truncate text-sm">🏆 ${championName}</div>
                     </div>
-
                     <div class="mt-auto border-t border-gray-700 pt-3">
                         <p class="text-[10px] text-gray-500 uppercase mb-2">รายชื่อผู้ศรัทธา</p>
                         <div class="flex flex-wrap max-h-32 overflow-y-auto custom-scrollbar">
@@ -238,30 +252,57 @@
             input.value = current + val;
         }
 
+        function searchChar() {
+            const name = document.getElementById('inputCharName').value.trim();
+            if(!name) return alert('ใส่ชื่อเพื่อค้นหา');
+            const found = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
+            
+            if(found) {
+                document.getElementById('inputDeity').value = found.deity || "";
+                document.getElementById('inputPiety').value = found.piety || 0;
+                document.getElementById('inputIsChampion').checked = found.is_champion || false;
+                document.getElementById('statusMsg').innerHTML = `<span class="text-blue-400">🔍 พบข้อมูล: ${found.name}</span>`;
+            } else {
+                document.getElementById('statusMsg').innerHTML = `<span class="text-gray-400">ℹ️ ไม่พบชื่อนี้ (จะสร้างใหม่เมื่อกดบันทึก)</span>`;
+                // Reset form for new entry
+                document.getElementById('inputDeity').value = "";
+                document.getElementById('inputPiety').value = 1;
+                document.getElementById('inputIsChampion').checked = false;
+            }
+        }
+
         async function saveAdminData() {
             const name = document.getElementById('inputCharName').value.trim();
             let deity = document.getElementById('inputDeity').value;
             const piety = parseInt(document.getElementById('inputPiety').value) || 0;
+            const isChampion = document.getElementById('inputIsChampion').checked;
             const statusMsg = document.getElementById('statusMsg');
 
             if (!name) return alert('กรุณาระบุชื่อตัวละคร');
             if (!deity) return alert('กรุณาเลือกเทพ');
 
-            // ⭐ ถ้าเลือก None ให้ส่งค่า null ไปบันทึก
-            if (deity === 'None') {
-                deity = null;
-            }
+            if (deity === 'None') deity = null;
 
             statusMsg.innerHTML = '<span class="text-yellow-400">⏳ กำลังบันทึก...</span>';
 
-            // 1. ค้นหาตัวละครก่อน
-            const existingChar = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
+            // 1. ถ้าตั้งเป็น Champion ต้องไปปลดคนเก่าออกก่อน
+            if (isChampion && deity) {
+                // หาคนที่เป็น Champion เก่าของเทพองค์นี้ (ที่มีชื่อไม่ตรงกับคนปัจจุบัน)
+                const oldChamp = allCharacters.find(c => c.deity === deity && c.is_champion && c.name.toLowerCase() !== name.toLowerCase());
+                if (oldChamp) {
+                    await supabase.from('characters').update({ is_champion: false }).eq('id', oldChamp.id);
+                }
+            }
 
+            // 2. บันทึกข้อมูลคนปัจจุบัน
+            const existingChar = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
             let error;
 
             if (existingChar) {
                 // Update
-                const res = await supabase.from('characters').update({ deity, piety }).eq('id', existingChar.id);
+                const res = await supabase.from('characters')
+                    .update({ deity, piety, is_champion: isChampion })
+                    .eq('id', existingChar.id);
                 error = res.error;
             } else {
                 // Insert New
@@ -269,10 +310,9 @@
                     name: name,
                     deity: deity,
                     piety: piety,
-                    user_id: currentUser.id, // ใช้ ID ของ Admin เป็นเจ้าของชั่วคราว
-                    level: 1,
-                    class: 'Unknown',
-                    race: 'Unknown'
+                    is_champion: isChampion,
+                    user_id: currentUser.id, // ใช้ Admin เป็นเจ้าของชั่วคราว
+                    level: 1, class: 'Unknown', race: 'Unknown'
                 });
                 error = res.error;
             }
@@ -282,12 +322,13 @@
                 statusMsg.innerHTML = `<span class="text-red-400">❌ เกิดข้อผิดพลาด: ${error.message}</span>`;
             } else {
                 const deityDisplay = deity === null ? 'ไม่นับถือเทพ' : deity;
-                statusMsg.innerHTML = `<span class="text-green-400">✅ บันทึก "${name}" สำเร็จ! (${deityDisplay}: ${piety})</span>`;
+                const champText = isChampion ? ' 👑 Champion' : '';
+                statusMsg.innerHTML = `<span class="text-green-400">✅ บันทึก "${name}" สำเร็จ! (${deityDisplay}: ${piety}${champText})</span>`;
                 
+                // Clear & Reload
                 document.getElementById('inputCharName').value = '';
                 document.getElementById('inputPiety').value = '1';
-                
-                // Reload Data
+                document.getElementById('inputIsChampion').checked = false;
                 await loadData();
             }
         }
@@ -311,7 +352,6 @@
                 viewDiv.classList.add('hidden');
             }
         }
-
     </script>
 </body>
 </html>
