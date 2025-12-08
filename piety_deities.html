@@ -124,11 +124,13 @@
     <nav class="sticky top-0 z-50 bg-gray-900/95 border-b border-gray-800 backdrop-blur-md shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
+                
                 <div class="flex items-center">
                     <i class="fa-solid fa-dragon text-amber-500 text-2xl mr-3"></i>
                     <span class="text-xl font-bold font-fantasy text-amber-500 tracking-wider">The Spire Tower</span>
                 </div>
-                <div class="flex space-x-2 md:space-x-4">
+
+                <div class="hidden md:flex space-x-4">
                     <button onclick="switchTab('rules')" id="tab-rules" class="tab-btn px-3 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors active">
                         <i class="fa-solid fa-book-open mr-2"></i>กฎ & คู่มือ
                     </button>
@@ -142,6 +144,29 @@
                         <i class="fa-solid fa-home mr-2"></i> กลับหน้าหลัก
                     </button>
                 </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900 border-t border-gray-800">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+                <button onclick="switchTab('rules'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <i class="fa-solid fa-book-open mr-2 w-6 text-center"></i>กฎ & คู่มือ
+                </button>
+                <button onclick="switchTab('deities'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <i class="fa-solid fa-users mr-2 w-6 text-center"></i>ทำเนียบเทพ
+                </button>
+                <button onclick="switchTab('status'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <i class="fa-solid fa-chart-pie mr-2 w-6 text-center"></i>สถานะศรัทธา
+                </button>
+                <button onclick="window.location.href = 'characters.html'" class="w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <i class="fa-solid fa-home mr-2 w-6 text-center"></i> กลับหน้าหลัก
+                </button>
             </div>
         </div>
     </nav>
@@ -437,6 +462,21 @@
     </footer>
 
     <script>
+        // ฟังก์ชันเปิด/ปิด เมนูมือถือ
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // ฟังก์ชันเสริม: สั่งปิดเมนูเมื่อกดเลือกแท็บแล้ว (ใส่เพิ่มใน onclick ของปุ่มมือถือ)
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        }
         // ---------------------------------------------------------
         // DATA: Gods Info
         // ---------------------------------------------------------
