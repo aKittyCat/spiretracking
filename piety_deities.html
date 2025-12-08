@@ -155,13 +155,13 @@
 
         <div id="mobile-menu" class="hidden md:hidden bg-gray-900 border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-                <button onclick="switchTab('rules'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                <button onclick="switchTab('rules'); toggleMobileMenu()" id="mobile-tab-rules" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
                     <i class="fa-solid fa-book-open mr-2 w-6 text-center"></i>กฎ & คู่มือ
                 </button>
-                <button onclick="switchTab('deities'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                <button onclick="switchTab('deities'); toggleMobileMenu()" id="mobile-tab-deities" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
                     <i class="fa-solid fa-users mr-2 w-6 text-center"></i>ทำเนียบเทพ
                 </button>
-                <button onclick="switchTab('status'); toggleMobileMenu()" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                <button onclick="switchTab('status'); toggleMobileMenu()" id="mobile-tab-status" class="mobile-tab-btn w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
                     <i class="fa-solid fa-chart-pie mr-2 w-6 text-center"></i>สถานะศรัทธา
                 </button>
                 <button onclick="window.location.href = 'characters.html'" class="w-full text-left px-3 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
@@ -859,38 +859,72 @@
         // MAIN TABS
         // ---------------------------------------------------------
         function switchTab(tabName) {
+            // 1. เนื้อหา (Content Sections)
             const rulesContent = document.getElementById('content-rules');
             const deitiesContent = document.getElementById('content-deities');
             const statusContent = document.getElementById('content-status');
             
+            // 2. ปุ่ม Desktop (Desktop Buttons)
             const rulesBtn = document.getElementById('tab-rules');
             const deitiesBtn = document.getElementById('tab-deities');
             const statusBtn = document.getElementById('tab-status');
 
-            // Reset
-            [rulesContent, deitiesContent, statusContent].forEach(el => el.classList.add('hidden'));
-            [rulesBtn, deitiesBtn, statusBtn].forEach(el => {
-                el.classList.remove('active', 'text-white');
-                el.classList.add('text-gray-300');
+            // 3. ปุ่ม Mobile (Mobile Buttons)
+            const mobileRulesBtn = document.getElementById('mobile-tab-rules');
+            const mobileDeitiesBtn = document.getElementById('mobile-tab-deities');
+            const mobileStatusBtn = document.getElementById('mobile-tab-status');
+
+            const allBtns = [
+                rulesBtn, deitiesBtn, statusBtn,
+                mobileRulesBtn, mobileDeitiesBtn, mobileStatusBtn
+            ];
+
+            // --- RESET ---
+            // ซ่อนเนื้อหาทั้งหมด
+            [rulesContent, deitiesContent, statusContent].forEach(el => {
+                if(el) el.classList.add('hidden');
             });
 
-            // Activate
+            // รีเซ็ตปุ่มทั้งหมดให้เป็นสีเทา
+            allBtns.forEach(el => {
+                if (el) {
+                    el.classList.remove('active', 'text-white', 'bg-gray-800'); // ลบ bg-gray-800 ด้วยเผื่อสไตล์มือถือ
+                    el.classList.add('text-gray-300');
+                }
+            });
+
+            // --- ACTIVATE ---
+            // ฟังก์ชันช่วยเปิดปุ่ม
+            const activateButtons = (btnDesktop, btnMobile) => {
+                if (btnDesktop) {
+                    btnDesktop.classList.add('active', 'text-white');
+                    btnDesktop.classList.remove('text-gray-300');
+                }
+                if (btnMobile) {
+                    btnMobile.classList.add('active', 'text-white', 'bg-gray-800'); // เพิ่ม bg-gray-800 ให้มือถือดูเด่นขึ้น
+                    btnMobile.classList.remove('text-gray-300');
+                }
+            };
+
             if (tabName === 'rules') {
-                rulesContent.classList.remove('hidden');
-                rulesBtn.classList.add('active', 'text-white');
-                rulesBtn.classList.remove('text-gray-300');
+                if(rulesContent) rulesContent.classList.remove('hidden');
+                activateButtons(rulesBtn, mobileRulesBtn);
+
             } else if (tabName === 'deities') {
-                deitiesContent.classList.remove('hidden');
-                deitiesBtn.classList.add('active', 'text-white');
-                deitiesBtn.classList.remove('text-gray-300');
+                if(deitiesContent) deitiesContent.classList.remove('hidden');
+                activateButtons(deitiesBtn, mobileDeitiesBtn);
+
             } else if (tabName === 'status') {
-                statusContent.classList.remove('hidden');
-                statusBtn.classList.add('active', 'text-white');
-                statusBtn.classList.remove('text-gray-300');
+                if(statusContent) statusContent.classList.remove('hidden');
+                activateButtons(statusBtn, mobileStatusBtn);
+                
                 // Trigger Data Load
-                if(allCharacters.length === 0) loadData(); 
+                if (typeof allCharacters !== 'undefined' && allCharacters.length === 0) {
+                    loadData();
+                }
             }
-            window.scrollTo(0,0);
+            
+            window.scrollTo(0, 0);
         }
 
         // ---------------------------------------------------------
