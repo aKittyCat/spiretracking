@@ -494,8 +494,8 @@
 
         let autoGold = 0, autoFavor = 0;
         if (!solo) {
-            // ไม่ใช้ Math.floor เพื่อให้ได้ทศนิยม
-            autoGold = hours * 100 * mult * 1.5;
+            let rawGold = hours * 100 * mult * 1.5;
+            autoGold = Math.round(rawGold * 100) / 100;
             autoFavor = Math.floor(hours * 4);
             if (double) { autoGold *= 2; autoFavor *= 2; }
         }
