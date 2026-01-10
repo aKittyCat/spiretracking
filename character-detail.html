@@ -51,7 +51,8 @@
       <h2 class="text-3xl font-bold mb-4 text-white" id="charName">...</h2>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm sm:text-base text-gray-300">
-        <p><strong class="text-gray-500 block text-xs uppercase">เลเวลที่ตั้งไว้</strong> <span id="charLevel" class="text-white">...</span></p>
+        <p><strong class="text-gray-500 block text-xs uppercase">สัตว์เลี้ยง</strong> <span id="charPets" class="text-white">...</span></p>
+        
         <p><strong class="text-gray-500 block text-xs uppercase">เลเวลปัจจุบัน</strong> <span id="charCurrentLevel" class="text-green-400 font-bold">...</span></p>
         <p><strong class="text-gray-500 block text-xs uppercase">ชั่วโมงที่เล่นทั้งหมด</strong> <span id="charTotalHours" class="text-white">0</span> ชม.</p>
         <p><strong class="text-gray-500 block text-xs uppercase">เลเวลอัปอีก</strong> <span id="charHoursToLevelUp" class="text-yellow-400">...</span></p>
@@ -238,7 +239,7 @@
 
     // --- 1. Load Data ---
     async function refreshAllData() {
-        const { data: charInfo } = await supabase.from('characters').select('user_id').eq('id', currentCharId).single();
+        const { data: charInfo } = await supabase.from('characters').select('user_id, pets').eq('id', currentCharId).single();
         if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href='characters.html'; return; }
         if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href='characters.html'; return; }
 
@@ -246,7 +247,8 @@
         const c = stats?.find(x => x.id === currentCharId);
         if(!c) return;
 
-        currentCharData = c;
+        // รวมข้อมูล stats กับข้อมูลที่ดึงตรง (pets)
+        currentCharData = { ...c, pets: charInfo.pets };
         renderHeader();
         loadLists();
     }
@@ -254,7 +256,9 @@
     function renderHeader() {
         const c = currentCharData;
         document.getElementById('charName').textContent = c.name;
-        document.getElementById('charLevel').textContent = c.level; 
+        
+        // ⭐ แสดงสัตว์เลี้ยงแทนเลเวล
+        document.getElementById('charPets').textContent = c.pets || '-'; 
         
         const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
         const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.level, totalHours);
@@ -555,9 +559,17 @@
         const newClass = prompt('อาชีพ:', c.class) || c.class;
         const newRace = prompt('เผ่า:', c.race) || c.race;
         const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
+        // ⭐ เพิ่มช่องแก้ไขสัตว์เลี้ยง
+        const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
 
         const { error } = await supabase.from('characters').update({
-            name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace, sheet_link: newSheetLink
+            name: newName, 
+            level: newLevel, 
+            gold_start: newGold, 
+            class: newClass, 
+            race: newRace, 
+            sheet_link: newSheetLink,
+            pets: newPets // ⭐ บันทึกสัตว์เลี้ยง
         }).eq('id', currentCharId);
 
         if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
