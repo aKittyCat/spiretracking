@@ -559,7 +559,6 @@
         const newClass = prompt('อาชีพ:', c.class) || c.class;
         const newRace = prompt('เผ่า:', c.race) || c.race;
         const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
-        // ⭐ เพิ่มช่องแก้ไขสัตว์เลี้ยง
         const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
 
         const { error } = await supabase.from('characters').update({
@@ -569,7 +568,7 @@
             class: newClass, 
             race: newRace, 
             sheet_link: newSheetLink,
-            pets: newPets // ⭐ บันทึกสัตว์เลี้ยง
+            pets: newPets
         }).eq('id', currentCharId);
 
         if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
