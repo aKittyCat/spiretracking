@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="env.js"></script>
+  <script src="supabase-config.js"></script>
+  <title>The Spire Tracking - ตัวละครของฉัน</title>
+</head>
+<body class="bg-gray-900 text-gray-200 p-4 sm:p-6 min-h-screen font-sans">
+  <div class="max-w-4xl mx-auto">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-700 gap-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white">ตัวละครของฉัน</h1>
+      <div class="flex items-center gap-3">
+        <span class="text-gray-200 text-sm">สมาชิก: <span id="userEmail">...</span></span>
+        <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm shadow">ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4 mb-6">
+        <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-1 rounded shadow text-sm font-medium flex items-center">
+            👑 Admin Dashboard
+        </button>
+        <button onclick="window.open('https://spireform.vercel.app/', '_blank')" class="bg-orange-600 hover:bg-orange-500 text-white px-4 py-1 rounded shadow text-sm font-medium">
+            📄 ฟอร์มสร้างตัวละคร
+        </button>
+        <button onclick="window.open('https://spiremk.vercel.app/', '_blank')" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded shadow text-sm font-medium">
+            🛒 ร้านค้า
+        </button>
+        <button onclick="window.location.href = 'piety_deities.html'" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-1 rounded shadow text-sm font-medium">
+            👼 Piety & Deities
+        </button>
+    </div>
+
+    <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-white">⚔️ เพิ่มตัวละครใหม่</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <input id="charName" placeholder="ชื่อตัวละคร" class="col-span-1 sm:col-span-2 w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+        <input id="charLevel" type="number" min="1" placeholder="เลเวล" class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+        <input id="charClass" placeholder="อาชีพ" class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+        <input id="charRace" placeholder="เผ่า" class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+        <input id="charGold" type="number" placeholder="ทองเริ่มต้น" class="w-full p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+      </div>
+      <input id="sheetLink" placeholder="ลิงก์ Character Sheet" class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 outline-none"/>
+      <button onclick="addCharacter()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-2.5 rounded-lg shadow">บันทึกตัวละคร</button>
+    </div>
+
+    <div id="charactersList" class="space-y-4 mb-6"></div>
+    
+    <div id="paginationControls" class="flex justify-center space-x-2"></div>
+
+    <footer class="mt-16 text-center text-dnd-muted text-xs text-gray-400">
+      <p>&copy;🏰 The Spire Tracking<br>
+      Create by aKittyCat🐈. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/fetch.js"></script>
+  <script>
+    let currentUser = null;
+    const ITEMS_PER_PAGE = 10; // จำนวนรายการต่อหน้า
+    let currentPage = 1;
+
+    async function init() {
+      if (typeof supabase === 'undefined') {
+          alert('❌ ไม่พบ Supabase Client! กรุณาตรวจสอบไฟล์ supabase-config.js');
+          return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      currentUser = session.user;
+      document.getElementById('userEmail').textContent = currentUser.email;
+      
+      checkAdmin();
+      loadCharacters(1);
+    }
+    init();
+
+    async function checkAdmin() {
+        const { data } = await supabase.rpc('is_admin'); 
+        if (data) document.getElementById('adminBtn').style.display = 'inline-flex';
+    }
+
+    async function addCharacter() {
+      const name = document.getElementById('charName').value.trim();
+      if (!name) return alert('ใส่ชื่อตัวละคร');
+
+      const { error } = await supabase.from('characters').insert({
+        user_id: currentUser.id,
+        name: name,
+        level: document.getElementById('charLevel').value || 1,
+        class: document.getElementById('charClass').value || 'None',
+        race: document.getElementById('charRace').value || 'None',
+        gold_start: document.getElementById('charGold').value || 0,
+        sheet_link: document.getElementById('sheetLink').value
+      });
+
+      if (error) alert('Error: ' + error.message);
+      else {
+        alert('✅ เพิ่มสำเร็จ!');
+        document.querySelectorAll('input').forEach(i => i.value = '');
+        loadCharacters(1);
+      }
+    }
+
+    async function loadCharacters(page) {
+      currentPage = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      const { data, error } = await supabase.rpc('get_character_stats', { 
+          target_user_id: currentUser.id 
+      });
+
+      if (error) {
+          console.error('Load Error:', error);
+          return;
+      }
+      
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      
+      const totalItems = data.length;
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      const paginatedData = data.slice(from, from + ITEMS_PER_PAGE);
+      
+      renderCharacters(paginatedData);
+      renderPagination(totalPages, page);
+    }
+
+    function renderCharacters(characters) {
+      const list = document.getElementById('charactersList');
+      list.innerHTML = '';
+      
+      if (!characters || characters.length === 0) {
+          list.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีตัวละคร</p>';
+          return;
+      }
+      
+      characters.forEach(c => {
+        const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+        const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
+        
+        list.innerHTML += `
+          <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+             <div>
+                <h3 class="font-bold text-xl text-yellow-500">${c.name} <span class="text-red-400 text-sm">(Lv. ${currentLevel})</span></h3>
+                <p class="text-gray-300 text-sm mt-1">
+                    <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">อาชีพ: ${c.class || '-'}</span>
+                    <span class="bg-gray-700 px-2 py-0.5 rounded text-xs mr-1">เผ่า: ${c.race || '-'}</span>
+                    <span class="text-yellow-400 font-medium">💰 ${(Number(c.total_gold)||0).toLocaleString()} gp</span>
+                </p>
+             </div>
+             <div class="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 border-gray-700 pt-3 sm:pt-0">
+                ${c.sheet_link ? `<a href="${c.sheet_link}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">📄 Sheet</a>` : ''}
+                <a href="character-detail.html?charId=${c.id}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1">
+                    📝 รายละเอียด
+                </a>
+                <button onclick="deleteChar('${c.id}')" class="text-red-400 hover:text-red-300 text-sm font-medium ml-2 border-l border-gray-600 pl-3">
+                    🗑️ ลบ
+                </button>
+             </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderPagination(totalPages, currentPage) {
+        const container = document.getElementById('paginationControls');
+        container.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i;
+            btn.className = `w-8 h-8 rounded-md text-sm font-medium transition ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`;
+            btn.onclick = () => loadCharacters(i);
+            container.appendChild(btn);
+        }
+    }
+
+    async function deleteChar(id) {
+        if(!confirm('ยืนยันลบ?')) return;
+        const { error } = await deleteCharacterAndData(id, true); 
+        if(error) alert(error.message);
+        else {
+            alert('ลบเรียบร้อย');
+            loadCharacters(currentPage);
+        }
+    }
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    // Helper
+    const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
+    function calculateCurrentLevel(start, hours) {
+        let lvl = start;
+        const total = (LEVEL_HOURS[start] || 0) + hours;
+        for(let i=start+1; i<=30; i++) { if(total >= LEVEL_HOURS[i]) lvl = i; else break; }
+        return { level: lvl };
+    }
+  </script>
+</body>
+</html>
