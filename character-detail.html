@@ -20,10 +20,12 @@
 
     .tab-button { border-bottom-width: 2px; border-color: transparent; }
     .tab-button.active { font-weight: bold; }
+    
     #tab-session.active { border-color: #f59e0b; color: #f59e0b; }
     #tab-gold.active { border-color: #10b981; color: #10b981; }
     #tab-favor.active { border-color: #c084fc; color: #c084fc; }
     #tab-dm.active { border-color: #f43f5e; color: #f43f5e; }
+    #tab-char-notes.active { border-color: #3b82f6; color: #3b82f6; }
   </style>
 </head>
 <body class="bg-gray-900 text-gray-200 p-4 sm:p-6 font-sans min-h-screen">
@@ -52,7 +54,6 @@
       
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm sm:text-base text-gray-300">
         <p><strong class="text-gray-500 block text-xs uppercase">สัตว์เลี้ยง</strong> <span id="charPets" class="text-white">...</span></p>
-        
         <p><strong class="text-gray-500 block text-xs uppercase">เลเวลปัจจุบัน</strong> <span id="charCurrentLevel" class="text-green-400 font-bold">...</span></p>
         <p><strong class="text-gray-500 block text-xs uppercase">ชั่วโมงที่เล่นทั้งหมด</strong> <span id="charTotalHours" class="text-white">0</span> ชม.</p>
         <p><strong class="text-gray-500 block text-xs uppercase">เลเวลอัปอีก</strong> <span id="charHoursToLevelUp" class="text-yellow-400">...</span></p>
@@ -73,9 +74,10 @@
       <button onclick="openTab('gold')" id="tab-gold" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-green-400 hover:text-white transition-colors">บันทึกทอง</button>
       <button onclick="openTab('favor')" id="tab-favor" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-purple-400 hover:text-white transition-colors">บันทึก Favor</button>
       <button onclick="openTab('dm')" id="tab-dm" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-red-400 hover:text-white transition-colors">บันทึก DM</button>
+      <button onclick="openTab('char-notes')" id="tab-char-notes" class="tab-button whitespace-nowrap px-4 py-2 font-medium text-blue-400 hover:text-white transition-colors">บันทึก Note</button>
     </div>
 
-    <div id="session" class="tab-content">
+    <div id="session" class="tab-content active">
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md" id="sessionFormCard">
         <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 บันทึก Session</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -84,7 +86,7 @@
           <input id="sessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
           <input id="hours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" onchange="calculateAutoGold()"/>
         </div>
-        <textarea id="notes" placeholder="Notes" class="w-full p-2.5 mb-4 border rounded bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" rows="2"></textarea>
+        <textarea id="notes" placeholder="Notes (บันทึกย่อสำหรับ Session นี้)" class="w-full p-2.5 mb-4 border rounded bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" rows="2"></textarea>
         <div class="flex items-center mb-4 bg-gray-700/50 p-2 rounded border border-gray-700 w-fit">
           <input id="noGold" type="checkbox" class="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-yellow-600 ring-offset-gray-800" onchange="calculateAutoGold()"/>
           <label class="text-gray-300 select-none cursor-pointer" for="noGold">ไม่ได้รับทอง</label>
@@ -141,14 +143,11 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
         <h2 class="text-xl font-semibold mb-4 text-white">✨ บันทึก Favor</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          
           <select id="favorType" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="spend">✨ ใช้ Favor (-)</option>
               <option value="receive">🌟 ได้รับ Favor (+)</option>
           </select>
-
           <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-          
           <input id="favorDesc" placeholder="คำอธิบาย" class="col-span-1 md:col-span-2 p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
         </div>
         <button onclick="addFavorEntry()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
@@ -194,13 +193,36 @@
       </div>
     </div>
 
+    <div id="char-notes" class="tab-content">
+      <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6 shadow-md relative">
+        <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
+            <h2 class="text-xl font-semibold text-blue-400 flex items-center gap-2">
+                <i class="fa-solid fa-book"></i> สมุดบันทึก (Notes)
+            </h2>
+            <span id="noteStatus" class="text-sm font-medium transition-opacity duration-300 opacity-0 bg-gray-900 px-3 py-1 rounded-full border border-gray-600">
+                ...
+            </span>
+        </div>
+        
+        <textarea id="charNotesInput" 
+                  class="w-full h-96 p-4 rounded-lg bg-gray-900 border border-gray-600 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed resize-none font-mono text-sm" 
+                  placeholder="พื้นที่จดบันทึกอิสระ... (เช่น ไอเทมที่เล็งไว้, NPC ที่เจอ, เควสค้างคา)&#10;ระบบจะบันทึกอัตโนมัติเมื่อหยุดพิมพ์"
+                  oninput="handleNoteInput()"></textarea>
+                  
+        <div class="flex justify-end mt-2">
+            <p class="text-xs text-gray-500 flex items-center">
+                <i class="fa-solid fa-cloud-upload-alt mr-1"></i> ระบบบันทึกอัตโนมัติ (Auto-save)
+            </p>
+        </div>
+      </div>
+    </div>
+
     <a href="characters.html" class="inline-block mt-6 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded transition flex items-center w-fit gap-2">
       <span>⬅️</span> กลับหน้าตัวละคร
     </a>
 
     <footer class="mt-16 text-center text-dnd-muted text-xs text-gray-400">
-      <p>&copy;🏰 The Spire Tracking<br>
-      Create by aKittyCat🐈. All rights reserved.</p>
+      <p>&copy;🏰 The Spire Tracking<br>Create by aKittyCat🐈. All rights reserved.</p>
     </footer>
   </div>
 
@@ -212,6 +234,7 @@
     let isAdmin = false;
     let currentCharId = new URLSearchParams(window.location.search).get('charId');
     let currentCharData = null;
+    let noteTimeout = null;
     
     const ITEMS_PER_PAGE = 10;
     let pageState = { session: 1, gold: 1, favor: 1, dm: 1 };
@@ -237,9 +260,10 @@
         window.location.href = 'index.html';
     }
 
-    // --- 1. Load Data ---
+    // --- Load Data ---
     async function refreshAllData() {
-        const { data: charInfo } = await supabase.from('characters').select('user_id, pets').eq('id', currentCharId).single();
+        const { data: charInfo } = await supabase.from('characters').select('user_id, pets, notes').eq('id', currentCharId).single();
+        
         if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href='characters.html'; return; }
         if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href='characters.html'; return; }
 
@@ -247,17 +271,21 @@
         const c = stats?.find(x => x.id === currentCharId);
         if(!c) return;
 
-        // รวมข้อมูล stats กับข้อมูลที่ดึงตรง (pets)
-        currentCharData = { ...c, pets: charInfo.pets };
+        currentCharData = { ...c, pets: charInfo.pets, notes: charInfo.notes };
+        
         renderHeader();
+        
+        const noteInput = document.getElementById('charNotesInput');
+        if(noteInput) {
+            noteInput.value = currentCharData.notes || '';
+        }
+        
         loadLists();
     }
 
     function renderHeader() {
         const c = currentCharData;
         document.getElementById('charName').textContent = c.name;
-        
-        // ⭐ แสดงสัตว์เลี้ยงแทนเลเวล
         document.getElementById('charPets').textContent = c.pets || '-'; 
         
         const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
@@ -265,18 +293,52 @@
         const displayTotalHours = totalHours + 10.5;
 
         document.getElementById('charCurrentLevel').textContent = currentLevel;
-        document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(1);
-        document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(1)} ชม.`;
+        document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(2);
+        document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(2)} ชม.`;
         document.getElementById('charTier').textContent = getTierFromLevel(currentLevel);
         
         document.getElementById('charClass').textContent = c.class || '-';
         document.getElementById('charRace').textContent = c.race || '-';
         document.getElementById('charGoldStart').textContent = c.gold_start;
         
-        document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
+        document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
         
         if(c.sheet_link) { const el = document.getElementById('sheetLink'); el.textContent = c.sheet_link; el.href = c.sheet_link; }
+    }
+
+    function handleNoteInput() {
+        const status = document.getElementById('noteStatus');
+        
+        status.innerHTML = '<i class="fa-solid fa-pen-nib animate-bounce"></i> กำลังพิมพ์...';
+        status.className = 'text-sm font-medium transition-opacity duration-300 opacity-100 bg-yellow-900/50 text-yellow-300 px-3 py-1 rounded-full border border-yellow-700';
+
+        clearTimeout(noteTimeout);
+
+        noteTimeout = setTimeout(saveNotes, 1000);
+    }
+
+    async function saveNotes() {
+        const notes = document.getElementById('charNotesInput').value;
+        const status = document.getElementById('noteStatus');
+        
+        status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+        status.className = 'text-sm font-medium transition-opacity duration-300 opacity-100 bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full border border-blue-700';
+        
+        const { error } = await supabase
+            .from('characters')
+            .update({ notes: notes })
+            .eq('id', currentCharId);
+
+        if (error) {
+            console.error('Save failed:', error);
+            status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> บันทึกผิดพลาด';
+            status.className = 'text-sm font-medium transition-opacity duration-300 opacity-100 bg-red-900/50 text-red-300 px-3 py-1 rounded-full border border-red-700';
+        } else {
+            status.innerHTML = '<i class="fa-solid fa-check"></i> บันทึกแล้ว';
+            status.className = 'text-sm font-medium transition-opacity duration-300 opacity-100 bg-green-900/50 text-green-300 px-3 py-1 rounded-full border border-green-700';
+            setTimeout(() => { status.style.opacity = '0'; }, 2000);
+        }
     }
 
     async function loadLists() {
@@ -286,7 +348,7 @@
         loadDmLogs(pageState.dm);
     }
 
-    // --- Server-side Pagination Functions ---
+    // --- Pagination Functions ---
     async function loadSessions(page) {
         pageState.session = page;
         const from = (page - 1) * ITEMS_PER_PAGE;
@@ -320,7 +382,7 @@
         renderDmLogs(count || 0);
     }
 
-    // --- 2. Logic & Multipliers ---
+    // --- Logic Helpers ---
     function getGoldMultiplier(level) {
         if (level >= 23) return 1.5; if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; if (level >= 3) return 1.1; return 1.0;
     }
@@ -338,7 +400,7 @@
         if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
     }
 
-    // --- 3. Session Logic (Add/Edit) ---
+    // --- Session CRUD ---
     async function saveSession() {
       const name = document.getElementById('sessionName').value.trim();
       if (!name) return alert('ใส่ชื่อ Session');
@@ -430,15 +492,14 @@
         const gold = Math.floor(hours * 100 * multiplier);
         const favor = Math.floor(hours * 2); 
         
-        document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
+        document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('autoFavorAmount').textContent = favor;
     }
 
-    // --- 4. Other Logs ---
+    // --- Other CRUD ---
     async function addGoldEntry() {
         const amount = parseFloat(document.getElementById('goldAmount').value);
         if (!amount || amount <= 0) return alert('ระบุจำนวนทองที่ถูกต้อง (มากกว่า 0)');
-        
         const type = document.getElementById('goldType').value;
         let finalAmount = amount;
         
@@ -489,10 +550,7 @@
 
         const c = currentCharData || {};
         const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        
-        let finalHours = hours * 1.5; 
-        if(double) finalHours *= 2;
-
+        let finalHours = hours * 1.5; if(double) finalHours *= 2;
         const projectedTotalHours = currentTotalHours + finalHours;
         const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
         const mult = getGoldMultiplier(currentLevel);
@@ -520,17 +578,12 @@
         const hours = parseFloat(document.getElementById('dmHours').value) || 0;
         const solo = document.getElementById('soloQuest').checked;
         const double = document.getElementById('doubleReward').checked;
-        
         const c = currentCharData || {};
-        // ใช้ Level ปัจจุบัน
         const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        let finalHours = hours * 1.5; 
-        if(double) finalHours *= 2;
+        let finalHours = hours * 1.5; if(double) finalHours *= 2;
         const projectedTotalHours = currentTotalHours + finalHours;
-
         const { level } = calculateCurrentLevel(c.level, projectedTotalHours);
         const mult = getGoldMultiplier(level);
-
         let gold = 0, favor = 0;
         if(!solo) {
             let rawGold = hours * 100 * mult * 1.5;
@@ -574,13 +627,11 @@
         if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
     }
 
-    // --- 5. Delete ---
     async function deleteSession(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('sessions').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
     async function deleteGold(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('gold_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
     async function deleteFavor(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('favor_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
     async function deleteDmLog(id) { if(!confirm('ลบ?')) return; const { error } = await supabase.from('dm_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
 
-    // --- 6. Render & Pagination UI ---
     function renderPaginationUI(elementId, totalItems, currentPage, loadFunction) {
         const container = document.getElementById(elementId);
         container.innerHTML = '';
@@ -600,7 +651,7 @@
       if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
       sessionsData.forEach(item => {
         const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50 transition-colors";
-        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold||0}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${Number(item.auto_gold).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
       });
       renderPaginationUI('sessionPagination', count, pageState.session, loadSessions);
@@ -648,8 +699,10 @@
       document.querySelectorAll('.tab-button').forEach(el => { el.classList.remove('active'); el.classList.add('text-400'); });
       document.getElementById(tabName).classList.add('active');
       const btn = document.getElementById('tab-' + tabName);
-      btn.classList.add('active');
-      btn.classList.remove('text-400');
+      if (btn) {
+          btn.classList.add('active');
+          btn.classList.remove('text-gray-400');
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => { openTab('session'); });
