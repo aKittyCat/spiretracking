@@ -79,17 +79,17 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md" id="sessionFormCard">
         <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">📝 บันทึก Session</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <input id="sessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
-          <input id="dmName" placeholder="ชื่อ DM" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
-          <input id="sessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
-          <input id="hours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="calculateAutoGold()"/>
+          <input id="sessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
+          <input id="dmName" placeholder="ชื่อ DM" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
+          <input id="sessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
+          <input id="hours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" onchange="calculateAutoGold()"/>
         </div>
-        <textarea id="notes" placeholder="Notes" class="w-full p-2.5 mb-4 border rounded bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="2"></textarea>
+        <textarea id="notes" placeholder="Notes" class="w-full p-2.5 mb-4 border rounded bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" rows="2"></textarea>
         <div class="flex items-center mb-4 bg-gray-700/50 p-2 rounded border border-gray-700 w-fit">
-          <input id="noGold" type="checkbox" class="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-blue-600 ring-offset-gray-800" onchange="calculateAutoGold()"/>
+          <input id="noGold" type="checkbox" class="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-yellow-600 ring-offset-gray-800" onchange="calculateAutoGold()"/>
           <label class="text-gray-300 select-none cursor-pointer" for="noGold">ไม่ได้รับทอง</label>
         </div>
-        <input id="gotItems" placeholder="ของที่ได้รับ" class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+        <input id="gotItems" placeholder="ของที่ได้รับ" class="w-full p-2.5 mb-4 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"/>
         <div class="bg-gray-700/50 p-3 rounded mb-4 border border-gray-700 text-gray-300 flex items-center gap-4">
           <div>💰 ทอง: <span id="autoGoldAmount" class="text-yellow-400 font-bold text-lg">0</span> GP</div>
           <div>✨ Favor: <span id="autoFavorAmount" class="text-orange-400 font-bold text-lg">0</span></div>
@@ -117,12 +117,12 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
         <h2 class="text-xl font-semibold mb-4 text-white">💰 บันทึกได้รับ/การใช้ทอง</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <select id="goldType" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+          <select id="goldType" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
               <option value="spend">💸 ใช้จ่าย (-)</option>
               <option value="receive">💰 ได้รับ (+)</option>
           </select>
-          <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวนทอง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"/>    
-          <input id="goldDesc" placeholder="คำอธิบาย (เช่น ซื้อยา, ขายของ)" class="col-span-1 md:col-span-2 p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"/>
+          <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวนทอง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"/>    
+          <input id="goldDesc" placeholder="คำอธิบาย (เช่น ซื้อยา, ขายของ)" class="col-span-1 md:col-span-2 p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"/>
         </div>
         <button onclick="addGoldEntry()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2.5 rounded shadow transition">บันทึก</button>
       </div>
@@ -168,9 +168,9 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md">
         <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">🎲 บันทึก DM Session</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"/>
-          <input id="dmSessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"/>
-          <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="calculateDmRewards()"/>
+          <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          <input id="dmSessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500" onchange="calculateDmRewards()"/>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 mb-6">
            <div class="flex items-center bg-gray-700/50 px-3 py-2 rounded border border-gray-700 w-fit"><input id="soloQuest" type="checkbox" class="mr-2" onchange="calculateDmRewards()"/><label for="soloQuest" class="text-gray-300 cursor-pointer">ภารกิจเดี่ยว</label></div>
