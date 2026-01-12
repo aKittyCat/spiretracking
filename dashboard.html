@@ -128,7 +128,7 @@
   <script>
     let currentUser = null;
     let isAdminUser = false;
-    let allCharacters = []; // ข้อมูลดิบที่คำนวณแล้ว
+    let allCharacters = [];
     let chartInstances = [];
     
     // Pagination Config
@@ -152,7 +152,6 @@
         currentUser = session.user;
         document.getElementById('userEmail').textContent = currentUser.email;
 
-        // เริ่มโหลดข้อมูล
         loadDashboardDataManual();
     }
     init();
@@ -162,7 +161,7 @@
         window.location.href = 'index.html';
     }
     
-    // --- Load Data (Manual & Raw) ---
+    // --- Load Data ---
     async function loadDashboardDataManual() {
         document.getElementById('tableLoadingText').style.display = 'block';
         const btnRefresh = document.getElementById('btnRefresh');
@@ -171,7 +170,6 @@
         try {
             console.log("🔄 Admin Loading: Fetching Raw Data...");
             
-            // 1. ดึงข้อมูลดิบทั้งหมด และดึง Email ผู้ใช้
             const [chars, sessions, dmlogs, golds, favors, users] = await Promise.all([
                 supabase.from('characters').select('*'),
                 supabase.from('sessions').select('*').order('created_at', { ascending: false }),
@@ -183,7 +181,6 @@
 
             if (chars.error) throw chars.error;
             
-            // 2. สร้าง Map สำหรับ UserID -> Email
             const userMap = {};
             if (users.data) {
                 users.data.forEach(u => userMap[u.id] = u.email);
@@ -191,7 +188,6 @@
 
             console.log(`✅ Loaded: ${chars.data.length} chars`);
 
-            // 3. ประมวลผลข้อมูลใน JS (Aggregation)
             const aggregatedChars = chars.data.map(c => {
                 const mySessions = sessions.data.filter(s => s.character_id === c.id);
                 const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
@@ -222,16 +218,12 @@
                 };
             });
             
-            // เก็บข้อมูลดิบไว้ใช้งานต่อ (เช่น Pagination)
             allCharacters = aggregatedChars;
             
-            // ส่งข้อมูลไป Render (ใช้ข้อมูลทั้งหมดคำนวณกราฟ)
             renderStats(allCharacters, dmlogs.data.length);
             
-            // Render Table หน้าแรก (1)
             renderAdminTable(1);
             
-            // Render Activity
             renderLatestActivity(sessions.data, allCharacters);
 
         } catch (error) {
@@ -383,13 +375,13 @@
       });
     }
 
-    // --- Render Table with Pagination (Client-side) ---
+    // --- Render Table with Pagination ---
     function renderAdminTable(page) {
         currentAdminPage = page;
         const from = (page - 1) * ITEMS_PER_PAGE;
         const to = from + ITEMS_PER_PAGE;
         
-        // เรียงลำดับก่อนตัด (ตาม Level มากไปน้อย)
+        // เรียงลำดับก่อนตัดตาม Level มากไปน้อย
         allCharacters.sort((a, b) => b.calculated_level - a.calculated_level);
         
         const pageData = allCharacters.slice(from, to);
