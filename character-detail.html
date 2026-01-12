@@ -664,7 +664,7 @@
           const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
           const typeLabel = item.amount === 'receive' ? 'ได้รับ' : 'ใช้จ่าย';
           const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
-          tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description} <span class="text-gray-500 text-xs">(${typeLabel})</span></td><td class="py-3 px-4 border-b border-gray-700 ${color}">${item.amount}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+          tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description} <span class="text-gray-500 text-xs">(${typeLabel})</span></td><td class="py-3 px-4 border-b border-gray-700 ${color}">${Number(item.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
           tbody.appendChild(tr);
       });
       renderPaginationUI('goldPagination', count, pageState.gold, loadGold);
