@@ -44,7 +44,10 @@
 
     <div id="charInfo" class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg mb-8">
       <div class="mb-4 flex justify-between items-start">
-        <span id="charTier" class="inline-block px-3 py-1 bg-blue-900/50 text-blue-200 border border-blue-700/50 font-bold rounded-full text-xs sm:text-sm uppercase tracking-wider">Loading...</span>
+        <div class="flex flex-wrap items-center gap-2">
+            <span id="charTier" class="inline-block px-3 py-1 bg-blue-900/50 text-blue-200 border border-blue-700/50 font-bold rounded-full text-xs sm:text-sm uppercase tracking-wider">Loading...</span>
+            <span id="charAlignment" class="inline-block px-3 py-1 rounded border text-xs sm:text-sm font-bold tracking-wide shadow-sm bg-gray-700 border-gray-600 text-gray-400">Alignment: -</span>
+        </div>
         <button onclick="editCharacter()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 rounded text-sm shadow transition flex items-center gap-1">
           <span>✏️</span> แก้ไข
         </button>
@@ -266,7 +269,7 @@
 
     // --- Load Data ---
     async function refreshAllData() {
-        const { data: charInfo } = await supabase.from('characters').select('user_id, pets, notes').eq('id', currentCharId).single();
+        const { data: charInfo } = await supabase.from('characters').select('user_id, pets, alignment, notes').eq('id', currentCharId).single();
         
         if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href='characters.html'; return; }
         if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href='characters.html'; return; }
@@ -275,7 +278,7 @@
         const c = stats?.find(x => x.id === currentCharId);
         if(!c) return;
 
-        currentCharData = { ...c, pets: charInfo.pets, notes: charInfo.notes };
+        currentCharData = { ...c, pets: charInfo.pets, notes: charInfo.notes, alignment: charInfo.alignment };
         
         renderHeader();
         
@@ -292,6 +295,19 @@
         document.getElementById('charName').textContent = c.name;
         document.getElementById('charPets').textContent = c.pets || '-'; 
         
+        const alignEl = document.getElementById('charAlignment');
+        const alignVal = c.alignment || '-';
+        alignEl.textContent = `Alignment: ${alignVal}`;
+
+        alignEl.className = "inline-block px-3 py-1 rounded border text-xs sm:text-sm font-bold tracking-wide shadow-sm transition-colors duration-200"; 
+        
+        if(alignVal.includes('Good')) alignEl.classList.add('bg-yellow-900/30', 'border-yellow-600', 'text-yellow-400');
+        else if(alignVal.includes('Evil')) alignEl.classList.add('bg-purple-900/30', 'border-purple-600', 'text-purple-400');
+        else if(alignVal.includes('Lawful')) alignEl.classList.add('bg-blue-900/30', 'border-blue-600', 'text-blue-400');
+        else if(alignVal.includes('Chaotic')) alignEl.classList.add('bg-red-900/30', 'border-red-600', 'text-red-400');
+        else if(alignVal.includes('Neutral')) alignEl.classList.add('bg-green-900/30', 'border-green-600', 'text-green-400');
+        else alignEl.classList.add('bg-gray-800', 'border-gray-600', 'text-gray-500'); // Default (-) style
+
         const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
         const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.level, totalHours);
         const displayTotalHours = totalHours + 10.5;
@@ -681,10 +697,18 @@
         const newClass = prompt('อาชีพ:', c.class) || c.class;
         const newRace = prompt('เผ่า:', c.race) || c.race;
         const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
+        const newAlignment = prompt('Alignment (เช่น Lawful Good):', c.alignment) || c.alignment;
         const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
 
         const { error } = await supabase.from('characters').update({
-            name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace, sheet_link: newSheetLink, pets: newPets
+            name: newName, 
+            level: newLevel, 
+            gold_start: newGold, 
+            class: newClass, 
+            race: newRace, 
+            sheet_link: newSheetLink, 
+            alignment: newAlignment, 
+            pets: newPets
         }).eq('id', currentCharId);
 
         if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
