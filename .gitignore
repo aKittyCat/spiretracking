@@ -68,6 +68,7 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
+/databkup
 /bkup
 /firebase-spiretk
 /old
