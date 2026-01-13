@@ -305,7 +305,7 @@
         document.getElementById('charRace').textContent = c.race || '-';
         document.getElementById('charGoldStart').textContent = c.gold_start;
         
-        document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
         document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
         
         if(c.sheet_link) { const el = document.getElementById('sheetLink'); el.textContent = c.sheet_link; el.href = c.sheet_link; }
@@ -546,6 +546,7 @@
         if (error) alert(error.message); else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
     }
 
+    // ⭐ Save / Edit DM Log (Updated & Floor Gold)
     async function saveDmLog() {
         const hours = parseFloat(document.getElementById('dmHours').value) || 0;
         const solo = document.getElementById('soloQuest').checked;
@@ -561,9 +562,12 @@
         let autoGold = 0, autoFavor = 0;
         if (!solo) {
             let rawGold = hours * 100 * mult * 1.5;
-            autoGold = Math.round(rawGold * 100) / 100;
+            autoGold = rawGold; // เก็บค่าดิบก่อน
             autoFavor = Math.floor(hours * 4);
             if (double) { autoGold *= 2; autoFavor *= 2; }
+            
+            // ⭐ ปัดเศษลง (Floor) ก่อนบันทึก
+            autoGold = Math.floor(autoGold);
         }
 
         const payload = {
@@ -575,9 +579,11 @@
 
         let error;
         if (editingDmLogId) {
+            // Update
             const res = await supabase.from('dm_logs').update(payload).eq('id', editingDmLogId);
             error = res.error;
         } else {
+            // Insert
             payload.character_id = currentCharId;
             payload.user_id = currentUser.id;
             const res = await supabase.from('dm_logs').insert(payload);
@@ -595,7 +601,6 @@
     function editDmLog(id) {
         const item = dmData.find(d => d.id === id);
         if(!item) return;
-
         let baseHours = item.hours;
         if(item.double_reward) baseHours /= 2;
         baseHours /= 1.5;
@@ -606,7 +611,7 @@
         document.getElementById('soloQuest').checked = item.solo_quest;
         document.getElementById('doubleReward').checked = item.double_reward;
         
-        calculateDmRewards(); // Recalculate preview
+        calculateDmRewards(); 
         
         editingDmLogId = id;
         const btn = document.getElementById('btnSaveDmLog');
@@ -648,11 +653,14 @@
         let gold = 0, favor = 0;
         if(!solo) {
             let rawGold = hours * 100 * mult * 1.5;
-            gold = Math.round(rawGold * 100) / 100;
+            gold = rawGold;
             favor = Math.floor(hours * 4);
             if(double) { gold *= 2; favor *= 2; }
+            
+            // ⭐ ปัดเศษลง (Floor) ก่อนแสดงผล
+            gold = Math.floor(gold);
         }
-        document.getElementById('dmAutoGold').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('dmAutoGold').textContent = gold.toLocaleString(); // แสดงจำนวนเต็ม
         document.getElementById('dmAutoFavor').textContent = favor;
         document.getElementById('dmAutoHours').textContent = finalHours;
     }
@@ -676,13 +684,7 @@
         const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
 
         const { error } = await supabase.from('characters').update({
-            name: newName, 
-            level: newLevel, 
-            gold_start: newGold, 
-            class: newClass, 
-            race: newRace, 
-            sheet_link: newSheetLink,
-            pets: newPets
+            name: newName, level: newLevel, gold_start: newGold, class: newClass, race: newRace, sheet_link: newSheetLink, pets: newPets
         }).eq('id', currentCharId);
 
         if(error) alert(error.message); else { alert('แก้ไขสำเร็จ'); refreshAllData(); }
@@ -712,7 +714,7 @@
       if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
       sessionsData.forEach(item => {
         const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50 transition-colors";
-        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold||0}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+        tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white font-medium">${item.name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.dm||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300 truncate max-w-xs">${item.notes||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.no_gold?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.got_items||'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor||0}</td><td class="py-3 px-4 border-b border-gray-700 flex items-center"><button onclick="editSession('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm mr-2">แก้ไข</button><button onclick="deleteSession('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
         tbody.appendChild(tr);
       });
       renderPaginationUI('sessionPagination', count, pageState.session, loadSessions);
@@ -749,7 +751,7 @@
       if (dmData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
       dmData.forEach(item => {
           const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
-          tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.session_name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${Number(item.auto_gold).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.solo_quest?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.double_reward?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 flex gap-2"><button onclick="editDmLog('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm">แก้ไข</button><button onclick="deleteDmLog('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
+          tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.session_name}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.date?new Date(item.date).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.hours}</td><td class="py-3 px-4 border-b border-gray-700 text-yellow-400">${item.auto_gold}</td><td class="py-3 px-4 border-b border-gray-700 text-indigo-400">${item.auto_favor}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.solo_quest?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 text-center">${item.double_reward?'✅':''}</td><td class="py-3 px-4 border-b border-gray-700 flex gap-2"><button onclick="editDmLog('${item.id}')" class="text-yellow-500 hover:text-yellow-400 text-sm">แก้ไข</button><button onclick="deleteDmLog('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
           tbody.appendChild(tr);
       });
       renderPaginationUI('dmPagination', count, pageState.dm, loadDmLogs);
