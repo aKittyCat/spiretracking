@@ -562,7 +562,6 @@
         if (error) alert(error.message); else { alert('✅ บันทึกสำเร็จ'); refreshAllData(); }
     }
 
-    // ⭐ Save / Edit DM Log (Updated & Floor Gold)
     async function saveDmLog() {
         const hours = parseFloat(document.getElementById('dmHours').value) || 0;
         const solo = document.getElementById('soloQuest').checked;
@@ -581,8 +580,6 @@
             autoGold = rawGold; // เก็บค่าดิบก่อน
             autoFavor = Math.floor(hours * 4);
             if (double) { autoGold *= 2; autoFavor *= 2; }
-            
-            // ⭐ ปัดเศษลง (Floor) ก่อนบันทึก
             autoGold = Math.floor(autoGold);
         }
 
@@ -672,11 +669,9 @@
             gold = rawGold;
             favor = Math.floor(hours * 4);
             if(double) { gold *= 2; favor *= 2; }
-            
-            // ⭐ ปัดเศษลง (Floor) ก่อนแสดงผล
             gold = Math.floor(gold);
         }
-        document.getElementById('dmAutoGold').textContent = gold.toLocaleString(); // แสดงจำนวนเต็ม
+        document.getElementById('dmAutoGold').textContent = gold.toLocaleString();
         document.getElementById('dmAutoFavor').textContent = favor;
         document.getElementById('dmAutoHours').textContent = finalHours;
     }
