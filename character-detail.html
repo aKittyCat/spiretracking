@@ -577,7 +577,7 @@
         let autoGold = 0, autoFavor = 0;
         if (!solo) {
             let rawGold = hours * 100 * mult * 1.5;
-            autoGold = rawGold; // เก็บค่าดิบก่อน
+            autoGold = rawGold;
             autoFavor = Math.floor(hours * 4);
             if (double) { autoGold *= 2; autoFavor *= 2; }
             autoGold = Math.floor(autoGold);
@@ -744,7 +744,7 @@
       if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>'; return; }
       goldData.forEach(item => {
           const color = item.amount < 0 ? 'text-red-400' : 'text-green-400';
-          const typeLabel = item.amount === 'receive' ? 'ได้รับ' : 'ใช้จ่าย';
+          const typeLabel = item.amount >= 0 ? 'ได้รับ' : 'ใช้จ่าย';
           const tr = document.createElement('tr'); tr.className = "hover:bg-gray-700/50";
           tr.innerHTML = `<td class="py-3 px-4 border-b border-gray-700 text-white">${item.description} <span class="text-gray-500 text-xs">(${typeLabel})</span></td><td class="py-3 px-4 border-b border-gray-700 ${color}">${Number(item.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="py-3 px-4 border-b border-gray-700 text-gray-300">${item.created_at?new Date(item.created_at).toLocaleDateString('th-TH'):'-'}</td><td class="py-3 px-4 border-b border-gray-700"><button onclick="deleteGold('${item.id}')" class="text-red-500 text-sm">ลบ</button></td>`;
           tbody.appendChild(tr);
