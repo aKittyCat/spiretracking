@@ -1,4 +1,4 @@
-// --- (Keep-Alive) ---
+// --- ส่วนที่เพิ่ม: สร้าง Web Server เพื่อกันหลับ (Keep-Alive) ---
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -53,6 +53,15 @@ function calculateLevelInfo(startLevel, totalPlayedHours) {
     }
 
     return { level: currentLevel, hoursToNext: Math.max(0, hoursToNext), totalHoursDisplay: realTotalHours };
+}
+
+// Helper: คำนวณ Tier จาก Level (เพิ่ม Tier 5)
+function getTierFromLevel(level) {
+    if (level >= 23) return "Tier 5"; // ⭐ เพิ่ม Tier 5
+    if (level >= 17) return "Tier 4";
+    if (level >= 11) return "Tier 3";
+    if (level >= 5) return "Tier 2";
+    return "Tier 1";
 }
 
 // 4. Register Slash Commands
@@ -224,10 +233,13 @@ client.on('interactionCreate', async interaction => {
             const totalPlayedHours = (Number(charStats.total_sessions_hours) || 0) + (Number(charStats.total_dm_hours) || 0);
             const levelInfo = calculateLevelInfo(startLevel, totalPlayedHours);
             const nextLvText = levelInfo.level >= 30 ? 'MAX' : `${levelInfo.hoursToNext.toFixed(2)}h`;
+            
+            const tier = getTierFromLevel(levelInfo.level);
 
+            // Compact Status Embed
             const embed = new EmbedBuilder()
-                .setColor(0x0ea5e9)
-                .setTitle(`📜 สถานะ: ${charStats.name}`)
+                .setColor(0x0ea5e9) // ฟ้า
+                .setTitle(`📜 สถานะ: ${charStats.name} (${tier})`)
                 .addFields(
                     { name: 'Level Info', value: `Lv: **${levelInfo.level}**\nTime: **${levelInfo.totalHoursDisplay.toFixed(2)}h**\nNext: **${nextLvText}**`, inline: true },
                     { name: 'Coin Purse', value: `💰 **${Number(charStats.total_gold).toLocaleString()}** GP\n✨ **${Number(charStats.total_favor).toLocaleString()}** Favor`, inline: true },
