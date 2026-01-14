@@ -70,6 +70,7 @@ node_modules/
 
 /databkup
 /old
+/SpireKeeper/.env
 firebase-config.js
 asr.html
 env.js
