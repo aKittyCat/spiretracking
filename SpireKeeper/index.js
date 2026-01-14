@@ -1,3 +1,17 @@
+// --- (Keep-Alive) ---
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Spire Bot is Online! 🤖');
+});
+
+app.listen(port, () => {
+  console.log(`Keep-Alive Server listening on port ${port}`);
+});
+// -----------------------------------------------------------
+
 require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
@@ -211,11 +225,9 @@ client.on('interactionCreate', async interaction => {
             const levelInfo = calculateLevelInfo(startLevel, totalPlayedHours);
             const nextLvText = levelInfo.level >= 30 ? 'MAX' : `${levelInfo.hoursToNext.toFixed(2)}h`;
 
-            // Compact Status Embed
             const embed = new EmbedBuilder()
-                .setColor(0x0ea5e9) // ฟ้า
-                // ⭐ เปลี่ยน iconURL เป็นรูปพ่อมด
-                .setAuthor({ name: `📜 ${charStats.name}`, iconURL: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' })
+                .setColor(0x0ea5e9)
+                .setTitle(`📜 สถานะ: ${charStats.name}`)
                 .addFields(
                     { name: 'Level Info', value: `Lv: **${levelInfo.level}**\nTime: **${levelInfo.totalHoursDisplay.toFixed(2)}h**\nNext: **${nextLvText}**`, inline: true },
                     { name: 'Coin Purse', value: `💰 **${Number(charStats.total_gold).toLocaleString()}** GP\n✨ **${Number(charStats.total_favor).toLocaleString()}** Favor`, inline: true },
