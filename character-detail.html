@@ -170,9 +170,9 @@
       <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 mb-6 shadow-md" id="dmFormCard">
         <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">🎲 บันทึก DM Session</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"/>
-          <input id="dmSessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"/>
-          <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="calculateDmRewards()"/>
+          <input id="dmSessionName" placeholder="ชื่อเซสชั่น" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          <input id="dmSessionDate" type="date" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          <input id="dmHours" type="number" min="0" step="0.5" placeholder="จำนวนชั่วโมง" class="p-2.5 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500" onchange="calculateDmRewards()"/>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 mb-6">
            <div class="flex items-center bg-gray-700/50 px-3 py-2 rounded border border-gray-700 w-fit"><input id="soloQuest" type="checkbox" class="mr-2" onchange="calculateDmRewards()"/><label for="soloQuest" class="text-gray-300 cursor-pointer">ภารกิจเดี่ยว</label></div>
@@ -629,8 +629,8 @@
         editingDmLogId = id;
         const btn = document.getElementById('btnSaveDmLog');
         btn.textContent = 'อัปเดต DM Session';
-        btn.classList.replace('bg-purple-600', 'bg-yellow-600');
-        btn.classList.replace('hover:bg-purple-500', 'hover:bg-yellow-500');
+        btn.classList.replace('bg-red-600', 'bg-yellow-600');
+        btn.classList.replace('hover:bg-red-500', 'hover:bg-yellow-500');
         document.getElementById('btnCancelDmLog').classList.remove('hidden');
         document.getElementById('dmFormCard').scrollIntoView({ behavior: 'smooth' });
     }
@@ -648,8 +648,8 @@
         
         const btn = document.getElementById('btnSaveDmLog');
         btn.textContent = 'บันทึก DM Session';
-        btn.classList.replace('bg-yellow-600', 'bg-purple-600');
-        btn.classList.replace('hover:bg-yellow-500', 'hover:bg-purple-500');
+        btn.classList.replace('bg-yellow-600', 'bg-red-600');
+        btn.classList.replace('hover:bg-yellow-500', 'hover:bg-red-500');
         document.getElementById('btnCancelDmLog').classList.add('hidden');
     }
 
