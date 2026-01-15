@@ -117,6 +117,35 @@
       <div id="adminPagination" class="flex justify-center space-x-2 mt-4"></div>
     </div>
 
+    <div id="transferModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+      <div class="bg-gray-800 border border-gray-700 p-6 rounded-lg w-full max-w-md shadow-2xl">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <span>🔄</span> ย้ายตัวละคร
+          </h3>
+          <p class="text-gray-400 text-sm mb-6">
+              กรุณากรอก <span class="text-white font-medium">อีเมลของผู้รับ</span> ที่ต้องการย้ายตัวละครนี้ไปให้
+          </p>
+          
+          <input type="hidden" id="transferCharId">
+          
+          <div class="mb-4">
+              <label class="block text-gray-500 text-xs mb-1">อีเมลผู้รับ (Target Email)</label>
+              <input type="email" id="targetEmail" 
+                    class="w-full bg-gray-900 border border-gray-600 text-white px-4 py-2 rounded focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="user@example.com">
+          </div>
+
+          <div class="flex justify-end gap-3">
+              <button onclick="closeTransferModal()" class="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors">
+                  ยกเลิก
+              </button>
+              <button onclick="confirmTransfer()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded shadow-lg transition-all">
+                  ยืนยันการย้าย
+              </button>
+          </div>
+      </div>
+    </div>
+
     <footer class="mt-16 text-center text-dnd-muted text-xs text-gray-400">
       <p>&copy;🏰 The Spire Tracking<br>
       Create by aKittyCat🐈. All rights reserved.</p>
@@ -406,10 +435,15 @@
                     ${char.user_email}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3">
-                        View/Edit
+                    <a href="character-detail.html?charId=${char.id}" class="text-indigo-400 hover:text-indigo-300 mr-3" title="ดูรายละเอียด">
+                        View
                     </a>
-                    <button onclick="deleteChar('${char.id}', '${char.name}')" class="text-red-400 hover:text-red-300">
+                    
+                    <button onclick="openTransferModal('${char.id}')" class="text-blue-400 hover:text-blue-300 mr-3" title="ย้ายเจ้าของ">
+                        Transfer
+                    </button>
+
+                    <button onclick="deleteChar('${char.id}', '${char.name}')" class="text-red-400 hover:text-red-300" title="ลบตัวละคร">
                         Delete
                     </button>
                 </td>
@@ -459,6 +493,51 @@
             else break;
         }
         return { level: currentLevel, hoursToNextLevel: 0 };
+    }
+
+    // --- Transfer Logic ---
+    function openTransferModal(charId) {
+        document.getElementById('transferCharId').value = charId;
+        document.getElementById('targetEmail').value = '';
+        document.getElementById('transferModal').classList.remove('hidden');
+        document.getElementById('transferModal').classList.add('flex');
+    }
+
+    function closeTransferModal() {
+        document.getElementById('transferModal').classList.add('hidden');
+        document.getElementById('transferModal').classList.remove('flex');
+    }
+
+    async function confirmTransfer() {
+        const charId = document.getElementById('transferCharId').value;
+        const email = document.getElementById('targetEmail').value;
+
+        if (!email) return alert('กรุณากรอกอีเมลผู้รับ');
+
+        if (!confirm(`ยืนยันที่จะย้ายตัวละครไปให้: ${email} ?\n(การกระทำนี้ไม่สามารถย้อนกลับได้)`)) return;
+
+        try {
+            const { data, error } = await supabase
+                .rpc('transfer_character_by_email', { 
+                    target_email: email, 
+                    char_id: charId 
+                });
+
+            if (error) throw error;
+
+            if (data === 'Success') {
+                alert('✅ ย้ายตัวละครสำเร็จเรียบร้อย');
+                closeTransferModal();
+                loadDashboardDataManual(); // รีโหลดตาราง
+            } else if (data === 'User not found') {
+                alert('❌ ไม่พบอีเมลนี้ในระบบ');
+            } else {
+                alert('❌ ไม่สามารถย้ายได้: ' + data);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('❌ Error: ' + err.message);
+        }
     }
   </script>
 </body>
