@@ -676,45 +676,47 @@
 
     // --- Session CRUD ---
     async function saveSession() {
-      const name = document.getElementById('sessionName').value.trim();
-      if (!name) return alert('ใส่ชื่อ Session');
-      
-      const btn = document.getElementById('btnSaveSession');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-      btn.disabled = true;
+        const name = document.getElementById('sessionName').value.trim();
+        if (!name) return alert('ใส่ชื่อ Session');
+        
+        const btn = document.getElementById('btnSaveSession');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
 
-      const hours = parseFloat(document.getElementById('hours').value) || 0;
-      const noGold = document.getElementById('noGold').checked;
-      const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,''));
-      const autoFavor = Math.floor(hours * 2);
+        const hours = parseFloat(document.getElementById('hours').value) || 0;
+        const noGold = document.getElementById('noGold').checked;
+        const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,''));
+        const autoFavor = Math.floor(hours * 2);
 
-      const payload = {
-          name, dm: document.getElementById('dmName').value,
-          date: document.getElementById('sessionDate').value || null,
-          hours, notes: document.getElementById('notes').value,
-          no_gold: noGold, auto_gold: autoGold, auto_favor: autoFavor,
-          got_items: document.getElementById('gotItems').value
-      };
+        const payload = {
+            name, dm: document.getElementById('dmName').value,
+            date: document.getElementById('sessionDate').value || null,
+            hours, notes: document.getElementById('notes').value,
+            no_gold: noGold, auto_gold: autoGold, auto_favor: autoFavor,
+            got_items: document.getElementById('gotItems').value
+        };
 
-      let error;
-      if (editingSessionId) {
-          const res = await supabase.from('sessions').update(payload).eq('id', editingSessionId);
-          error = res.error;
-      } else {
-          payload.character_id = currentCharId;
-          payload.user_id = currentUser.id;
-          const res = await supabase.from('sessions').insert(payload);
-          error = res.error;
-      }
+        let error;
+        if (editingSessionId) {
+            const res = await supabase.from('sessions').update(payload).eq('id', editingSessionId);
+            error = res.error;
+        } else {
+            payload.character_id = currentCharId;
+            payload.user_id = currentUser.id;
+            const res = await supabase.from('sessions').insert(payload);
+            error = res.error;
+        }
 
-      if (error) alert('Error: ' + error.message);
-      else {
-          refreshAllData();
-          cancelEditSession();
-      }
-      btn.innerHTML = originalText;
-      btn.disabled = false;
+        if (error) {
+            alert('Error: ' + error.message);
+            btn.innerHTML = originalText;
+        } else {
+            refreshAllData();
+            cancelEditSession();
+        }
+        
+        btn.disabled = false;
     }
 
     function editSession(id) {
@@ -734,8 +736,7 @@
         const btn = document.getElementById('btnSaveSession');
         btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต Session';
         btn.classList.replace('bg-blue-600', 'bg-yellow-600');
-        btn.classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');
-        
+        btn.classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');    
         document.getElementById('btnCancelSession').classList.remove('hidden');
         document.getElementById('sessionFormCard').scrollIntoView({ behavior: 'smooth' });
     }
@@ -832,6 +833,11 @@
     }
 
     async function saveDmLog() {
+        const btn = document.getElementById('btnSaveDmLog');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+
         const hours = parseFloat(document.getElementById('dmHours').value) || 0;
         const solo = document.getElementById('soloQuest').checked;
         const double = document.getElementById('doubleReward').checked;
@@ -870,11 +876,15 @@
             error = res.error;
         }
 
-        if (error) alert(error.message); 
-        else { 
+        if (error) {
+            alert('Error: ' + error.message); 
+            btn.innerHTML = originalText;
+        } else { 
             refreshAllData();
             cancelEditDmLog();
         }
+        
+        btn.disabled = false;
     }
 
     function editDmLog(id) {
@@ -892,8 +902,8 @@
         document.getElementById('dmAutoGold').textContent = Number(item.auto_gold).toLocaleString();
         document.getElementById('dmAutoFavor').textContent = item.auto_favor;
         document.getElementById('dmAutoHours').textContent = item.hours;
-        
         editingDmLogId = id;
+
         const btn = document.getElementById('btnSaveDmLog');
         btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต DM Session';
         btn.classList.replace('bg-red-600', 'bg-yellow-600');
