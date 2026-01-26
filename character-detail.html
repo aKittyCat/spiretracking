@@ -727,7 +727,8 @@
         document.getElementById('notes').value = item.notes || '';
         document.getElementById('noGold').checked = item.no_gold;
         document.getElementById('gotItems').value = item.got_items || '';
-        calculateAutoGold();
+        document.getElementById('autoGoldAmount').textContent = Number(item.auto_gold).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
+        document.getElementById('autoFavorAmount').textContent = item.auto_favor;
         editingSessionId = id;
         
         const btn = document.getElementById('btnSaveSession');
@@ -888,8 +889,9 @@
         document.getElementById('dmHours').value = parseFloat(baseHours.toFixed(2));
         document.getElementById('soloQuest').checked = item.solo_quest;
         document.getElementById('doubleReward').checked = item.double_reward;
-        
-        calculateDmRewards(); 
+        document.getElementById('dmAutoGold').textContent = Number(item.auto_gold).toLocaleString();
+        document.getElementById('dmAutoFavor').textContent = item.auto_favor;
+        document.getElementById('dmAutoHours').textContent = item.hours;
         
         editingDmLogId = id;
         const btn = document.getElementById('btnSaveDmLog');
