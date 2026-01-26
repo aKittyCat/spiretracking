@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Spire Tracking - Piety & Deities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tab-btn.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .god-card {
+            transition: all 0.3s ease;
+        }
+
+        .god-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.1);
+        }
+
+        .rank-champion {
+            color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .rank-disciple {
+            color: #a855f7;
+        }
+
+        .rank-votary {
+            color: #3b82f6;
+        }
+
+        .rank-devotee {
+            color: #10b981;
+        }
+
+        .rank-none {
+            color: #6b7280;
+        }
+
+        .subtab-active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border-radius: 0.5rem;
+        }
+
+        .subtab-inactive {
+            color: #9ca3af;
+        }
+
+        .piety-trait {
+            position: relative;
+            padding-left: 1rem;
+            border-left: 2px solid #4b5563;
+            margin-bottom: 0.75rem;
+        }
+
+        .piety-trait:hover {
+            border-left-color: #a855f7;
+        }
+
+        .modal-open {
+            overflow: hidden;
+        }
+
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(4px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white">
+
+    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
+
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                    <span class="text-2xl">⛪</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">
+                        <span class="gradient-text">Piety</span> & Deities
+                    </h1>
+                    <p class="text-xs text-gray-500 mt-1">The Spire Tracking</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 justify-center">
+                <button onclick="switchTab('rules')" id="tab-rules"
+                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all active">
+                    <i class="fa-solid fa-book-open mr-2"></i>กฎ & คู่มือ
+                </button>
+                <button onclick="switchTab('deities')" id="tab-deities"
+                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+                    <i class="fa-solid fa-users mr-2"></i>ทำเนียบเทพ
+                </button>
+                <button onclick="switchTab('status')" id="tab-status"
+                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+                    <i class="fa-solid fa-chart-pie mr-2"></i>สถานะศรัทธา
+                </button>
+                <button onclick="window.location.href = 'characters.html'"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5">
+                    <i class="fa-solid fa-home mr-2"></i>กลับหน้าหลัก
+                </button>
+            </div>
+        </div>
+
+
+        <div id="content-rules" class="fade-in">
+            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg text-lg">⛪</span>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">เทพแห่ง The Spire</h2>
+                        <p class="text-xs text-gray-500">God System Overview</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 mb-4">
+                    เหล่าเทพใน The Spire ค่อนข้างให้ความสนใจกับคนที่นับถือพวกเขามากกว่าเหล่า Deities ส่วนใหญ่ในโลกของ
+                    D&D และมีอิทธิพลที่ส่งผลไปถึงมิติต่างๆอีกด้วย
+                </p>
+                <p class="text-sm text-gray-500 italic">
+                    ทฤษฐีเกี่ยวกับการมีอยู่ของเหล่าเทพใน The Spire เริ่มแพร่ขยายอย่างกว้างขวางขึ้นเรื่อยๆ
+                    แต่เป็นความศรัทธาที่เหมือนๆกันที่สร้างพวกเขาขึ้นมา
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span> ลงบันทึกเทพที่นับถือ
+                        </h2>
+                        <p class="mb-4 text-gray-300 text-sm">
+                            ก่อนที่ผู้เล่นจะทำการ Religious Service ได้ ผู้เล่นจะต้องลงบันทึกเพื่อเป็นการเริ่มต้นก่อน
+                        </p>
+                        <div
+                            class="bg-gray-900 p-4 rounded-xl border-l-4 border-purple-500 font-mono text-sm text-gray-300">
+                            ชื่อตัวละคร:<br>ชื่อเทพ:
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span> Religious Service
+                        </h2>
+                        <p class="mb-4 text-gray-300 text-sm">
+                            ตัวละครสามารถทำ Religious Service เพื่อได้รับ Favor จากเทพโดยใช้ <span
+                                class="text-purple-300 bg-gray-900 px-1 rounded font-mono">!service</span>
+                        </p>
+                        <table class="w-full text-left mb-4 border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-900 text-purple-400 border-b border-gray-700">
+                                    <th class="p-2">DC Check</th>
+                                    <th class="p-2">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-300 divide-y divide-gray-700">
+                                <tr>
+                                    <td class="p-2">DC 1-10</td>
+                                    <td class="p-2 font-bold text-gray-500">0 Piety Favor</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">DC 11-20</td>
+                                    <td class="p-2 font-bold text-gray-300">1 Piety Favor</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">DC 21+</td>
+                                    <td class="p-2 font-bold text-purple-400">2 Piety Favor</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> การเปลี่ยนเทพที่นับถือ
+                        </h2>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            ตัวละครสามารถเปลี่ยนเทพที่นับถือได้ตลอด แต่แต้ม Piety Favor จะไม่ส่งต่อไปยังเทพองค์อื่น
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-indigo-500/50">
+                        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            🙏 Piety Blessing
+                        </h2>
+                        <p class="mb-4 text-gray-300">
+                            เหล่าเทพสามารถประทานพรให้กับ Champion หรือผู้ที่ศรัทธาพวกเขา
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                <div class="text-purple-400 font-bold text-sm">Devotee</div>
+                                <div class="text-xs text-gray-400">3+ Piety</div>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                <div class="text-purple-400 font-bold text-sm">Votary</div>
+                                <div class="text-xs text-gray-400">10+ Piety</div>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                <div class="text-purple-400 font-bold text-sm">Disciple</div>
+                                <div class="text-xs text-gray-400">25+ Piety</div>
+                            </div>
+                            <div
+                                class="bg-gray-900 p-3 rounded-xl text-center border border-purple-500/50 shadow-lg shadow-purple-900/20">
+                                <div class="text-purple-400 font-bold text-sm">👑 Champion</div>
+                                <div class="text-xs text-gray-400">50+ Piety</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700">
+                            <p class="text-sm text-gray-300">
+                                <span class="text-purple-400 font-bold">เงื่อนไขการปลดล็อก:</span> ต้องมีตัวละครที่
+                                Piety Favor ในระดับเดียวกันและจำนวนเท่ากับแต้ม Piety Favor
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-yellow-500/50">
+                        <h2 class="text-xl font-bold text-white mb-4">🏆 Deities Champion</h2>
+                        <p class="mb-4 text-gray-300 text-sm">
+                            ในทุกๆ 1 เดือน ตัวละครที่มีค่า Piety Favor สูงที่สุดสำหรับเทพแต่ละองค์จะกลายเป็น Champion
+                        </p>
+                        <ul class="space-y-2 text-gray-300 text-sm">
+                            <li class="flex items-start"><i
+                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>เทพองค์นั้นต้องมีระดับ
+                                Votary ขึ้นไป</li>
+                            <li class="flex items-start"><i
+                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
+                                จะได้รับพรทั้งหมดของเทพองค์นั้น</li>
+                            <li class="flex items-start"><i
+                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
+                                จะไม่ถูกเปลี่ยนจนกว่าครบ 1 เดือน</li>
+                        </ul>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg border-l-4 border-l-red-500">
+                            <h2 class="text-lg font-bold text-white mb-3">⚖️ แนวทางปฏิบัติตน</h2>
+                            <p class="text-sm text-gray-300 mb-4">หากขัดต่อหลักการ DM สามารถลดแต้ม Piety Favor ได้:</p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                        class="text-gray-300">ขัดหลักคำสอนเล็กน้อย</span><span
+                                        class="text-red-400 font-bold">-1</span></li>
+                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                        class="text-gray-300">ขัดหลักคำสอนทั่วไป</span><span
+                                        class="text-red-400 font-bold">-3</span></li>
+                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                        class="text-gray-300">ขัดหลักคำสอนร้ายแรง</span><span
+                                        class="text-red-500 font-bold">-5</span></li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                            <h2 class="text-lg font-bold text-white mb-3">👥 การนับถือเทพองค์อื่น</h2>
+                            <p class="text-gray-300 text-sm mb-3">หากต้องการนับถือเทพอื่นๆที่ไม่อยู่ในรายการ
+                                ต้องมีเงื่อนไข:</p>
+                            <div class="bg-gray-900/50 p-3 rounded-xl border border-purple-900/30">
+                                <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
+                                    <li>จำนวนตัวละครที่นับถือเทพองค์เดียวกัน 25 คน</li>
+                                    <li>ค่า Piety Favor ของตัวละครเหล่านั้นอย่างน้อย 10 แต้ม</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-deities" class="hidden fade-in">
+            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                <h2 class="text-xl font-bold text-white mb-2">ทำเนียบเทพเจ้า</h2>
+                <p class="text-gray-400 text-sm">Pantheon of The Spire</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="god-grid">
+            </div>
+        </div>
+
+        <div id="content-status" class="flex-grow hidden fade-in">
+            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-place-of-worship text-purple-400"></i> Deities Status
+                        </h2>
+                        <p class="text-sm text-gray-400">สถานะความศรัทธา</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="switchStatusMode('view')" id="subtab-view"
+                            class="text-sm font-medium px-4 py-2 subtab-active rounded-lg transition">👁️
+                            มุมมองผู้เล่น</button>
+                        <button onclick="switchStatusMode('admin')" id="subtab-admin"
+                            class="text-sm font-medium px-4 py-2 subtab-inactive rounded-lg transition hidden">⚙️
+                            Admin</button>
+                        <button onclick="manualRefresh()" id="btnRefresh"
+                            class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition group border border-gray-700"
+                            title="Refresh Data">
+                            <i id="refreshIcon"
+                                class="fa-solid fa-arrows-rotate group-hover:text-purple-400 transition-colors"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="loading" class="text-center py-12">
+                <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-500"></i>
+                <p class="mt-2 text-gray-400">กำลังรวบรวมพลังศรัทธา...</p>
+            </div>
+
+            <div id="view-mode" class="hidden fade-in">
+                <div id="gods-status-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                </div>
+            </div>
+
+            <div id="admin-mode" class="hidden fade-in">
+                <div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <i class="fa-solid fa-pen-to-square mr-2 text-amber-500"></i> บันทึกข้อมูลศรัทธา
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">ชื่อตัวละคร</label>
+                            <input type="text" id="inputCharName" list="charList" oninput="onCharNameChange()"
+                                class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition"
+                                placeholder="พิมพ์หรือเลือกชื่อตัวละคร...">
+                            <datalist id="charList"></datalist>
+                            <p class="text-xs text-gray-400 mt-1" id="nameHelpText">*เลือกจากรายการตัวละคร
+                                หรือพิมพ์ชื่อใหม่เพื่อสร้างตัวละคร</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">เทพที่นับถือ</label>
+                            <select id="inputDeity"
+                                class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition">
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">แต้มความศรัทธา
+                                (Favor)</label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="adjustPiety(-1)"
+                                    class="bg-gray-700 w-10 h-10 rounded hover:bg-red-500 transition font-bold text-lg">-</button>
+                                <input type="number" id="inputPiety" value="1"
+                                    class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 text-center font-bold focus:border-amber-500 outline-none">
+                                <button onclick="adjustPiety(1)"
+                                    class="bg-gray-700 w-10 h-10 rounded hover:bg-green-500 transition font-bold text-lg">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-700/30 p-3 rounded border border-gray-600 flex items-center justify-between cursor-pointer"
+                            onclick="document.getElementById('inputIsChampion').click()">
+                            <label class="text-sm font-bold text-amber-400 cursor-pointer select-none">
+                                <i class="fa-solid fa-crown mr-1"></i> แต่งตั้งเป็น Champion
+                            </label>
+                            <input type="checkbox" id="inputIsChampion"
+                                class="w-5 h-5 text-amber-600 rounded border-gray-500 focus:ring-amber-500 bg-gray-900">
+                        </div>
+
+                        <button onclick="saveAdminData()"
+                            class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-save"></i> บันทึกข้อมูล
+                        </button>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-700 pt-4">
+                        <h3 class="text-sm font-bold text-gray-400 mb-2">สถานะล่าสุด:</h3>
+                        <div id="statusMsg" class="text-sm text-gray-500 italic">ยังไม่มีการดำเนินการ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="god-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 modal-bg transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-gray-850 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-600">
+                <div class="bg-gray-850 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-2xl leading-6 font-bold text-amber-500 font-fantasy mb-1" id="modal-title">
+                                God Name</h3>
+                            <p class="text-sm text-gray-400 italic mb-4" id="modal-subtitle">Title & Alignment</p>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
+                                <div class="bg-gray-900 p-3 rounded">
+                                    <strong class="text-gray-300 block mb-1">Domain</strong>
+                                    <span id="modal-domain" class="text-amber-100"></span>
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded">
+                                    <strong class="text-gray-300 block mb-1">Alignment</strong>
+                                    <span id="modal-alignment" class="text-amber-100"></span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                <div>
+                                    <h4
+                                        class="text-green-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                        <i class="fa-solid fa-check-circle mr-1"></i> แนวทางปฏิบัติ (Conduct)
+                                    </h4>
+                                    <ul id="modal-conduct"
+                                        class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
+                                </div>
+                                <div>
+                                    <h4
+                                        class="text-red-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                        <i class="fa-solid fa-times-circle mr-1"></i> สิ่งที่ทำให้เสีย Piety
+                                    </h4>
+                                    <ul id="modal-loss"
+                                        class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
+                                </div>
+                                <div>
+                                    <h4
+                                        class="text-amber-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                        <i class="fa-solid fa-gift mr-1"></i> พรแห่งศรัทธา (Blessings)
+                                    </h4>
+                                    <div id="modal-benefits" class="space-y-3 text-sm text-gray-300"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-800">
+                    <button type="button"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                        onclick="closeModal()">ปิดหน้าต่าง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-16 mb-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
+        <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
+    </footer>
+    </div>
+
+    <script>
+        // Tab switch helper
+        // ---------------------------------------------------------
+        // DATA: Gods Info
+        // ---------------------------------------------------------
+        const godsData = [
+            {
+                name: "Athreos",
+                title: "God of Passage",
+                image: "https://5e.tools/img/deities/MOT/025-02-04.webp",
+                domain: "Death, Grave",
+                alignment: "Lawful Evil",
+                conduct: [
+                    "Providing coins and overseeing burial rites for those slain during a tragedy",
+                    "Ensuring that the deeds and knowledge of someone who has died are preserved",
+                    "Slaying a Returned and its associated eidolon"
+                ],
+                loss: [
+                    "Denying a dying person their final rites",
+                    "Removing wealth from a corpse or defiling a tomb",
+                    "Aiding those who seek to escape from the Underworld, or who already have"
+                ],
+                benefits: [
+                    { piety: 3, text: "Your life is intertwined with the fate of the dead. You can cast gentle repose with this trait, requiring no material components, a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast speak with dead with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You can cast false life with this trait, requiring no material components. When you do so, you gain an additional 25 temporary hit points. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 50, text: "You can increase your Intelligence or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Ephara",
+                title: "God of the Polis",
+                image: "https://5e.tools/img/deities/MOT/027-02-05.webp",
+                domain: "Knowledge, Light",
+                alignment: "Lawful Neutral",
+                conduct: [
+                    "Defending a city from a major threat",
+                    "Defeating a tyrant who threatens a city's freedom",
+                    "Creating a masterwork, such as a building or a poem"
+                ],
+                loss: [
+                    "Betraying one's trust to commit acts of corruption or tyranny",
+                    "Destroying a civic institution or sowing chaos within a city",
+                    "Willfully breaking just laws for personal gain"
+                ],
+                benefits: [
+                    { piety: 3, text: "Ephara grants you insight into how people communicate. You can cast comprehend languages with this trait, requiring no material component, a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You gain advantage on Charisma (Persuasion) checks while you are within a city. In addition, when you fail an Intelligence check or Intelligence saving throw, you can reroll the die, and you must use the new roll. Once you use this reroll, you can't do so again until you finish a long rest." },
+                    { piety: 25, text: "You can cast Mordenkainen's private sanctum with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 50, text: "You can increase your Intelligence or Charisma score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Erebos",
+                title: "God of the Dead",
+                image: "https://5e.tools/img/deities/MOT/029-02-06.webp",
+                domain: "Death, Trickery",
+                alignment: "Neutral Evil",
+                conduct: [
+                    "Convincing a group of people to accept misfortune",
+                    "Easing someone's death or assisting with funeral arrangements",
+                    "Retrieving a prominent figure's eidolon or Returned form",
+                    "Thwarting the schemes of Heliod"
+                ],
+                loss: [
+                    "Saving a life without securing compensation for Erebos",
+                    "Forsaking your duties for personal gain or pleasure",
+                    "Allowing a soul to escape the Underworld"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Erebos, you have proven yourself an executor of the Underworld's grim laws. You can call on Erebos's favor to cast bane with this trait, requiring no material components, a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast vampiric touch with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "When a soul is sent to its rightful place, you can draw on the energy of the Underworld to empower you. When a creature dies within 10 feet of you, you can use your reaction to gain a number of temporary hit points equal to your level." },
+                    { piety: 50, text: "You can increase your Constitution or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Heliod",
+                title: "God of the Sun",
+                image: "https://5e.tools/img/deities/MOT/031-02-07.webp",
+                domain: "Light",
+                alignment: "Lawful Good",
+                conduct: [
+                    "Carrying out punishment on a fugitive from justice",
+                    "Exacting vengeance for a significant wrong done to you",
+                    "Defending a polis from attacking monsters",
+                    "Building or restoring a temple to Heliod"
+                ],
+                loss: [
+                    "Breaking an explicit promise or oath",
+                    "Violating any just law",
+                    "Putting others at risk through your own cowardice"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Heliod, you have proven yourself a worthy champion of the sun god. You can call on Heliod's favor and cast bless with this trait, requiring no material components. Heliod's blessing manifests as a nimbus around the affected creatures, causing them to shed dim light in a 5-foot radius until the spell ends. You can cast the spell in this way a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast daylight with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You grow accustomed to the blazing radiance of the sun; you have advantage on saving throws against being blinded, and you have resistance to fire damage." },
+                    { piety: 50, text: "You can increase your Strength or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Iroas",
+                title: "God of Victory",
+                image: "https://5e.tools/img/deities/MOT/033-02-08.webp",
+                domain: "War",
+                alignment: "Chaotic Good",
+                conduct: [
+                    "Achieving a great victory",
+                    "Overcoming long odds honorably",
+                    "Defeating a skilled foe in single combat",
+                    "Winning a great feat of strength or skill"
+                ],
+                loss: [
+                    "Showing cowardice in battle",
+                    "Besting an honorable foe through deceit",
+                    "Harming innocents or noncombatants"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Iroas, you have earned his favor through victories won in his name. You can cast compelled duel with this trait a number of times equal to your Charisma modifier (minimum of once). You regain all expended uses when you finish a long rest. Charisma is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast crusader's mantle with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Charisma is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being frightened." },
+                    { piety: 25, text: "As a bonus action, you can call on Iroas's blessing, gaining the following benefit for 1 minute or until you are incapacitated: creatures within 30 feet of you can't gain advantage on attack rolls against you. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 50, text: "You can increase your Strength or Charisma score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Karametra",
+                title: "God of Harvests",
+                image: "https://5e.tools/img/deities/MOT/035-02-09.webp",
+                domain: "Life, Nature",
+                alignment: "Neutral Good",
+                conduct: [
+                    "Turning a wild field into fertile cropland",
+                    "Feeding those who are starving",
+                    "Defending a farm from monsters",
+                    "Building or restoring a temple to Karametra"
+                ],
+                loss: [
+                    "Destroying a settlement's food source",
+                    "Releasing and scattering domestic animals",
+                    "Diverting a water source needed for irrigation",
+                    "Starting a fire that threatens a settlement"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Karametra, you have proven yourself a worthy potential champion of the harvest god. As a bonus action, you can invoke her protection; spectral plants cover you, providing you with a +1 bonus to AC for 1 minute. Once you use this trait, you can't use it again until you finish a long rest." },
+                    { piety: 10, text: "You can cast create food and water with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being poisoned." },
+                    { piety: 25, text: "By performing an hour-long ritual, you can conjure enough grapes to fill three vials (4 ounces each) of wine. Each vial serves as a potion of healing for 24 hours, after which it loses this property. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 50, text: "You can increase your Constitution or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Keranos",
+                title: "God of Storms",
+                image: "https://5e.tools/img/deities/MOT/037-02-10.webp",
+                domain: "Knowledge, Tempest",
+                alignment: "Chaotic Neutral",
+                conduct: [
+                    "Solving a challenging riddle or puzzle",
+                    "Smiting the unwise and foolish in Keranos's name",
+                    "Helping a polis successfully plan for or adapt to a threat",
+                    "Building or restoring a temple to Keranos"
+                ],
+                loss: [
+                    "Jeopardizing others through rash or foolish actions",
+                    "Willingly subverting or impeding a wise course of action",
+                    "Failing to plan appropriately for a challenge",
+                    "Giving in to wanton fury and destruction"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Keranos, you have proven your wisdom and your allegiance to the storm lord. Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d6 lightning damage to the target. You can use this trait a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest." },
+                    { piety: 10, text: "When you fail an Intelligence or a Wisdom saving throw, you can reroll the die, and you must use the new roll. Once you use this trait, you can't do so again until you finish a long rest." },
+                    { piety: 25, text: "The energy of the storm fills your being, granting you advantage on initiative rolls." },
+                    { piety: 50, text: "You can increase your Intelligence or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Klothys",
+                title: "God of Destiny",
+                image: "https://5e.tools/img/deities/MOT/039-02-11.webp",
+                domain: "Knowledge, War",
+                alignment: "Neutral",
+                conduct: [
+                    "Defeating a creature that has stepped out of its place",
+                    "Repairing a significant wound dealt to destiny by the gods' ambitions",
+                    "Teaching people about Klothys, her nature, and her return"
+                ],
+                loss: [
+                    "Undoing a deserved punishment or curse suffered by another creature",
+                    "Willfully destroying a natural wonder",
+                    "Assisting a creature in undermining the natural order or exploiting destiny"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Klothys, you can manipulate the bonds of destiny that invisibly entangle every living thing. You can cast command with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast clairvoyance with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being charmed." },
+                    { piety: 25, text: "You develop a second sense, allowing you to intuit the tug and pull of destiny. You can't be surprised, provided you aren't incapacitated." },
+                    { piety: 50, text: "You can increase your Strength or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Kruphix",
+                title: "God of Horizons",
+                image: "https://5e.tools/img/deities/MOT/041-02-12.webp",
+                domain: "Knowledge, Trickery",
+                alignment: "Neutral",
+                conduct: [
+                    "Keeping a dangerous secret despite personal cost",
+                    "Revealing a critical truth at an important moment",
+                    "Mediating a major dispute or conflict",
+                    "Aiding the weak or impeding the strong"
+                ],
+                loss: [
+                    "Revealing a secret that should remain unknown",
+                    "Selfishly refusing to share information",
+                    "Showing favoritism toward any other god or group",
+                    "Furthering the aims of another god in defiance of Kruphix's will"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Kruphix, you have proven yourself a devotee of reality's mysteries and laws. You can cast detect magic with this trait a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. In addition, you know the mage hand cantrip. Intelligence is your spellcasting ability for these spells." },
+                    { piety: 10, text: "You can cast detect thoughts with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being charmed." },
+                    { piety: 25, text: "As a true champion of Kruphix, you can use your mage hand cantrip to protect yourself. While your spectral hand is within 5 feet of you, you gain a +2 bonus to your AC against ranged attacks." },
+                    { piety: 50, text: "You can increase your Constitution or Intelligence score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Mogis",
+                title: "God of Slaughter",
+                image: "https://5e.tools/img/deities/MOT/043-02-13.webp",
+                domain: "War",
+                alignment: "Chaotic Evil",
+                conduct: [
+                    "Defeating a champion of Iroas",
+                    "Taking vengeance against a powerful foe",
+                    "Burning a polis or a settlement to the ground",
+                    "Desecrating a temple to Iroas as an offering to Mogis"
+                ],
+                loss: [
+                    "Failing to carry out a sworn vendetta",
+                    "Publicly displaying weakness or compassion",
+                    "Rejecting a duel or a challenge out of fear"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Mogis, you have shown yourself to be a brutal combatant. You can call on Mogis's favor and cast wrathful smite with this trait. Mogis's blessing manifest as a blood-red glow around your weapon, causing it to shed dim light in a 5-foot radius until the spell ends. You can cast the spell in this way a number of times equal to your Constitution modifier (minimum of once). You regain all expended uses when you finish a long rest. Constitution is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast blinding smite with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Constitution is your spellcasting ability for this spell." },
+                    { piety: 25, text: "Countless battles and vicious visions have given you focus. You have advantage on saving throws against being charmed or frightened." },
+                    { piety: 50, text: "You can increase your Strength or Constitution score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Nylea",
+                title: "God of the Hunt",
+                image: "https://5e.tools/img/deities/MOT/045-02-14.webp",
+                domain: "Nature",
+                alignment: "Neutral Good",
+                conduct: [
+                    "Healing a sick or injured wild animal",
+                    "Stopping those who hunt for sport or profit",
+                    "Proving your worth in a contest of archery",
+                    "Slaying an aberration, a fiend, or an undead"
+                ],
+                loss: [
+                    "Killing an animal for any reason other than necessity",
+                    "Dedicating a building or making a sacrifice to any god, including Nylea",
+                    "Protecting a city or farm from natural dangers"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Nylea, you have proven yourself a guardian of the wilds. You can cast hunter's mark with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast speak with animals with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being poisoned." },
+                    { piety: 25, text: "When a beast is about to attack you, it must make a DC 15 Wisdom saving throw. On a failed save, the creature must choose a different target, or the attack automatically misses you. On a successful save, the creature is immune to this trait for 24 hours." },
+                    { piety: 50, text: "You can increase your Dexterity or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Pharika",
+                title: "God of Affliction",
+                image: "https://5e.tools/img/deities/MOT/047-02-15.webp",
+                domain: "Death, Knowledge, Life",
+                alignment: "Neutral Evil",
+                conduct: [
+                    "Creating a cure for a dangerous affliction",
+                    "Defeating a powerful foe by using poison",
+                    "Discovering or documenting an unknown people or a poorly understood creature",
+                    "Building or restoring a temple to Pharika, or a site that glorifies serpentine creatures"
+                ],
+                loss: [
+                    "Destroying alchemical, medical, or pathological research",
+                    "Performing a notable act of healing without exacting a significant price",
+                    "Slaying a medusa or serpent"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Pharika, you have power over affliction. You can cast ray of sickness with this trait a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest. Wisdom is your spellcasting ability for this spell." },
+                    { piety: 10, text: "Pharika's blessing shields you from most maladies. You have advantage on saving throws against being poisoned, and you are immune to disease." },
+                    { piety: 25, text: "Pharika blesses you with Pharika's Balm, an effect that can cure or enfeeble. As an action, you can touch a creature and choose one of the following:<br>- The target regains hit points equal to 1d8 + your Wisdom modifier, and you can cure the target of one disease or neutralize one poison affecting it.<br>- The target must succeed on a DC 15 Constitution saving throw, or for 1 minute, the target deals only half damage with weapon attacks. The target can repeat the saving throw at the end of each of its turns, ending the effect on a success.<br>You can use this action a number of times equal to your Wisdom modifier (minimum of once). You regain all expended uses when you finish a long rest." },
+                    { piety: 50, text: "You can increase your Dexterity or Wisdom score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Phenax",
+                title: "God of Deception",
+                image: "https://5e.tools/img/deities/MOT/049-02-16.webp",
+                domain: "Trickery",
+                alignment: "Chaotic Neutral",
+                conduct: [
+                    "Helping a fugitive escape justice",
+                    "Pulling off a daring robbery",
+                    "Obstructing champions of other gods",
+                    "Building or restoring a temple to Phenax"
+                ],
+                loss: [
+                    "Forthrightly assisting lawgivers in their duties",
+                    "Swearing and then honoring an oath",
+                    "Bringing order in times of chaos"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Phenax, you have proven yourself accomplished at deception. You can call on Phenax's blessing and cast disguise self with this trait. While the spell is active, your shadow still resembles your original form. You can cast the spell in this way a number of times equal to your Charisma modifier (minimum of once). You regain all expended uses when you finish a long rest. Charisma is your spellcasting ability for this spell." },
+                    { piety: 10, text: "Your words are inspired by Theros's greatest liar. You have advantage on Charisma (Deception) checks." },
+                    { piety: 25, text: "When you are hidden from a creature and miss it with an attack, making the attack doesn't reveal your position." },
+                    { piety: 50, text: "You can increase your Dexterity or Charisma score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Purphoros",
+                title: "God of the Forge",
+                image: "https://5e.tools/img/deities/MOT/051-02-17.webp",
+                domain: "Forge, Knowledge",
+                alignment: "Chaotic Neutral",
+                conduct: [
+                    "Fighting against those who would rule over others",
+                    "Taking decisive action on impulse",
+                    "Destroying something that has outlived its usefulness",
+                    "Creating something wondrous in Purphoros's name"
+                ],
+                loss: [
+                    "Following an unjust law despite your misgivings",
+                    "Creating something shoddy or flawed",
+                    "Backing down from a fight or a contest"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Purphoros, you have drawn the notice of the forge god with your skill. You can cast shield of faith with this trait, requiring no material components, a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. In addition, you know the mending cantrip. Intelligence is your spellcasting ability for these spells." },
+                    { piety: 10, text: "You can cast heat metal with this trait, requiring no material components. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell. In addition, you have advantage on saving throws against being knocked prone." },
+                    { piety: 25, text: "While you are standing and an effect would push you 1 foot or more, you can use your reaction to not be pushed." },
+                    { piety: 50, text: "You can increase your Strength or Intelligence score by 2 and also increase your maximum for that score by 2." }
+                ]
+            },
+            {
+                name: "Thassa",
+                title: "God of the Sea",
+                image: "https://5e.tools/img/deities/MOT/053-02-18.webp",
+                domain: "Knowledge, Tempest",
+                alignment: "Neutral",
+                conduct: [
+                    "Supporting those who would reform or overturn institutions",
+                    "Preventing cataclysmic change",
+                    "Offering a treasure to the sea",
+                    "Defending or maintaining a temple to Thassa"
+                ],
+                loss: [
+                    "Trying to keep a secret from Thassa",
+                    "Using magic to calm the sea's fury",
+                    "Upholding an institution not devoted to Thassa",
+                    "Bowing to the desires or demands of another god"
+                ],
+                benefits: [
+                    { piety: 3, text: "As a devotee of Thassa, you have proven yourself a worthy representative of the god of the sea. You can cast fog cloud with this trait. Fog created in this way smells strongly of the sea. You can cast the spell in this way a number of times equal to your Intelligence modifier (minimum of once). You regain all expended uses when you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 10, text: "You can cast blink with this trait. Once you cast the spell in this way, you can't do so again until you finish a long rest. Intelligence is your spellcasting ability for this spell." },
+                    { piety: 25, text: "You are inspired by the tempestuous, uncontrollable nature of the sea; you have advantage on saving throws against being charmed or restrained." },
+                    { piety: 50, text: "You can increase your Dexterity or Intelligence score by 2 and also increase your maximum for that score by 2." }
+                ]
+            }
+        ];
+
+        // รายชื่อเทพ 15 องค์ (For Status Page)
+        const GODS_LIST = [
+            "Athreos", "Ephara", "Erebos", "Heliod", "Iroas",
+            "Karametra", "Keranos", "Klothys", "Kruphix", "Mogis",
+            "Nylea", "Pharika", "Phenax", "Purphoros", "Thassa"
+        ];
+
+        let allCharacters = [];
+        let isAdmin = false;
+        let currentUser = null;
+
+        // ---------------------------------------------------------
+        // MAIN TABS
+        // ---------------------------------------------------------
+        function switchTab(tabName) {
+            // 1. Content Sections
+            const rulesContent = document.getElementById('content-rules');
+            const deitiesContent = document.getElementById('content-deities');
+            const statusContent = document.getElementById('content-status');
+
+            // 2. Tab Buttons
+            const rulesBtn = document.getElementById('tab-rules');
+            const deitiesBtn = document.getElementById('tab-deities');
+            const statusBtn = document.getElementById('tab-status');
+
+            const allBtns = [rulesBtn, deitiesBtn, statusBtn];
+
+            // --- RESET ---
+            [rulesContent, deitiesContent, statusContent].forEach(el => {
+                if (el) el.classList.add('hidden');
+            });
+
+            allBtns.forEach(el => {
+                if (el) {
+                    el.classList.remove('active');
+                }
+            });
+
+            // --- ACTIVATE ---
+            if (tabName === 'rules') {
+                if (rulesContent) rulesContent.classList.remove('hidden');
+                if (rulesBtn) rulesBtn.classList.add('active');
+
+            } else if (tabName === 'deities') {
+                if (deitiesContent) deitiesContent.classList.remove('hidden');
+                if (deitiesBtn) deitiesBtn.classList.add('active');
+
+            } else if (tabName === 'status') {
+                if (statusContent) statusContent.classList.remove('hidden');
+                if (statusBtn) statusBtn.classList.add('active');
+
+                // Trigger Data Load
+                if (typeof allCharacters !== 'undefined' && allCharacters.length === 0) {
+                    loadData();
+                }
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+
+        // ---------------------------------------------------------
+        // STATUS PAGE LOGIC (From deities.html)
+        // ---------------------------------------------------------
+        async function initSupabase() {
+            try {
+                if (typeof supabase === 'undefined') {
+                    console.log("Supabase not initialized");
+                    return;
+                }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    const { data: adminStatus } = await supabase.rpc('is_admin');
+                    if (adminStatus) {
+                        isAdmin = true;
+                        document.getElementById('subtab-admin').classList.remove('hidden');
+                    }
+                }
+                setupForm();
+                // ถ้าเปิดมาหน้าแรกไม่ใช่ status เรายังไม่โหลด data ก็ได้ รอคนกด tab
+            } catch (err) {
+                console.log("Supabase not initialized or config missing");
+            }
+        }
+
+        function setupForm() {
+            const select = document.getElementById('inputDeity');
+            if (!select) return;
+            select.innerHTML = '<option value="">- เลือกเทพ -</option>';
+            select.innerHTML += '<option value="None" class="text-red-400 font-bold bg-gray-800">❌ ไม่นับถือเทพ (ลบออก)</option>';
+            GODS_LIST.forEach(g => {
+                select.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+            // Update Datalist
+            updateCharDatalist();
+        }
+
+        function updateCharDatalist() {
+            const datalist = document.getElementById('charList');
+            if (!datalist) return;
+            datalist.innerHTML = '';
+            const sorted = [...allCharacters].sort((a, b) => a.name.localeCompare(b.name));
+            sorted.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.name;
+                datalist.appendChild(option);
+            });
+        }
+
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = 'block';
+
+            try {
+                // ✅ แก้ไข: เรียก RPC แทนการเรียก Table ตรงๆ เพื่อแก้ปัญหา RLS
+                const { data, error } = await supabase.rpc('get_all_characters_public');
+
+                if (error) throw error;
+
+                allCharacters = data || [];
+                renderGodsView();
+                updateCharDatalist();
+
+            } catch (err) {
+                console.error(err);
+                // alert('โหลดข้อมูลล้มเหลว หรือยังไม่ได้เชื่อมต่อ Supabase');
+            } finally {
+                if (loading) loading.style.display = 'none';
+
+                // Show correct mode
+                if (document.getElementById('subtab-view').classList.contains('subtab-active')) {
+                    document.getElementById('view-mode').classList.remove('hidden');
+                } else {
+                    document.getElementById('admin-mode').classList.remove('hidden');
+                }
+            }
+        }
+
+        function renderGodsView() {
+            const grid = document.getElementById('gods-status-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            GODS_LIST.forEach(godName => {
+                const followers = allCharacters.filter(c => c.deity === godName);
+                const count = followers.length;
+
+                // Rank
+                let rankName = "ยังไม่ได้รับพร";
+                let rankClass = "rank-none";
+                if (count >= 50) { rankName = "Champion"; rankClass = "rank-champion"; }
+                else if (count >= 25) { rankName = "Disciple"; rankClass = "rank-disciple"; }
+                else if (count >= 10) { rankName = "Votary"; rankClass = "rank-votary"; }
+                else if (count >= 3) { rankName = "Devotee"; rankClass = "rank-devotee"; }
+
+                // Champion Logic
+                let championName = "-";
+                let champion = followers.find(c => c.is_champion);
+                if (!champion && followers.length > 0) {
+                    followers.sort((a, b) => (b.piety || 0) - (a.piety || 0));
+                    if (followers[0].piety > 0) champion = followers[0];
+                }
+                if (champion) {
+                    championName = `${champion.name} (${champion.piety})`;
+                    if (champion.is_champion) championName = `👑 ${championName}`;
+                }
+
+                // Followers List
+                followers.sort((a, b) => a.name.localeCompare(b.name));
+                const followerListHTML = followers.length > 0
+                    ? followers.map(c => {
+                        const style = c.is_champion ? 'border-amber-500 text-amber-200' : 'border-gray-700 text-gray-300';
+                        return `<span class="inline-block bg-gray-900 px-2 py-1 rounded text-xs mr-1 mb-1 border ${style}">${c.name} (${c.piety || 0})</span>`;
+                    }).join('')
+                    : '<span class="text-gray-600 text-xs italic">ยังไม่มีผู้ศรัทธา</span>';
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg god-card relative overflow-hidden flex flex-col";
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-star text-6xl"></i></div>
+                    <div class="flex justify-between items-start mb-2">
+                        <h2 class="text-2xl font-bold text-white font-serif tracking-wide">${godName}</h2>
+                        <span class="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-600"><i class="fa-solid fa-users mr-1"></i> ${count}</span>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-lg font-bold ${rankClass}">${rankName === 'Champion' ? '👑' : ''} ${rankName}</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-2 rounded border border-gray-700 mb-3">
+                        <p class="text-[10px] text-gray-500 uppercase">Current Champion</p>
+                        <div class="text-amber-100 font-medium truncate text-sm">🏆 ${championName}</div>
+                    </div>
+                    <div class="mt-auto border-t border-gray-700 pt-3">
+                        <p class="text-[10px] text-gray-500 uppercase mb-2">รายชื่อผู้ศรัทธา</p>
+                        <div class="flex flex-wrap max-h-32 overflow-y-auto custom-scrollbar">
+                            ${followerListHTML}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- Admin Actions ---
+        function adjustPiety(val) {
+            const input = document.getElementById('inputPiety');
+            let current = parseInt(input.value) || 0;
+            input.value = current + val;
+        }
+
+        function onCharNameChange() {
+            const name = document.getElementById('inputCharName').value.trim();
+            if (!name) return;
+
+            const found = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
+            const helpText = document.getElementById('nameHelpText');
+
+            if (found) {
+                document.getElementById('inputDeity').value = found.deity || "";
+                document.getElementById('inputPiety').value = found.piety || 0;
+                document.getElementById('inputIsChampion').checked = found.is_champion || false;
+                document.getElementById('statusMsg').innerHTML = `<span class="text-blue-400">🔍 กำลังแก้ไข: ${found.name}</span>`;
+                helpText.innerHTML = "✅ พบข้อมูลเดิมในระบบ (แก้ไข)";
+                helpText.className = "text-xs text-green-400 mt-1";
+            } else {
+                document.getElementById('statusMsg').innerHTML = `<span class="text-gray-400">ℹ️ ข้อมูลใหม่ (สร้าง)</span>`;
+                // Optional: Reset values or keep them
+                document.getElementById('inputDeity').value = "";
+                document.getElementById('inputPiety').value = 1;
+                document.getElementById('inputIsChampion').checked = false;
+                helpText.innerHTML = "✨ ชื่อใหม่ (จะสร้างเมื่อกดบันทึก)";
+                helpText.className = "text-xs text-blue-400 mt-1";
+            }
+        }
+
+        async function saveAdminData() {
+            const name = document.getElementById('inputCharName').value.trim();
+            let deity = document.getElementById('inputDeity').value;
+            const piety = parseInt(document.getElementById('inputPiety').value) || 0;
+            const isChampion = document.getElementById('inputIsChampion').checked;
+            const statusMsg = document.getElementById('statusMsg');
+
+            if (!name) return alert('กรุณาระบุชื่อตัวละคร');
+            if (!deity) return alert('กรุณาเลือกเทพ');
+            if (deity === 'None') deity = null;
+
+            statusMsg.innerHTML = '<span class="text-yellow-400">⏳ กำลังบันทึก...</span>';
+
+            if (isChampion && deity) {
+                const oldChamp = allCharacters.find(c => c.deity === deity && c.is_champion && c.name.toLowerCase() !== name.toLowerCase());
+                if (oldChamp) {
+                    await supabase.from('characters').update({ is_champion: false }).eq('id', oldChamp.id);
+                }
+            }
+
+            const existingChar = allCharacters.find(c => c.name.toLowerCase() === name.toLowerCase());
+            let error;
+
+            if (existingChar) {
+                const res = await supabase.from('characters').update({ deity, piety, is_champion: isChampion }).eq('id', existingChar.id);
+                error = res.error;
+            } else {
+                const res = await supabase.from('characters').insert({
+                    name: name, deity: deity, piety: piety, is_champion: isChampion,
+                    user_id: currentUser ? currentUser.id : null, level: 1, class: 'Unknown', race: 'Unknown'
+                });
+                error = res.error;
+            }
+
+            if (error) {
+                console.error(error);
+                statusMsg.innerHTML = `<span class="text-red-400">❌ เกิดข้อผิดพลาด: ${error.message}</span>`;
+            } else {
+                statusMsg.innerHTML = `<span class="text-green-400">✅ บันทึกสำเร็จ!</span>`;
+                document.getElementById('inputCharName').value = '';
+                document.getElementById('inputPiety').value = '1';
+                document.getElementById('inputIsChampion').checked = false;
+                document.getElementById('nameHelpText').innerHTML = "*พิมพ์ชื่อเพื่อสร้างใหม่ หรือเลือกจากรายการเพื่อแก้ไข";
+                document.getElementById('nameHelpText').className = "text-xs text-gray-400 mt-1";
+
+                await loadData();
+            }
+        }
+
+        function switchStatusMode(mode) {
+            const viewBtn = document.getElementById('subtab-view');
+            const adminBtn = document.getElementById('subtab-admin');
+            const viewDiv = document.getElementById('view-mode');
+            const adminDiv = document.getElementById('admin-mode');
+
+            if (mode === 'view') {
+                viewBtn.classList.add('subtab-active'); viewBtn.classList.remove('subtab-inactive');
+                adminBtn.classList.remove('subtab-active'); adminBtn.classList.add('subtab-inactive');
+                viewDiv.classList.remove('hidden');
+                adminDiv.classList.add('hidden');
+            } else {
+                adminBtn.classList.add('subtab-active'); adminBtn.classList.remove('subtab-inactive');
+                viewBtn.classList.remove('subtab-active'); viewBtn.classList.add('subtab-inactive');
+                adminDiv.classList.remove('hidden');
+                viewDiv.classList.add('hidden');
+            }
+        }
+
+        // ---------------------------------------------------------
+        // RENDER DEITIES LIST (Static)
+        // ---------------------------------------------------------
+        function renderGodsList() {
+            const grid = document.getElementById('god-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            godsData.forEach((god, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-glow flex flex-col";
+
+                let borderColor = '#22c55e';
+                if (god.alignment.includes('Good')) borderColor = '#eab308';
+                else if (god.alignment.includes('Evil')) borderColor = '#a855f7';
+                else if (god.alignment.includes('Chaotic')) borderColor = '#ef4444';
+                else if (god.alignment.includes('Lawful')) borderColor = '#3b82f6';
+
+                card.style.borderTopWidth = "4px";
+                card.style.borderColor = borderColor;
+
+                card.innerHTML = `
+                    <div class="relative h-48 bg-gray-900 overflow-hidden group cursor-pointer" onclick="openModal(${index})">
+                        <img src="${god.image}" alt="${god.name}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-4 pt-12">
+                            <h2 class="text-2xl font-fantasy font-bold text-white shadow-black drop-shadow-md">${god.name}</h2>
+                            <p class="text-xs text-amber-400 font-bold uppercase tracking-wider">${god.title}</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-grow flex flex-col">
+                        <div class="flex justify-between items-center mb-4 text-xs text-gray-400">
+                            <span class="bg-gray-900 px-2 py-1 rounded border border-gray-700"><i class="fa-solid fa-scroll mr-1"></i>${god.domain}</span>
+                            <span class="bg-gray-900 px-2 py-1 rounded border border-gray-700">${god.alignment}</span>
+                        </div>
+                        <div class="mt-auto pt-4 border-t border-gray-700 text-center">
+                            <button onclick="openModal(${index})" class="text-sm text-amber-500 hover:text-amber-400 font-medium transition-colors w-full">
+                                ดูข้อมูลพรและข้อห้าม <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Modal Logic (Same as before)
+        function openModal(index) {
+            // (Note: uses godsData, make sure godsData is fully populated for this to work perfectly)
+            const god = godsData[index];
+            if (!god) return;
+            document.getElementById('modal-title').innerText = god.name;
+            document.getElementById('modal-subtitle').innerText = `${god.title} (${god.alignment})`;
+            document.getElementById('modal-domain').innerText = god.domain;
+            document.getElementById('modal-alignment').innerText = god.alignment;
+
+            document.getElementById('modal-conduct').innerHTML = god.conduct.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('modal-loss').innerHTML = god.loss.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('modal-benefits').innerHTML = god.benefits.map(b => `
+                <div class="piety-trait">
+                    <span class="text-amber-500 font-bold mr-2 text-xs uppercase tracking-wider bg-gray-800 px-1 rounded border border-gray-600">${b.piety} Piety</span>
+                    <span class="text-gray-300">${b.text}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('god-modal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            document.getElementById('god-modal').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        }
+
+        document.onkeydown = function (evt) {
+            if (evt.keyCode == 27) closeModal();
+        };
+
+        // ฟังก์ชันสำหรับปุ่ม Refresh
+        async function manualRefresh() {
+            const btn = document.getElementById('btnRefresh');
+            const icon = document.getElementById('refreshIcon');
+
+            // เริ่มหมุน
+            icon.classList.add('animate-spin', 'text-amber-500');
+            btn.classList.add('cursor-wait', 'opacity-70');
+            btn.disabled = true;
+
+            try {
+                // บังคับให้หมุนอย่างน้อย 1 วินาที + โหลดข้อมูล
+                await Promise.all([
+                    loadData(),
+                    new Promise(resolve => setTimeout(resolve, 1000))
+                ]);
+
+            } catch (error) {
+                console.error("Refresh failed:", error);
+            } finally {
+                // หยุดหมุน
+                icon.classList.remove('animate-spin', 'text-amber-500');
+                btn.classList.remove('cursor-wait', 'opacity-70');
+                btn.disabled = false;
+            }
+        }
+
+        // --- INIT ---
+        window.onload = function () {
+            renderGodsList();
+            initSupabase();
+        }
+
+    </script>
+</body>
+
+</html>

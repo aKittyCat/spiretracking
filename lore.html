@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Spire Lore</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cinzel for headers and Noto Sans Thai for content -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-gold: #c5a059;
+            --color-bg-dark: #0a0a0c;
+        }
+
+        body {
+            background-color: var(--color-bg-dark);
+            color: #e0e0e0;
+            font-family: 'Noto Sans Thai', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+
+        /* Hero & Background */
+        .hero-bg {
+            background-image: linear-gradient(to bottom, rgba(10, 10, 12, 0.6), rgba(10, 10, 12, 0.95)), 
+                              url('pic/lore/spire.png');
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Story Section Styling */
+        .story-content {
+            line-height: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .story-text-highlight {
+            color: var(--color-gold);
+            font-weight: 700;
+        }
+
+        /* Gallery Image Styling */
+        .newspaper-card {
+            background: #1a1a1e;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .newspaper-card:hover {
+            border-color: var(--color-gold);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(197, 160, 89, 0.2);
+        }
+
+        /* Adjusted for Horizontal Images */
+        .img-container {
+            aspect-ratio: 16/9;
+            background: #2a2a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .newspaper-card:hover .img-container img {
+            transform: scale(1.05);
+        }
+
+        /* Tab System */
+        .tab-btn {
+            position: relative;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--color-gold);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: var(--color-gold);
+        }
+
+        .hidden-page {
+            display: none;
+        }
+
+        /* Fixed Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(to bottom, rgba(10,10,12,0.9), transparent);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Lightbox Modal */
+        #image-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        #modal-img {
+            max-width: 95%;
+            max-height: 90vh;
+            object-fit: contain;
+            border: 2px solid var(--color-gold);
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Lightbox Modal -->
+    <div id="image-modal" onclick="closeModal()">
+        <button class="absolute top-6 right-6 text-white text-3xl hover:text-gold transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="modal-img" src="" alt="Full view" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Responsive Navigation Container -->
+    <nav class="nav-container flex justify-between items-center">
+        <!-- Left Side: Page Switcher -->
+        <div class="flex space-x-4">
+            <button onclick="switchPage('lore')" id="btn-lore" class="tab-btn active text-sm md:text-base font-bold uppercase tracking-wider">
+                Lore
+            </button>
+            <button onclick="switchPage('gallery')" id="btn-gallery" class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+                Newspapers
+            </button>
+        </div>
+
+        <!-- Right Side: Home Button -->
+        <div>
+            <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-gold">
+                <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="hero-bg px-6 pb-20">
+        
+        <!-- Header Section -->
+        <header class="text-center mt-32 mb-12">
+            <h1 id="page-title" class="text-4xl md:text-6xl font-bold text-[#c5a059] mb-4">The Spire Lore</h1>
+            <div class="w-24 h-1 bg-[#c5a059] mx-auto"></div>
+        </header>
+
+        <!-- PAGE 1: Lore (Story) -->
+        <div id="page-lore" class="story-content space-y-8 text-base md:text-xl font-light text-gray-200">
+            <article class="space-y-8">
+                <p>ไม่มีใครรู้แน่ชัดว่ามันปรากฏขึ้นเมื่อใด</p>
+                <p>บางคนบอกว่ามันเกิดขึ้น “เมื่อคืนนี้” ขณะที่อีกกลุ่มยืนยันว่าพวกเขาจำได้ว่าเห็นมันตั้งแต่เด็ก</p>
+                <p>แต่ไม่เคยมีแผนที่ใดใน <span class="story-text-highlight">Faerûn</span> ที่เคยระบุ <span class="story-text-highlight">“The Spire Tower”</span> ไว้ในตำแหน่งนี้มาก่อน</p>
+                <p>ท่ามกลางหุบเขาอันรกร้างทางตอนเหนือของ <span class="story-text-highlight">The High Forest</span> ณ จุดที่เคยเป็นเพียงทุ่งหญ้าไร้ชื่อ</p>
+                <p>เสาหอคอยหินสูงล้ำเมฆา ปรากฏขึ้นจากเบื้องล่างอย่างเงียบงัน สูงจนไม่มีใครมองเห็นยอด และเย็นเยียบแม้ในยามกลางวัน</p>
+                <p>ผู้คนเริ่มหลั่งไหลมา...</p>
+                <p>ไม่ใช่ด้วยคำสั่งของกษัตริย์ ไม่ใช่ด้วยคำเรียกของเหล่าทวยเทพ แต่ด้วยเสียงกระซิบในฝัน ภาพเงาเลือนรางในนิมิต และบางสิ่ง... ที่พวกเขาไม่อาจอธิบายได้</p>
+                <p>ว่ากันว่า ใต้หอคอยมีประตูมากมาย— แต่ละบานไม่ได้นำไปสู่ห้องอื่นของหอคอย... หากแต่นำไปสู่ <span class="story-text-highlight">“โลกอื่น”</span></p>
+                <p>มิติที่ไม่เคยมีในตำนานของนักปราชญ์ นรกที่เทพยังไม่กล้าเอ่ยชื่อ หรือสวรรค์ที่แม้ Celestial เองยังไม่กล้าสัมผัส</p>
+                <p>และสิ่งที่น่ากลัวยิ่งกว่า—คือทุกครั้งที่ใครบางคนผ่านประตูนั้น <span class="story-text-highlight">“บางสิ่ง”</span> ก็เดินสวนออกมาสู่โลกนี้</p>
+                <p>บัดนี้ <span class="story-text-highlight">The Spire Tower</span> ได้กลายเป็น จุดรวมของเหล่านักผจญภัยจากทั่ว Faerûn ทั้งผู้แสวงหาพลัง ความจริง ความอยู่รอด หรือแม้แต่ความตาย</p>
+                <p>มันไม่ได้เป็นเพียงหอคอย แต่มันคือ <span class="story-text-highlight">“สนามทดสอบ”</span> ของผู้ที่กล้าก้าวข้ามขีดจำกัดของตนเอง และของโลกใบนี้</p>
+                <p class="text-center italic mt-12 text-[#c5a059]">หากคุณได้ยินเสียงเรียก... จงรู้ไว้ว่า The Spire ไม่ได้เลือกใครโดยบังเอิญ</p>
+            </article>
+        </div>
+
+        <!-- PAGE 2: Gallery -->
+        <div id="page-gallery" class="hidden-page w-full max-w-6xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Gallery Item 1 -->
+                <div class="newspaper-card rounded-lg" onclick="openModal('pic/lore/handout1.png')">
+                    <div class="img-container rounded">
+                        <img src="pic/lore/handout1.png" alt="Newspaper Issue 1">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-24 text-center text-xs text-gray-400 py-6 border-t border-gray-800 w-full max-w-4xl">
+            <p>&copy;🏰 The Spire Tracking<br>Create by aKittyCat🐈. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Page Switcher Logic
+        function switchPage(page) {
+            const lorePage = document.getElementById('page-lore');
+            const galleryPage = document.getElementById('page-gallery');
+            const btnLore = document.getElementById('btn-lore');
+            const btnGallery = document.getElementById('btn-gallery');
+            const pageTitle = document.getElementById('page-title');
+
+            if (page === 'lore') {
+                lorePage.style.display = 'block';
+                galleryPage.style.display = 'none';
+                btnLore.classList.add('active', 'text-white');
+                btnLore.classList.remove('text-gray-400');
+                btnGallery.classList.remove('active', 'text-white');
+                btnGallery.classList.add('text-gray-400');
+                pageTitle.innerText = 'The Spire Lore';
+            } else {
+                lorePage.style.display = 'none';
+                galleryPage.style.display = 'block';
+                btnGallery.classList.add('active', 'text-white');
+                btnGallery.classList.remove('text-gray-400');
+                btnLore.classList.remove('active', 'text-white');
+                btnLore.classList.add('text-gray-400');
+                pageTitle.innerText = 'Archives';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Modal Logic
+        function openModal(imgSrc) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            modalImg.src = imgSrc;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('image-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; 
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+    </script>
+
+</body>
+</html>
