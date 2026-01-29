@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Glass Arboretum | SpireTracking Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* SpireTracking Themed CSS */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            background-image: 
+                radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%),
+                linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            color: #e2e8f0;
+        }
+
+        h1, h2, h3, .stat-font {
+            font-family: 'Rajdhani', 'Sarabun', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            color: #94a3b8;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            color: #10b981;
+        }
+        .nav-item.active {
+            border-bottom: 2px solid #10b981; /* Emerald 500 */
+            color: #10b981;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Rarity Colors for Dark Mode */
+        .rarity-common { color: #a3a3a3; font-weight: bold; } /* Neutral */
+        .rarity-uncommon { color: #34d399; font-weight: bold; text-shadow: 0 0 5px rgba(52, 211, 153, 0.2); } /* Emerald 400 */
+        .rarity-rare { color: #60a5fa; font-weight: bold; text-shadow: 0 0 5px rgba(96, 165, 250, 0.2); } /* Blue 400 */
+        .rarity-very-rare { color: #c084fc; font-weight: bold; text-shadow: 0 0 5px rgba(192, 132, 252, 0.2); } /* Purple 400 */
+        .rarity-legendary { color: #fb923c; font-weight: bold; text-shadow: 0 0 5px rgba(251, 146, 60, 0.2); } /* Orange 400 */
+
+        .scroll-dark::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scroll-dark::-webkit-scrollbar-track { background: #1e293b; }
+        .scroll-dark::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .scroll-dark::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .animate-glow {
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+            to { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col scroll-dark">
+
+    <!-- Header -->
+    <header class="bg-slate-900/90 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-emerald-900/50 rounded-lg flex items-center justify-center border border-emerald-500/30">
+                    <i class="fa-solid fa-flask text-emerald-400 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight tracking-wide text-gray-100">THE GLASS ARBORETUM</h1>
+                    <p class="text-xs text-emerald-500 font-mono tracking-wider">SYSTEM MODULE: POTION CRAFTER</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('infoModal').classList.remove('hidden')" class="text-slate-400 hover:text-emerald-400 transition">
+                <i class="fa-solid fa-circle-info text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="border-b border-slate-800 overflow-x-auto whitespace-nowrap scroll-dark bg-slate-900/50">
+            <div class="max-w-6xl mx-auto px-4 flex space-x-8">
+                <button onclick="switchTab('crafting')" id="tab-crafting" class="nav-item active py-3 px-1 focus:outline-none text-sm uppercase tracking-wider font-bold">
+                    <i class="fa-solid fa-mortar-pestle mr-2"></i>Crafting Console
+                </button>
+                <button onclick="switchTab('potions')" id="tab-potions" class="nav-item py-3 px-1 focus:outline-none text-sm uppercase tracking-wider font-bold">
+                    <i class="fa-solid fa-database mr-2"></i>Potion Database
+                </button>
+                <button onclick="switchTab('boons')" id="tab-boons" class="nav-item py-3 px-1 focus:outline-none text-sm uppercase tracking-wider font-bold">
+                    <i class="fa-solid fa-gem mr-2"></i>Boons
+                </button>
+                <button onclick="switchTab('rules')" id="tab-rules" class="nav-item py-3 px-1 focus:outline-none text-sm uppercase tracking-wider font-bold">
+                    <i class="fa-solid fa-book-skull mr-2"></i>Protocols & Sickness
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-6">
+
+        <!-- TAB: CRAFTING -->
+        <div id="view-crafting" class="space-y-6">
+            
+            <!-- Cauldron / Processor -->
+            <div class="glass-panel rounded-xl p-6 border-l-4 border-emerald-500 relative overflow-hidden">
+                <!-- Background Decoration -->
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+
+                <div class="flex justify-between items-center mb-6 relative z-10">
+                    <h2 class="text-xl font-bold text-emerald-400 uppercase tracking-widest"><i class="fa-solid fa-microchip mr-2"></i>Synthesis Chamber</h2>
+                    <button onclick="clearCauldron()" class="text-xs text-red-400 hover:text-red-300 border border-red-500/30 px-3 py-1 rounded hover:bg-red-500/10 transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i> FLUSH SYSTEM
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative z-10">
+                    <!-- Slot 1 -->
+                    <div id="slot-0" class="group bg-slate-800/50 border border-slate-600 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[140px] transition-all hover:border-emerald-500/50 hover:bg-slate-800">
+                        <span class="text-slate-500 text-xs uppercase tracking-widest mb-2">Slot Alpha</span>
+                        <div class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center group-hover:scale-110 transition">
+                            <i class="fa-solid fa-plus text-slate-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Slot 2 -->
+                    <div id="slot-1" class="group bg-slate-800/50 border border-slate-600 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[140px] transition-all hover:border-emerald-500/50 hover:bg-slate-800">
+                        <span class="text-slate-500 text-xs uppercase tracking-widest mb-2">Slot Beta</span>
+                        <div class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center group-hover:scale-110 transition">
+                            <i class="fa-solid fa-plus text-slate-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Slot 3 -->
+                    <div id="slot-2" class="group bg-slate-800/50 border border-slate-600 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[140px] transition-all hover:border-emerald-500/50 hover:bg-slate-800">
+                        <span class="text-slate-500 text-xs uppercase tracking-widest mb-2">Slot Gamma</span>
+                        <div class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center group-hover:scale-110 transition">
+                            <i class="fa-solid fa-plus text-slate-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Monitor -->
+                <div class="bg-slate-900/80 rounded-lg p-1 border border-slate-700 grid grid-cols-3 divide-x divide-slate-700 mb-6">
+                    <div class="p-3 text-center">
+                        <div class="text-xs text-red-400 uppercase font-bold tracking-wider mb-1">Combat</div>
+                        <div id="total-combat" class="text-2xl font-bold stat-font text-white">0</div>
+                    </div>
+                    <div class="p-3 text-center">
+                        <div class="text-xs text-blue-400 uppercase font-bold tracking-wider mb-1">Utility</div>
+                        <div id="total-utility" class="text-2xl font-bold stat-font text-white">0</div>
+                    </div>
+                    <div class="p-3 text-center">
+                        <div class="text-xs text-purple-400 uppercase font-bold tracking-wider mb-1">Whimsy</div>
+                        <div id="total-whimsy" class="text-2xl font-bold stat-font text-white">0</div>
+                    </div>
+                </div>
+
+                <!-- Result Display -->
+                <div id="crafting-result" class="hidden animate-fade-in border border-emerald-500/30 bg-emerald-900/20 rounded-xl p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                    <h3 class="text-emerald-400 font-bold uppercase text-xs tracking-wider mb-2 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span> Synthesis Complete
+                    </h3>
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                        <div>
+                            <div id="result-name" class="text-3xl font-bold text-white mb-2 font-sarabun drop-shadow-md">Rabbit's Speed</div>
+                            <div class="flex flex-wrap gap-2 text-xs mb-4 font-mono">
+                                <span id="result-rarity" class="px-2 py-0.5 bg-slate-700 rounded border border-slate-600 text-gray-300">Common</span>
+                                <span id="result-type" class="px-2 py-0.5 bg-slate-700 rounded border border-slate-600 text-gray-300">Combat</span>
+                                <span id="result-level" class="px-2 py-0.5 bg-slate-700 rounded border border-slate-600 text-emerald-300">LVL 1</span>
+                            </div>
+                        </div>
+                        <div class="md:text-right">
+                             <!-- Icon Placeholder -->
+                             <i class="fa-solid fa-flask-vial text-4xl text-emerald-500/50"></i>
+                        </div>
+                    </div>
+                    <p id="result-desc" class="text-gray-300 text-sm leading-relaxed border-t border-emerald-500/20 pt-3 mt-1 font-light">
+                        ...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Inventory Search -->
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-300 uppercase tracking-wide">Inventory Storage</h3>
+                    <span class="text-xs text-emerald-500 font-mono" id="item-count">LOADING...</span>
+                </div>
+                
+                <div class="relative mb-4 group">
+                    <input type="text" id="ingredient-search" placeholder="Search ingredients..." class="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-gray-200 placeholder-slate-500 transition-all">
+                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-500 group-focus-within:text-emerald-400 transition-colors"></i>
+                </div>
+
+                <div class="overflow-hidden rounded-lg border border-slate-700 bg-slate-900/30">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-800 text-gray-400 font-bold uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="p-3 pl-4">Name</th>
+                                    <th class="p-3 text-center text-red-400">Cmbt</th>
+                                    <th class="p-3 text-center text-blue-400">Util</th>
+                                    <th class="p-3 text-center text-purple-400">Whim</th>
+                                    <th class="p-3 text-right pr-4">Add</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ingredient-list" class="divide-y divide-slate-700/50 text-gray-300">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: POTIONS LIST -->
+        <div id="view-potions" class="hidden space-y-6">
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h2 class="text-xl font-bold text-gray-200 tracking-wide uppercase">Potion Database</h2>
+                    <div class="flex bg-slate-800/80 p-1 rounded-lg">
+                        <button onclick="filterPotions('all')" class="filter-btn active px-4 py-1.5 rounded-md text-xs font-bold transition-all hover:bg-slate-700 text-gray-400">ALL</button>
+                        <button onclick="filterPotions('Combat')" class="filter-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all hover:bg-slate-700 text-red-400">COMBAT</button>
+                        <button onclick="filterPotions('Utility')" class="filter-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all hover:bg-slate-700 text-blue-400">UTILITY</button>
+                        <button onclick="filterPotions('Whimsy')" class="filter-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all hover:bg-slate-700 text-purple-400">WHIMSY</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4" id="potions-library">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: BOONS -->
+        <div id="view-boons" class="hidden space-y-6">
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-amber-500 font-rajdhani uppercase tracking-widest">Obojima Boons</h2>
+                        <p class="text-sm text-gray-400 mt-1"><i class="fa-solid fa-triangle-exclamation mr-1 text-amber-500"></i> Restriction: Limit 1 Boon per Character</p>
+                    </div>
+                    <div class="bg-amber-500/10 text-amber-500 px-3 py-1 rounded border border-amber-500/30 text-xs font-bold uppercase tracking-wider">
+                        Requires Shards
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="boons-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: RULES -->
+        <div id="view-rules" class="hidden space-y-6">
+            <div class="glass-panel rounded-xl p-6 mb-4">
+                <h2 class="text-xl font-bold text-emerald-400 mb-4 border-b border-slate-700 pb-2 uppercase tracking-wide">Synthesis Protocols</h2>
+                <ul class="space-y-3 text-sm text-gray-300">
+                    <li class="flex items-start"><i class="fa-solid fa-chevron-right text-emerald-500 mt-1 mr-2 text-xs"></i> <span>Ingredients possess distinct <strong>Combat</strong>, <strong>Utility</strong>, and <strong>Whimsy</strong> values.</span></li>
+                    <li class="flex items-start"><i class="fa-solid fa-chevron-right text-emerald-500 mt-1 mr-2 text-xs"></i> <span>Exactly <strong>3 Ingredients</strong> are required to synthesize a compound.</span></li>
+                    <li class="flex items-start"><i class="fa-solid fa-chevron-right text-emerald-500 mt-1 mr-2 text-xs"></i> <span>The resulting Potion Type is determined by the <strong>Highest Aggregate Attribute</strong>.</span></li>
+                    <li class="flex items-start"><i class="fa-solid fa-chevron-right text-red-500 mt-1 mr-2 text-xs"></i> <span><strong>Warning:</strong> Exceeding biological limits may trigger Potion Sickness.</span></li>
+                </ul>
+            </div>
+
+            <div class="glass-panel rounded-xl p-0 overflow-hidden border border-red-900/30">
+                <div class="bg-red-900/20 p-4 border-b border-red-900/30 flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-red-400 uppercase tracking-wide">Sickness Table</h2>
+                    <span class="px-2 py-1 bg-red-900/40 rounded text-xs text-red-300 font-mono border border-red-500/20">D10 ROLL</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <tbody id="sickness-table" class="divide-y divide-slate-800">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-slate-900 rounded-xl max-w-md w-full p-6 relative animate-fade-in border border-emerald-500/20 shadow-2xl shadow-emerald-900/20">
+            <button onclick="document.getElementById('infoModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold text-emerald-400 mb-1 uppercase tracking-widest">The Glass Arboretum</h3>
+            <div class="h-1 w-20 bg-emerald-500 rounded mb-4"></div>
+            <p class="text-sm text-gray-300 mb-4 leading-relaxed font-light">
+                ท่ามกลางโครงสร้างหินที่เย็นเยียบและทางเดินที่ไร้จุดสิ้นสุดของหอคอย The Spire... คุณค้นพบเรือนกระจกยักษ์ที่ฝังตัวอยู่ เต็มไปด้วยพรรณไม้จากต่างมิติ
+                <br><br>
+                ระบบนี้ใช้สำหรับบันทึกและคำนวณการสร้าง Potion ตามกฎ D&D League เฉพาะกลุ่ม โดยอ้างอิงข้อมูลจาก Obojima
+            </p>
+            <div class="text-xs text-slate-500 mt-6 text-center border-t border-slate-800 pt-4">
+                SPIRE TRACKING SYSTEM v2.0
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & DATA -->
+    <script>
+        // --- EXPANDED DATA SECTION ---
+        // ข้อมูลนี้ถูกเติมเต็มจาก CSV snippets ที่ให้มา
+
+        const ingredientsDB = [
+            { id: 1, name: "Amber", rarity: "common", combat: 9, utility: 5, whimsy: 4 },
+            { id: 2, name: "Apper Carrot", rarity: "common", combat: 0, utility: 3, whimsy: 1 },
+            { id: 3, name: "Bamboo", rarity: "common", combat: 3, utility: 3, whimsy: 3 },
+            { id: 4, name: "Bashu Powder", rarity: "common", combat: 2, utility: 0, whimsy: 0 },
+            { id: 5, name: "Black Cinnamon", rarity: "uncommon", combat: 16, utility: 12, whimsy: 11 },
+            { id: 6, name: "Black Pearl", rarity: "uncommon", combat: 13, utility: 14, whimsy: 15 },
+            { id: 7, name: "Blossom of Spirit Vine", rarity: "rare", combat: 18, utility: 18, whimsy: 19 },
+            { id: 8, name: "Blue Back Salmon", rarity: "common", combat: 3, utility: 4, whimsy: 7 },
+            { id: 9, name: "Boom Beri", rarity: "common", combat: 7, utility: 6, whimsy: 1 },
+            { id: 10, name: "Bora Bug", rarity: "common", combat: 4, utility: 8, whimsy: 3 },
+            { id: 11, name: "Brush Reed", rarity: "common", combat: 1, utility: 10, whimsy: 6 },
+            { id: 12, name: "Bundle of Driko Twigs", rarity: "common", combat: 1, utility: 1, whimsy: 2 },
+            { id: 13, name: "Camp Mite", rarity: "common", combat: 6, utility: 4, whimsy: 8 },
+            { id: 14, name: "Chicken Egg", rarity: "common", combat: 1, utility: 1, whimsy: 2 },
+            { id: 15, name: "Chisuay's Heavenly Tea", rarity: "common", combat: 2, utility: 7, whimsy: 5 },
+            { id: 16, name: "Clay Snake Tail", rarity: "common", combat: 8, utility: 6, whimsy: 5 },
+            { id: 17, name: "Cloud Horn", rarity: "common", combat: 1, utility: 0, whimsy: 0 },
+            { id: 18, name: "Creeping Bolete", rarity: "common", combat: 3, utility: 10, whimsy: 6 },
+            { id: 19, name: "Dorrin Plate", rarity: "common", combat: 7, utility: 8, whimsy: 4 },
+            { id: 20, name: "Dried Fruit", rarity: "common", combat: 2, utility: 1, whimsy: 4 },
+            { id: 21, name: "Earwax", rarity: "common", combat: 0, utility: 0, whimsy: 0 },
+            { id: 22, name: "Fish Folk Tooth", rarity: "common", combat: 9, utility: 4, whimsy: 3 },
+            { id: 23, name: "Fish Head", rarity: "common", combat: 4, utility: 5, whimsy: 4 },
+            { id: 24, name: "Flash Paper", rarity: "common", combat: 6, utility: 9, whimsy: 1 },
+            { id: 25, name: "Gohaku Rice", rarity: "common", combat: 3, utility: 2, whimsy: 3 },
+            { id: 26, name: "Green Slime", rarity: "common", combat: 8, utility: 2, whimsy: 5 },
+            { id: 27, name: "Munchanka Root", rarity: "uncommon", combat: 17, utility: 11, whimsy: 11 },
+            { id: 28, name: "Nakudama Spice", rarity: "uncommon", combat: 12, utility: 15, whimsy: 14 },
+            { id: 29, name: "Night Thistle", rarity: "uncommon", combat: 14, utility: 17, whimsy: 16 },
+            { id: 30, name: "Noodle Eel", rarity: "uncommon", combat: 13, utility: 12, whimsy: 16 },
+            { id: 31, name: "Opu Opu Spring Water", rarity: "uncommon", combat: 11, utility: 16, whimsy: 14 },
+            { id: 32, name: "Petrified Alligator", rarity: "uncommon", combat: 15, utility: 16, whimsy: 13 },
+            { id: 33, name: "Pok Pok Flakes", rarity: "uncommon", combat: 13, utility: 14, whimsy: 13 },
+            { id: 34, name: "Rubble from a Rubble Golem", rarity: "uncommon", combat: 16, utility: 11, whimsy: 15 },
+            { id: 35, name: "Scumweed", rarity: "uncommon", combat: 11, utility: 12, whimsy: 11 },
+            { id: 36, name: "Shadowroot", rarity: "uncommon", combat: 15, utility: 13, whimsy: 12 },
+            { id: 37, name: "Sleeping Merchant", rarity: "uncommon", combat: 13, utility: 13, whimsy: 13 },
+            { id: 38, name: "Spark Plug", rarity: "uncommon", combat: 11, utility: 17, whimsy: 11 },
+            { id: 39, name: "Spirit Tea", rarity: "uncommon", combat: 11, utility: 11, whimsy: 17 },
+            { id: 40, name: "Spring", rarity: "uncommon", combat: 14, utility: 17, whimsy: 15 },
+            { id: 41, name: "Sun Shroom", rarity: "uncommon", combat: 13, utility: 16, whimsy: 14 },
+            { id: 42, name: "Toka Truffle", rarity: "uncommon", combat: 15, utility: 12, whimsy: 14 },
+            { id: 43, name: "Vinyl Record", rarity: "uncommon", combat: 15, utility: 15, whimsy: 15 },
+            { id: 44, name: "Wolfenite", rarity: "uncommon", combat: 11, utility: 17, whimsy: 11 },
+            // Added from new snippets
+            { id: 45, name: "Ube", rarity: "common", combat: 2, utility: 6, whimsy: 5 },
+            { id: 46, name: "Varrow", rarity: "common", combat: 0, utility: 1, whimsy: 0 },
+            { id: 47, name: "Venus Fly Rat", rarity: "common", combat: 9, utility: 2, whimsy: 8 },
+            { id: 48, name: "Windbloom", rarity: "common", combat: 6, utility: 7, whimsy: 0 },
+            { id: 49, name: "Witch's Broom", rarity: "common", combat: 3, utility: 0, whimsy: 5 },
+            { id: 50, name: "Witch's Eye Coral", rarity: "common", combat: 1, utility: 0, whimsy: 10 }
+        ];
+
+        // รายชื่อ Potion
+        const potionsDB = [
+            // COMBAT
+            { level: 1, type: "Combat", name: "Rabbit's Speed", rarity: "common", desc: "Walking speed increases by 5 feet for 10 minutes. Within seconds of downing this potion, you feel a distinct lightness." },
+            { level: 2, type: "Combat", name: "Weapon Master's Elixir", rarity: "common", desc: "Gain proficiency with a melee weapon of your choice for 24 hours. Gain a sense of clarity and focus." },
+            { level: 3, type: "Combat", name: "Spirit of Salyri", rarity: "common", desc: "Gain proficiency with one type of armor of your choice for 24 hours. Contains the spirit of a great warrior." },
+            { level: 4, type: "Combat", name: "Beast Hide", rarity: "common", desc: "Resistance to cold damage for 1 minute. Thickens your skin and grows patches of fur." },
+            { level: 5, type: "Combat", name: "Spirit Armor", rarity: "common", desc: "Target has AC 15 while not wearing armor for 1 hour. Covers the target with a magical force." },
+            { level: 6, type: "Combat", name: "Displacement Field", rarity: "common", desc: "Appears standing next to actual location. Causes you to shimmer and flicker." },
+            
+            // WHIMSY (Found in snippets)
+            { level: 59, type: "Whimsy", name: "Chicken Chaser", rarity: "rare", desc: "Summons 100 chickens. 30d6 slashing damage AOE. Speak with chickens permanently. Hair turns dark red." },
+            { level: 60, type: "Whimsy", name: "Disappearing Act", rarity: "rare", desc: "Body vanishes, sentience transferred to random object within 100 miles. Items fall to the ground." },
+            
+            // UTILITY (Inferred generics for missing data)
+            { level: 1, type: "Utility", name: "Minor Glow", rarity: "common", desc: "Emits a faint light for 1 hour." },
+            { level: 10, type: "Utility", name: "Tracker's Eye", rarity: "common", desc: "Advantage on Survival checks for 1 hour." },
+            { level: 20, type: "Utility", name: "Water Breath", rarity: "uncommon", desc: "Breathe underwater for 1 hour." }
+        ];
+
+        const boonsDB = [
+            { name: "Acceptance", cost: 5, desc: "When making a skill check you can choose to add a +5 bonus to the roll. Once per long rest." },
+            { name: "Envy", cost: 5, desc: "Gain proficiency in a skill an ally has for 1 hour. Ally has disadvantage on that skill. (PvP Consent required)" },
+            { name: "Fearful", cost: 10, desc: "If hit by an attack near an ally, transfer damage to ally. Once per long rest. (PvP Consent required)" },
+            { name: "Forgiveness", cost: 10, desc: "When hit, cause subsequent attacks by that creature to have disadvantage until next turn. Once per long rest." },
+            { name: "Hate", cost: 15, desc: "Change an attack roll or skill check to a 20. Charisma drops to 1 for 24 hours." },
+            { name: "Heroic", cost: 15, desc: "Succeed on a failed WIS, CHA, or INT save. Once per long rest." },
+            { name: "Mercy", cost: 5, desc: "Forgo damage on a drop-to-zero hit to make a CHA check with advantage." },
+            { name: "Selfishness", cost: 10, desc: "Regain 2 HP per ally within 30ft when taking damage. Allies take necrotic damage. (PvP Consent required)" },
+            { name: "Selfless", cost: 5, desc: "Forgo action to let another character take an action or move." },
+            { name: "Shame", cost: 15, desc: "Creatures within 60ft must succeed Wisdom save or cannot look at you. DC = 10 + Level." }
+        ];
+
+        const sicknessDB = [
+            { dice: 1, effect: "Sand fills your mouth, making it impossible to speak (1 minute)." },
+            { dice: 2, effect: "Arms turn jelly-like. Cannot use arms until end of next turn." },
+            { dice: 3, effect: "Vision blurs. All creatures look exactly the same (1 minute)." },
+            { dice: 4, effect: "Polymorph into adorable critter (Kitten, Songbird, Puppy, Black Bear Cub, Piglet, Otter)." },
+            { dice: 5, effect: "Teleported away randomly (1d4 direction, 1d4 hundred feet) with a sonic boom." },
+            { dice: 6, effect: "Voice volume changes randomly (1 hour)." },
+            { dice: 7, effect: "Eels grow in your gut for 1 hour. You cough one up occasionally." },
+            { dice: 8, effect: "Sickened by potions. DC 15 CON save to drink potions for 1 week." },
+            { dice: 9, effect: "Allergic to magic (itchy hives near magic), reducing Charisma." },
+            { dice: 10, effect: "No adverse side effects occurred." }
+        ];
+
+        // --- APP STATE ---
+        let selectedIngredients = [];
+
+        // --- FUNCTIONS ---
+
+        function init() {
+            renderIngredientsList(ingredientsDB);
+            renderPotionsList();
+            renderBoonsList();
+            renderSicknessTable();
+            document.getElementById('item-count').innerText = `${ingredientsDB.length} ITEMS LOADED`;
+        }
+
+        function switchTab(tabName) {
+            ['crafting', 'potions', 'boons', 'rules'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('active');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-400');
+            });
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-gray-400');
+        }
+
+        function renderIngredientsList(data) {
+            const list = document.getElementById('ingredient-list');
+            list.innerHTML = '';
+            
+            data.slice(0, 100).forEach(ing => { // Show more items
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition-colors border-b border-slate-800/50 last:border-0";
+                tr.innerHTML = `
+                    <td class="p-3 pl-4">
+                        <div class="font-bold text-gray-200">${ing.name}</div>
+                        <div class="text-[10px] uppercase tracking-wider rarity-${ing.rarity.replace(" ", "-")}">${ing.rarity}</div>
+                    </td>
+                    <td class="p-3 text-center font-mono text-slate-400">${ing.combat}</td>
+                    <td class="p-3 text-center font-mono text-slate-400">${ing.utility}</td>
+                    <td class="p-3 text-center font-mono text-slate-400">${ing.whimsy}</td>
+                    <td class="p-3 text-right pr-4">
+                        <button onclick="addIngredient(${ing.id})" class="text-emerald-500 hover:text-emerald-300 hover:bg-emerald-500/20 rounded-lg w-8 h-8 flex items-center justify-center transition border border-emerald-500/30">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+        }
+
+        document.getElementById('ingredient-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = ingredientsDB.filter(ing => ing.name.toLowerCase().includes(term));
+            renderIngredientsList(filtered);
+        });
+
+        function addIngredient(id) {
+            if (selectedIngredients.length >= 3) {
+                // No alert, just shake animation or tooltip could be better, but simplified here
+                const panel = document.querySelector('.border-emerald-500');
+                panel.classList.add('animate-pulse');
+                setTimeout(() => panel.classList.remove('animate-pulse'), 500);
+                return;
+            }
+            const ing = ingredientsDB.find(i => i.id === id);
+            selectedIngredients.push(ing);
+            renderCauldron();
+        }
+
+        function removeIngredient(index) {
+            selectedIngredients.splice(index, 1);
+            renderCauldron();
+        }
+
+        function clearCauldron() {
+            selectedIngredients = [];
+            renderCauldron();
+        }
+
+        function renderCauldron() {
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                if (selectedIngredients[i]) {
+                    const ing = selectedIngredients[i];
+                    slot.className = "bg-slate-800 border border-emerald-500 rounded-lg p-3 shadow-lg shadow-emerald-500/10 relative flex flex-col justify-between h-[140px] animate-fade-in";
+                    slot.innerHTML = `
+                        <button onclick="removeIngredient(${i})" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <div>
+                            <div class="font-bold text-sm text-emerald-400 line-clamp-2 pr-4">${ing.name}</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1 opacity-70">${ing.rarity}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1 text-[10px] font-mono bg-slate-900/50 rounded p-1.5 border border-slate-700/50">
+                            <div class="text-center"><span class="block text-red-400">C</span>${ing.combat}</div>
+                            <div class="text-center"><span class="block text-blue-400">U</span>${ing.utility}</div>
+                            <div class="text-center"><span class="block text-purple-400">W</span>${ing.whimsy}</div>
+                        </div>
+                    `;
+                } else {
+                    const slotNames = ['Alpha', 'Beta', 'Gamma'];
+                    slot.className = "group bg-slate-800/50 border border-slate-600 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[140px] transition-all hover:border-emerald-500/50 hover:bg-slate-800";
+                    slot.innerHTML = `
+                        <span class="text-slate-500 text-xs uppercase tracking-widest mb-2">Slot ${slotNames[i]}</span>
+                        <div class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center group-hover:scale-110 transition group-hover:bg-slate-700">
+                            <i class="fa-solid fa-plus text-slate-500 text-xl group-hover:text-emerald-400"></i>
+                        </div>
+                    `;
+                }
+            }
+            calculateResult();
+        }
+
+        function calculateResult() {
+            const totalC = selectedIngredients.reduce((sum, i) => sum + i.combat, 0);
+            const totalU = selectedIngredients.reduce((sum, i) => sum + i.utility, 0);
+            const totalW = selectedIngredients.reduce((sum, i) => sum + i.whimsy, 0);
+
+            // Animate numbers
+            document.getElementById('total-combat').innerText = totalC;
+            document.getElementById('total-utility').innerText = totalU;
+            document.getElementById('total-whimsy').innerText = totalW;
+            
+            // Colorize highest
+            const max = Math.max(totalC, totalU, totalW);
+            document.getElementById('total-combat').className = `text-2xl font-bold stat-font ${totalC === max && totalC > 0 ? 'text-red-400 scale-110' : 'text-gray-500'} transition-all inline-block`;
+            document.getElementById('total-utility').className = `text-2xl font-bold stat-font ${totalU === max && totalU > 0 ? 'text-blue-400 scale-110' : 'text-gray-500'} transition-all inline-block`;
+            document.getElementById('total-whimsy').className = `text-2xl font-bold stat-font ${totalW === max && totalW > 0 ? 'text-purple-400 scale-110' : 'text-gray-500'} transition-all inline-block`;
+
+            const resultArea = document.getElementById('crafting-result');
+
+            if (selectedIngredients.length === 3) {
+                resultArea.classList.remove('hidden');
+                
+                let type = "";
+                if (max === totalC) type = "Combat";
+                else if (max === totalU) type = "Utility";
+                else type = "Whimsy";
+
+                let potion = potionsDB.find(p => p.type === type && p.level === max);
+
+                if (!potion) {
+                    potion = {
+                        name: "Unstable Mixture",
+                        rarity: "common",
+                        type: type,
+                        level: max,
+                        desc: `A generic ${type} potion with power level ${max}. The specific formula matches no known database records. Proceed with caution.`
+                    };
+                }
+
+                document.getElementById('result-name').innerText = potion.name;
+                document.getElementById('result-rarity').innerText = potion.rarity.toUpperCase();
+                document.getElementById('result-rarity').className = `px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide rarity-${potion.rarity.replace(" ", "-")} bg-slate-900 border-slate-700`;
+                
+                document.getElementById('result-type').innerText = potion.type.toUpperCase();
+                document.getElementById('result-level').innerText = "LVL " + (potion.level || max);
+                document.getElementById('result-desc').innerText = potion.desc;
+
+            } else {
+                resultArea.classList.add('hidden');
+            }
+        }
+
+        function renderPotionsList() {
+            const container = document.getElementById('potions-library');
+            container.innerHTML = potionsDB.map(p => `
+                <div class="potion-card p-4 bg-slate-800/80 border border-slate-700 rounded-lg shadow-sm hover:border-emerald-500/50 transition relative overflow-hidden group" data-type="${p.type}">
+                    <div class="absolute right-0 top-0 p-2 opacity-10 group-hover:opacity-20 transition">
+                        <i class="fa-solid fa-flask text-4xl text-white"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <h4 class="font-bold text-gray-200 text-lg">${p.name}</h4>
+                        <div class="flex items-center gap-2 text-xs mt-1 mb-2">
+                            <span class="uppercase tracking-wider font-bold rarity-${p.rarity}">${p.rarity}</span>
+                            <span class="text-slate-600">•</span>
+                            <span class="text-slate-400">${p.type} (Lv.${p.level})</span>
+                        </div>
+                        <p class="text-sm text-gray-400 font-light border-l-2 border-slate-600 pl-3">${p.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterPotions(type) {
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.innerText.toUpperCase() === type.toUpperCase() || (type === 'all' && btn.innerText === 'ALL')) {
+                    btn.classList.add('active', 'bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/50');
+                    btn.classList.remove('text-gray-400', 'text-red-400', 'text-blue-400', 'text-purple-400');
+                } else {
+                    btn.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/50');
+                    // Reset colors based on original class logic if needed, but simple gray is fine for inactive
+                    btn.classList.add('text-gray-500');
+                }
+            });
+
+            const cards = document.querySelectorAll('.potion-card');
+            cards.forEach(card => {
+                if (type === 'all' || card.getAttribute('data-type') === type) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        function renderBoonsList() {
+            const container = document.getElementById('boons-list');
+            container.innerHTML = boonsDB.map(b => `
+                <div class="bg-slate-800/50 border border-amber-500/30 rounded-lg p-5 shadow-sm relative overflow-hidden group hover:bg-slate-800 transition">
+                    <div class="absolute top-0 right-0 bg-amber-500/20 text-amber-500 text-[10px] px-2 py-1 rounded-bl-lg font-bold border-l border-b border-amber-500/30 backdrop-blur-sm">
+                        ${b.cost} SHARDS
+                    </div>
+                    <h4 class="font-bold text-lg text-gray-200 mb-2 font-rajdhani uppercase tracking-wide group-hover:text-amber-400 transition">${b.name}</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed font-light">${b.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderSicknessTable() {
+            const tbody = document.getElementById('sickness-table');
+            tbody.innerHTML = sicknessDB.map(s => `
+                <tr class="even:bg-slate-800/30 hover:bg-red-900/10 transition">
+                    <td class="p-3 text-center font-bold text-red-400 border-r border-slate-700/50 font-mono text-lg">${s.dice}</td>
+                    <td class="p-3 text-gray-400 text-sm pl-4">${s.effect}</td>
+                </tr>
+            `).join('');
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
