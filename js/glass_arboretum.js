@@ -467,7 +467,12 @@ async function adjustQty(name, delta) {
     if (newQty === 0) {
         currentInventory = currentInventory.filter(i => i.item_name !== name);
     }
+
+    // Sync crafting slots - remove excess ingredients that exceed new inventory
+    syncCraftingSlotsWithInventory();
+
     renderInventory();
+    updateSlotsUI();
 
     // DB Update
     if (newQty > 0) {
@@ -478,6 +483,35 @@ async function adjustQty(name, delta) {
         await supabase.from('character_inventories')
             .delete()
             .eq('character_id', selectedCharId).eq('item_name', name);
+    }
+}
+
+// Sync crafting slots with inventory - remove items that exceed available quantity
+function syncCraftingSlotsWithInventory() {
+    const usageCount = {};
+
+    // Count how many of each item is in crafting slots
+    craftingSlots.forEach((item, index) => {
+        if (item) {
+            if (!usageCount[item.name]) usageCount[item.name] = [];
+            usageCount[item.name].push(index);
+        }
+    });
+
+    // Check against available inventory and remove excess
+    for (const [itemName, slotIndices] of Object.entries(usageCount)) {
+        const invItem = currentInventory.find(i => i.item_name === itemName);
+        const availableQty = invItem ? invItem.quantity : 0;
+
+        // If using more than available, remove excess from slots (LIFO - last added first removed)
+        if (slotIndices.length > availableQty) {
+            const excessCount = slotIndices.length - availableQty;
+            // Remove from the end (latest slots first)
+            for (let i = 0; i < excessCount; i++) {
+                const slotToRemove = slotIndices[slotIndices.length - 1 - i];
+                craftingSlots[slotToRemove] = null;
+            }
+        }
     }
 }
 
