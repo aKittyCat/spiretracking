@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Populate GM Item List
-    INGREDIENTS_DB.sort((a,b) => a.name.localeCompare(b.name)).forEach(ing => {
+    INGREDIENTS_DB.sort((a, b) => a.name.localeCompare(b.name)).forEach(ing => {
         const opt = document.createElement('option');
         opt.value = ing.name; opt.innerText = ing.name;
         document.getElementById('addItemSelect').appendChild(opt);
@@ -58,14 +58,14 @@ function switchTab(tab) {
         invEl.classList.remove('hidden');
         potEl.classList.add('hidden');
         gmPanel.classList.remove('hidden');
-        btnIng.className = 'flex-1 pb-2 text-center tab-active';
-        btnPot.className = 'flex-1 pb-2 text-center tab-inactive';
+        btnIng.className = 'tab-btn active pb-3 text-sm font-semibold text-green-400 flex items-center gap-2';
+        btnPot.className = 'tab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-gray-200 flex items-center gap-2';
     } else {
         invEl.classList.add('hidden');
         potEl.classList.remove('hidden');
         gmPanel.classList.add('hidden');
-        btnIng.className = 'flex-1 pb-2 text-center tab-inactive';
-        btnPot.className = 'flex-1 pb-2 text-center tab-active';
+        btnIng.className = 'tab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-gray-200 flex items-center gap-2';
+        btnPot.className = 'tab-btn active pb-3 text-sm font-semibold text-green-400 flex items-center gap-2';
     }
 }
 
@@ -96,10 +96,10 @@ function renderInventory() {
     }
 
     currentInventory.forEach(item => {
-        const stats = INGREDIENTS_DB.find(i => i.name === item.item_name) || { combat:'?', utility:'?', whimsy:'?' };
+        const stats = INGREDIENTS_DB.find(i => i.name === item.item_name) || { combat: '?', utility: '?', whimsy: '?' };
         const safeName = item.item_name.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-2 rounded border border-gray-700 flex justify-between items-center';
+        div.className = 'bg-gray-800/50 p-3 rounded-xl border border-gray-700/50 flex justify-between items-center hover:bg-gray-800 transition';
         div.innerHTML = `
             <div>
                 <div class="font-bold text-sm text-green-300">${item.item_name}</div>
@@ -114,7 +114,7 @@ function renderInventory() {
                     <button onclick="adjustQty('${safeName}', 1)" class="bg-gray-700 hover:bg-green-900 text-white w-5 h-5 rounded flex items-center justify-center text-xs">+</button>
                 </div>
             </div>
-            <button onclick="addToSlot('${safeName}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs h-full ml-2">
+            <button onclick="addToSlot('${safeName}')" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-xs font-medium h-full ml-2 shadow-lg shadow-green-600/20 transition">
                 ใส่
             </button>
         `;
@@ -133,13 +133,13 @@ function renderPotions() {
     currentPotions.forEach(item => {
         const safeName = item.item_name.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-2 rounded border border-gray-600 flex justify-between items-center';
+        div.className = 'bg-gray-800/50 p-3 rounded-xl border border-gray-700/50 flex justify-between items-center hover:bg-gray-800 transition';
         div.innerHTML = `
             <div>
                 <div class="font-bold text-sm text-yellow-300">${item.item_name}</div>
                 <div class="text-xs text-gray-400">จำนวน: ${item.quantity}</div>
             </div>
-            <button onclick="deletePotion('${safeName}')" class="bg-red-900 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+            <button onclick="deletePotion('${safeName}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs transition border border-red-600/30">
                 <i class="fas fa-trash"></i> ลบ
             </button>
         `;
@@ -175,8 +175,8 @@ async function adjustQty(name, delta) {
 }
 
 async function deletePotion(name) {
-    if(!confirm(`ต้องการลบ ${name} ใช่หรือไม่?`)) return;
-    
+    if (!confirm(`ต้องการลบ ${name} ใช่หรือไม่?`)) return;
+
     // Find DB ID for specific deletion or just quantity decrement
     // Here logic implies removing 1 qty
     const item = currentPotions.find(i => i.item_name === name);
@@ -195,7 +195,7 @@ async function deletePotion(name) {
 function addToSlot(itemName) {
     const invItem = currentInventory.find(i => i.item_name === itemName);
     const usedCount = craftingSlots.filter(s => s && s.name === itemName).length;
-    
+
     if (!invItem || usedCount >= invItem.quantity) {
         alert('วัตถุดิบไม่พอ'); return;
     }
@@ -225,7 +225,7 @@ function updateSlotsUI() {
     let filledCount = 0;
 
     craftingSlots.forEach((item, index) => {
-        const el = document.getElementById(`slot${index+1}`);
+        const el = document.getElementById(`slot${index + 1}`);
         if (item) {
             el.innerHTML = `<div class="text-center"><div class="text-xs font-bold text-white">${item.name}</div></div>`;
             el.classList.add('filled');
@@ -234,7 +234,7 @@ function updateSlotsUI() {
             totalW += parseInt(item.whimsy);
             filledCount++;
         } else {
-            el.innerHTML = `<span class="text-gray-500 text-sm">วัตถุดิบ ${index+1}</span>`;
+            el.innerHTML = `<span class="text-gray-500 text-sm">วัตถุดิบ ${index + 1}</span>`;
             el.classList.remove('filled');
         }
     });
@@ -255,17 +255,17 @@ function updateSlotsUI() {
             // Tie found -> Show Selector
             tieBreakerDiv.classList.remove('hidden');
             tieButtonsDiv.innerHTML = '';
-            
+
             candidates.forEach(type => {
                 const btn = document.createElement('button');
-                btn.className = `px-3 py-1 rounded text-sm border ${selectedAttribute === type ? 'bg-yellow-600 text-white border-white' : 'bg-gray-700 text-gray-300 border-gray-500 hover:bg-gray-600'}`;
-                
+                btn.className = `px-4 py-2 rounded-lg text-sm font-medium border transition ${selectedAttribute === type ? 'bg-yellow-600 text-white border-yellow-500 shadow-lg shadow-yellow-600/20' : 'bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:text-white'}`;
+
                 // Icon mapping
                 let icon = '';
-                if(type === 'Combat') icon = '<i class="fas fa-fist-raised"></i>';
-                if(type === 'Utility') icon = '<i class="fas fa-tools"></i>';
-                if(type === 'Whimsical') icon = '<i class="fas fa-hat-wizard"></i>';
-                
+                if (type === 'Combat') icon = '<i class="fas fa-fist-raised"></i>';
+                if (type === 'Utility') icon = '<i class="fas fa-tools"></i>';
+                if (type === 'Whimsical') icon = '<i class="fas fa-hat-wizard"></i>';
+
                 btn.innerHTML = `${icon} ${type}`;
                 btn.onclick = () => {
                     selectedAttribute = type;
@@ -291,12 +291,12 @@ function updateSlotsUI() {
         craftBtn.disabled = false;
         craftBtn.classList.remove('bg-gray-700', 'text-gray-400');
         craftBtn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-500');
-        
+
         // Find Result using selectedAttribute (needs to convert Whimsical -> Whimsy if needed, but DB uses keys)
         // Adjust DB key in data.js to match: "Whimsical" or "Whimsy"
         // Let's assume DB keys are: Combat, Utility, Whimsical
         const result = findPotion(selectedAttribute, maxVal);
-        
+
         if (result) {
             document.getElementById('previewResult').classList.remove('hidden');
             document.getElementById('potionName').innerText = result.name;
@@ -320,7 +320,7 @@ async function craftPotion() {
     try {
         // 1. Deduct Ingredients
         const usage = {};
-        craftingSlots.forEach(item => { if(item) usage[item.name] = (usage[item.name] || 0) + 1; });
+        craftingSlots.forEach(item => { if (item) usage[item.name] = (usage[item.name] || 0) + 1; });
 
         for (const [name, qty] of Object.entries(usage)) {
             const item = currentInventory.find(i => i.item_name === name);
@@ -346,7 +346,7 @@ async function craftPotion() {
         // 3. Generate Log
         const usedIngs = craftingSlots.map(s => s.name).join(', ');
         const logText = `ชื่อตัวละคร: ${selectedCharName}\nวัตถุดิบที่ใช้: ${usedIngs}\nPotion ที่ได้: ${potionName}`;
-        
+
         logContent.innerText = logText;
         logArea.classList.remove('hidden');
 
@@ -373,7 +373,7 @@ function copyLog() {
 async function addManualItem() {
     const itemName = document.getElementById('addItemSelect').value;
     if (!itemName || !selectedCharId) return;
-    
+
     // Check local first to save bandwidth? or direct DB
     const { data: exist } = await supabase.from('character_inventories')
         .select('quantity').eq('character_id', selectedCharId).eq('item_name', itemName).eq('category', 'ingredient').single();

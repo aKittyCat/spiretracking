@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,82 +8,213 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="env.js"></script>
-    <script src="supabase-config.js"></script> 
+    <script src="supabase-config.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-    
+
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #121212; color: #e0e0e0; }
-        .spire-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .slot { height: 80px; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; background-color: #252525; }
-        .slot:hover { border-color: #4caf50; background-color: #2a2a2a; }
-        .slot.filled { border-style: solid; border-color: #4caf50; background-color: #1b3a1d; }
-        .tab-active { border-bottom: 2px solid #4caf50; color: #4caf50; }
-        .tab-inactive { color: #888; }
-        .tab-inactive:hover { color: #ccc; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #121212; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #4ade80, #22d3ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-primary {
+            background-color: rgba(17, 24, 39, 0.6);
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .input-primary:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+            outline: none;
+        }
+
+        /* Custom Select Style */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: currentColor;
+            transition: width 0.3s ease;
+        }
+
+        .tab-btn.active::after {
+            width: 100%;
+        }
+
+        .slot {
+            height: 80px;
+            border: 2px dashed rgba(75, 85, 99, 0.6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(17, 24, 39, 0.5);
+        }
+
+        .slot:hover {
+            border-color: #4ade80;
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+
+        .slot.filled {
+            border-style: solid;
+            border-color: #22c55e;
+            background-color: rgba(34, 197, 94, 0.15);
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
 
-    <nav class="bg-gray-900 border-b border-gray-800 p-4 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="characters.html" class="text-gray-400 hover:text-white flex items-center gap-2">
-                <i class="fas fa-chevron-left"></i> กลับไปหน้าตัวละคร
-            </a>
-            <h1 class="text-xl font-bold text-green-400"><i class="fas fa-flask"></i> The Glass Arboretum</h1>
-            <div class="w-24"></div>
+<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-green-500 selection:text-white">
+
+    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
+            <div class="flex items-center gap-4">
+                <a href="characters.html"
+                    class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group"
+                    title="กลับหน้าตัวละคร">
+                    <i class="fa-solid fa-arrow-left text-gray-400 group-hover:text-white"></i>
+                </a>
+                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                    <span class="text-2xl">🧪</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">
+                        The <span class="gradient-text">Glass Arboretum</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 mt-1">Alchemy Crafting System</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="characters.html"
+                    class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                    <i class="fa-solid fa-users"></i> กลับหน้าตัวละคร
+                </a>
+            </div>
         </div>
-    </nav>
 
-    <div class="container mx-auto p-4 flex-grow">
-        
-        <div class="mb-6 flex justify-center">
-            <div class="w-full max-w-md">
-                <label class="block text-sm text-gray-400 mb-2">เลือกตัวละครที่จะปรุงยา</label>
-                <select id="characterSelect" class="w-full bg-gray-800 text-white border border-gray-700 rounded p-3 focus:outline-none focus:border-green-500">
+        <!-- Character Selection -->
+        <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-green-500/50">
+            <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+                <span class="bg-green-500/20 text-green-400 p-1.5 rounded-lg text-sm"><i
+                        class="fa-solid fa-user"></i></span>
+                เลือกตัวละครที่จะปรุงยา
+            </h2>
+            <div class="max-w-md">
+                <select id="characterSelect" class="w-full p-3 rounded-xl input-primary pr-10">
                     <option value="" disabled selected>รายการตัวละคร</option>
                 </select>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div class="lg:col-span-1 spire-card p-4 flex flex-col h-[80vh]">
-                <div class="flex border-b border-gray-700 mb-4 text-sm font-semibold">
-                    <button id="tabIngBtn" onclick="switchTab('ingredient')" class="flex-1 pb-2 text-center tab-active">
+
+            <!-- Inventory Panel -->
+            <div class="lg:col-span-1 glass-panel p-6 rounded-2xl shadow-lg flex flex-col h-[80vh]">
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-700 mb-4 gap-4">
+                    <button id="tabIngBtn" onclick="switchTab('ingredient')"
+                        class="tab-btn active pb-3 text-sm font-semibold text-green-400 flex items-center gap-2">
                         <i class="fas fa-leaf"></i> วัตถุดิบ
                     </button>
-                    <button id="tabPotBtn" onclick="switchTab('potion')" class="flex-1 pb-2 text-center tab-inactive">
+                    <button id="tabPotBtn" onclick="switchTab('potion')"
+                        class="tab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-gray-200 flex items-center gap-2">
                         <i class="fas fa-prescription-bottle"></i> กระเป๋ายา
                     </button>
                 </div>
-                
+
+                <!-- GM Panel -->
                 <div id="gmPanel" class="mb-4 flex gap-2">
-                    <select id="addItemSelect" class="bg-gray-800 text-xs text-white border border-gray-700 rounded flex-grow p-2">
+                    <select id="addItemSelect" class="flex-grow p-2.5 rounded-xl input-primary text-sm pr-10">
                         <option value="">+ เพิ่มวัตถุดิบ</option>
                     </select>
-                    <button onclick="addManualItem()" class="bg-green-700 hover:bg-green-600 text-white px-3 rounded text-xs">
+                    <button onclick="addManualItem()"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-xl text-sm font-medium transition shadow-lg shadow-green-600/20">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
 
+                <!-- Lists -->
                 <div id="inventoryList" class="flex-grow overflow-y-auto space-y-2 pr-2">
-                    <div class="text-center text-gray-500 mt-10">กรุณาเลือกตัวละคร</div>
+                    <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
+                        <i class="fa-solid fa-flask-vial text-4xl text-gray-600"></i>
+                        <p>กรุณาเลือกตัวละคร</p>
+                    </div>
                 </div>
                 <div id="potionList" class="hidden flex-grow overflow-y-auto space-y-2 pr-2">
-                    <div class="text-center text-gray-500 mt-10">ไม่มี Potion ที่ปรุงไว้</div>
+                    <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
+                        <i class="fa-solid fa-bottle-droplet text-4xl text-gray-600"></i>
+                        <p>ไม่มี Potion ที่ปรุงไว้</p>
+                    </div>
                 </div>
             </div>
 
+            <!-- Crafting Area -->
             <div class="lg:col-span-2 flex flex-col gap-6">
-                
-                <div class="spire-card p-6">
-                    <h2 class="text-lg font-semibold mb-4 text-center">โต๊ะปรุงยา (Alchemy Table)</h2>
+
+                <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-lg font-semibold mb-6 text-white flex items-center gap-2">
+                        <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
+                                class="fa-solid fa-flask"></i></span>
+                        โต๊ะปรุงยา (Alchemy Table)
+                    </h2>
+
+                    <!-- Slots -->
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div id="slot1" class="slot" onclick="removeIngredient(0)">
                             <span class="text-gray-500 text-sm">วัตถุดิบ 1</span>
@@ -95,45 +227,83 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-900 p-3 rounded">
-                        <div><div class="text-red-400"><i class="fas fa-fist-raised"></i> Combat</div><div id="totalCombat" class="font-bold text-xl">0</div></div>
-                        <div><div class="text-blue-400"><i class="fas fa-tools"></i> Utility</div><div id="totalUtility" class="font-bold text-xl">0</div></div>
-                        <div><div class="text-purple-400"><i class="fas fa-hat-wizard"></i> Whimsy</div><div id="totalWhimsy" class="font-bold text-xl">0</div></div>
+                    <!-- Stats -->
+                    <div
+                        class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-900/50 p-4 rounded-xl border border-gray-800">
+                        <div class="bg-gray-800/30 rounded-xl p-3 border border-gray-700/50">
+                            <div class="text-red-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                    class="fas fa-fist-raised"></i> Combat</div>
+                            <div id="totalCombat" class="font-bold text-2xl text-white">0</div>
+                        </div>
+                        <div class="bg-gray-800/30 rounded-xl p-3 border border-gray-700/50">
+                            <div class="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                    class="fas fa-tools"></i> Utility</div>
+                            <div id="totalUtility" class="font-bold text-2xl text-white">0</div>
+                        </div>
+                        <div class="bg-gray-800/30 rounded-xl p-3 border border-gray-700/50">
+                            <div class="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                    class="fas fa-hat-wizard"></i> Whimsy</div>
+                            <div id="totalWhimsy" class="font-bold text-2xl text-white">0</div>
+                        </div>
                     </div>
 
-                    <div id="tieBreaker" class="hidden mb-4 p-3 bg-gray-800 border border-yellow-600 rounded text-center">
-                        <p class="text-yellow-500 text-sm mb-2"><i class="fas fa-balance-scale"></i> ค่าพลังเท่ากัน! โปรดเลือกสายที่ต้องการ:</p>
+                    <!-- Tie Breaker -->
+                    <div id="tieBreaker"
+                        class="hidden mb-4 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-xl text-center">
+                        <p class="text-yellow-400 text-sm mb-3"><i class="fas fa-balance-scale"></i> ค่าพลังเท่ากัน!
+                            โปรดเลือกสายที่ต้องการ:</p>
                         <div class="flex justify-center gap-3" id="tieButtons">
-                            </div>
+                        </div>
                     </div>
 
-                    <div id="previewResult" class="hidden mb-6 p-4 bg-gray-800 rounded border border-gray-600 text-center transition-all">
-                        <div class="text-green-400 text-xs uppercase tracking-wide mb-1">Potion ที่ได้</div>
-                        <h3 id="potionName" class="text-xl font-bold text-white mb-1">...</h3>
+                    <!-- Preview Result -->
+                    <div id="previewResult"
+                        class="hidden mb-6 p-5 bg-gradient-to-br from-gray-800/50 to-green-900/20 rounded-xl border border-green-600/30 text-center transition-all">
+                        <div class="text-green-400 text-xs uppercase tracking-wider font-bold mb-2">Potion ที่ได้</div>
+                        <h3 id="potionName" class="text-2xl font-bold text-white mb-1">...</h3>
                         <p id="potionDesc" class="text-sm text-gray-300 italic">...</p>
                     </div>
 
-                    <button id="craftBtn" onclick="craftPotion()" disabled class="w-full bg-gray-700 text-gray-400 font-bold py-3 rounded shadow transition-all">
+                    <!-- Craft Button -->
+                    <button id="craftBtn" onclick="craftPotion()" disabled
+                        class="w-full bg-gray-700 text-gray-400 font-bold py-3.5 rounded-xl shadow transition-all cursor-not-allowed">
                         ปรุงยา (เลือกวัตถุดิบให้ครบ 3 อย่าง)
                     </button>
 
-                    <div id="craftLogArea" class="hidden mt-6 p-4 bg-gray-900 rounded border border-gray-700 relative">
-                        <h4 class="text-gray-400 text-xs mb-2">📜 Crafting Log</h4>
+                    <!-- Crafting Log -->
+                    <div id="craftLogArea"
+                        class="hidden mt-6 p-5 bg-gray-900/50 rounded-xl border border-gray-700 relative">
+                        <h4
+                            class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-scroll"></i> Crafting Log
+                        </h4>
                         <pre id="logContent" class="text-sm text-green-300 font-mono whitespace-pre-wrap"></pre>
-                        <button onclick="copyLog()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                        <button onclick="copyLog()"
+                            class="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-lg border border-gray-600 transition flex items-center gap-1.5">
                             <i class="fas fa-copy"></i> Copy for Discord
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
+            <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
+        </footer>
     </div>
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="text-green-500 text-2xl animate-pulse"><i class="fas fa-spinner fa-spin"></i> กำลังประมวลผล...</div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-panel p-8 rounded-2xl text-center">
+            <div class="text-green-500 text-4xl animate-pulse mb-4"><i class="fas fa-spinner fa-spin"></i></div>
+            <p class="text-gray-300">กำลังประมวลผล...</p>
+        </div>
     </div>
 
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
 </body>
+
 </html>
