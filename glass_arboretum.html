@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Spire Tracking - Glass Arboretum Crafting</title>
+    <title>The Spire Tracking - Glass Arboretum</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="env.js"></script>
@@ -17,12 +17,14 @@
         .slot { height: 80px; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; background-color: #252525; }
         .slot:hover { border-color: #4caf50; background-color: #2a2a2a; }
         .slot.filled { border-style: solid; border-color: #4caf50; background-color: #1b3a1d; }
-        .tab-btn.active { border-bottom: 2px solid #4caf50; color: #4caf50; }
+        .tab-active { border-bottom: 2px solid #4caf50; color: #4caf50; }
+        .tab-inactive { color: #888; }
+        .tab-inactive:hover { color: #ccc; }
+        
         /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -41,7 +43,7 @@
         
         <div class="mb-6 flex justify-center">
             <div class="w-full max-w-md">
-                <label class="block text-sm text-gray-400 mb-2">เลือกตัวละคร</label>
+                <label class="block text-sm text-gray-400 mb-2">เลือกตัวละครที่จะปรุงยา</label>
                 <select id="characterSelect" class="w-full bg-gray-800 text-white border border-gray-700 rounded p-3 focus:outline-none focus:border-green-500">
                     <option value="" disabled selected>กำลังโหลดตัวละคร...</option>
                 </select>
@@ -50,40 +52,37 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <div class="lg:col-span-1 spire-card flex flex-col h-[80vh]">
-                <div class="flex border-b border-gray-700">
-                    <button onclick="switchTab('ingredients')" id="tabIngredients" class="tab-btn active flex-1 py-3 text-sm font-bold text-gray-400 hover:text-white transition">
+            <div class="lg:col-span-1 spire-card p-4 flex flex-col h-[80vh]">
+                <div class="flex border-b border-gray-700 mb-4 text-sm font-semibold">
+                    <button id="tabIngBtn" onclick="switchTab('ingredient')" class="flex-1 pb-2 text-center tab-active">
                         <i class="fas fa-leaf"></i> วัตถุดิบ
                     </button>
-                    <button onclick="switchTab('potions')" id="tabPotions" class="tab-btn flex-1 py-3 text-sm font-bold text-gray-400 hover:text-white transition">
+                    <button id="tabPotBtn" onclick="switchTab('potion')" class="flex-1 pb-2 text-center tab-inactive">
                         <i class="fas fa-prescription-bottle"></i> กระเป๋ายา
                     </button>
                 </div>
-
-                <div id="contentIngredients" class="flex flex-col flex-grow p-4 overflow-hidden">
-                    <div class="mb-3 flex gap-2">
-                        <select id="addItemSelect" class="bg-gray-800 text-xs text-white border border-gray-700 rounded flex-grow p-2">
-                            <option value="">+ เพิ่มวัตถุดิบ (GM Mode)</option>
-                        </select>
-                        <button onclick="addManualItem()" class="bg-green-700 hover:bg-green-600 text-white px-3 rounded text-xs">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <div id="inventoryList" class="flex-grow overflow-y-auto space-y-2 pr-2"></div>
+                
+                <div id="gmPanel" class="mb-4 flex gap-2">
+                    <select id="addItemSelect" class="bg-gray-800 text-xs text-white border border-gray-700 rounded flex-grow p-2">
+                        <option value="">+ เพิ่มวัตถุดิบ (GM Mode)</option>
+                    </select>
+                    <button onclick="addManualItem()" class="bg-green-700 hover:bg-green-600 text-white px-3 rounded text-xs">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
 
-                <div id="contentPotions" class="hidden flex-col flex-grow p-4 overflow-hidden">
-                    <div id="potionList" class="flex-grow overflow-y-auto space-y-2 pr-2">
-                        <div class="text-center text-gray-500 mt-10">ยังไม่มียาในกระเป๋า</div>
-                    </div>
+                <div id="inventoryList" class="flex-grow overflow-y-auto space-y-2 pr-2">
+                    <div class="text-center text-gray-500 mt-10">กรุณาเลือกตัวละคร</div>
+                </div>
+                <div id="potionList" class="hidden flex-grow overflow-y-auto space-y-2 pr-2">
+                    <div class="text-center text-gray-500 mt-10">ไม่มี Potion ที่ปรุงไว้</div>
                 </div>
             </div>
 
             <div class="lg:col-span-2 flex flex-col gap-6">
                 
-                <div class="spire-card p-6 relative">
-                    <h2 class="text-lg font-semibold mb-4 text-center text-green-300">โต๊ะปรุงยา (Alchemy Table)</h2>
-                    
+                <div class="spire-card p-6">
+                    <h2 class="text-lg font-semibold mb-4 text-center">โต๊ะปรุงยา (Alchemy Table)</h2>
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div id="slot1" class="slot" onclick="removeIngredient(0)">
                             <span class="text-gray-500 text-sm">วัตถุดิบ 1</span>
@@ -96,53 +95,42 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-900 p-3 rounded border border-gray-700">
-                        <div>
-                            <div class="text-red-400 font-bold"><i class="fas fa-fist-raised"></i> Combat</div>
-                            <div id="totalCombat" class="font-mono text-xl mt-1">0</div>
-                        </div>
-                        <div>
-                            <div class="text-blue-400 font-bold"><i class="fas fa-tools"></i> Utility</div>
-                            <div id="totalUtility" class="font-mono text-xl mt-1">0</div>
-                        </div>
-                        <div>
-                            <div class="text-purple-400 font-bold"><i class="fas fa-hat-wizard"></i> Whimsy</div>
-                            <div id="totalWhimsy" class="font-mono text-xl mt-1">0</div>
-                        </div>
+                    <div class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-900 p-3 rounded">
+                        <div><div class="text-red-400"><i class="fas fa-fist-raised"></i> Combat</div><div id="totalCombat" class="font-bold text-xl">0</div></div>
+                        <div><div class="text-blue-400"><i class="fas fa-tools"></i> Utility</div><div id="totalUtility" class="font-bold text-xl">0</div></div>
+                        <div><div class="text-purple-400"><i class="fas fa-hat-wizard"></i> Whimsy</div><div id="totalWhimsy" class="font-bold text-xl">0</div></div>
                     </div>
 
-                    <div id="tieBreakerSection" class="hidden mb-6 p-4 bg-yellow-900/30 border border-yellow-600 rounded text-center animate-pulse">
-                        <p class="text-yellow-400 text-sm mb-3"><i class="fas fa-exclamation-triangle"></i> ค่าพลังเท่ากัน! โปรดเลือกสายที่ต้องการ:</p>
-                        <div id="tieButtons" class="flex justify-center gap-3">
+                    <div id="tieBreaker" class="hidden mb-4 p-3 bg-gray-800 border border-yellow-600 rounded text-center">
+                        <p class="text-yellow-500 text-sm mb-2"><i class="fas fa-balance-scale"></i> ค่าพลังเท่ากัน! โปรดเลือกสายที่ต้องการ:</p>
+                        <div class="flex justify-center gap-3" id="tieButtons">
                             </div>
                     </div>
 
-                    <div id="previewResult" class="hidden mb-6 p-4 bg-gray-800 rounded border border-green-600 text-center shadow-lg shadow-green-900/20">
+                    <div id="previewResult" class="hidden mb-6 p-4 bg-gray-800 rounded border border-gray-600 text-center transition-all">
                         <div class="text-green-400 text-xs uppercase tracking-wide mb-1">Potion ที่ได้</div>
-                        <h3 id="potionName" class="text-2xl font-bold text-white mb-2">...</h3>
+                        <h3 id="potionName" class="text-xl font-bold text-white mb-1">...</h3>
                         <p id="potionDesc" class="text-sm text-gray-300 italic">...</p>
                     </div>
 
-                    <button id="craftBtn" onclick="craftPotion()" disabled class="w-full bg-gray-700 text-gray-500 font-bold py-4 rounded shadow-lg transition-all text-lg">
-                        เลือกวัตถุดิบให้ครบ 3 อย่าง
+                    <button id="craftBtn" onclick="craftPotion()" disabled class="w-full bg-gray-700 text-gray-400 font-bold py-3 rounded shadow transition-all">
+                        ปรุงยา (เลือกวัตถุดิบให้ครบ 3 อย่าง)
                     </button>
 
-                    <div id="craftResultLog" class="hidden mt-6 p-4 bg-black rounded border border-gray-600 relative">
-                        <button onclick="copyCraftLog()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-xs bg-gray-700 px-2 py-1 rounded">
-                            <i class="fas fa-copy"></i> Copy
+                    <div id="craftLogArea" class="hidden mt-6 p-4 bg-gray-900 rounded border border-gray-700 relative">
+                        <h4 class="text-gray-400 text-xs mb-2">📜 Crafting Log</h4>
+                        <pre id="logContent" class="text-sm text-green-300 font-mono whitespace-pre-wrap"></pre>
+                        <button onclick="copyLog()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                            <i class="fas fa-copy"></i> Copy for Discord
                         </button>
-                        <pre id="logText" class="text-sm text-green-400 font-mono whitespace-pre-wrap"></pre>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden backdrop-blur-sm">
-        <div class="text-center">
-            <div class="text-green-500 text-4xl mb-4"><i class="fas fa-flask fa-spin"></i></div>
-            <div class="text-white text-xl font-bold animate-pulse">กำลังปรุงยา...</div>
-        </div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="text-green-500 text-2xl animate-pulse"><i class="fas fa-spinner fa-spin"></i> กำลังประมวลผล...</div>
     </div>
 
     <script src="js/glass_data.js"></script>

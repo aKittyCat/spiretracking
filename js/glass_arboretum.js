@@ -1,229 +1,223 @@
 // State
 let selectedCharId = null;
-let currentIngredients = [];
+let selectedCharName = "";
+let currentInventory = [];
 let currentPotions = [];
 let craftingSlots = [null, null, null];
-let activeTab = 'ingredients';
+let selectedAttribute = null; // เก็บค่าที่ user เลือกตอน tie-break
 
 // DOM Elements
 const charSelect = document.getElementById('characterSelect');
 const invList = document.getElementById('inventoryList');
-const potionList = document.getElementById('potionList');
-const addItemSelect = document.getElementById('addItemSelect');
+const potList = document.getElementById('potionList');
 const craftBtn = document.getElementById('craftBtn');
 const loading = document.getElementById('loadingOverlay');
-const tieSection = document.getElementById('tieBreakerSection');
-const tieButtons = document.getElementById('tieButtons');
-const previewSection = document.getElementById('previewResult');
-const craftLogSection = document.getElementById('craftResultLog');
-const logText = document.getElementById('logText');
+const tieBreakerDiv = document.getElementById('tieBreaker');
+const tieButtonsDiv = document.getElementById('tieButtons');
+const logArea = document.getElementById('craftLogArea');
+const logContent = document.getElementById('logContent');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Load Characters
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        window.location.href = 'index.html'; 
-        return;
-    }
+    if (!user) { window.location.href = 'index.html'; return; }
 
-    const { data: chars, error } = await supabase
-        .from('characters')
-        .select('id, name')
-        .eq('user_id', user.id);
-
-    if (error) console.error(error);
-
+    const { data: chars } = await supabase.from('characters').select('id, name').eq('user_id', user.id);
     chars.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.innerText = c.name;
+        opt.value = c.id; opt.innerText = c.name;
         charSelect.appendChild(opt);
     });
 
-    // Populate GM Add Item List
+    // Populate GM Item List
     INGREDIENTS_DB.sort((a,b) => a.name.localeCompare(b.name)).forEach(ing => {
         const opt = document.createElement('option');
-        opt.value = ing.name;
-        opt.innerText = `${ing.name}`;
-        addItemSelect.appendChild(opt);
+        opt.value = ing.name; opt.innerText = ing.name;
+        document.getElementById('addItemSelect').appendChild(opt);
     });
 
-    // Event Listener
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
-        loadAllInventory();
+        selectedCharName = e.target.options[e.target.selectedIndex].text;
+        loadData();
         resetSlots();
-        hideLog();
+        // Hide log on char change
+        logArea.classList.add('hidden');
     });
 });
 
 // --- Tab System ---
 function switchTab(tab) {
-    activeTab = tab;
-    document.getElementById('tabIngredients').classList.toggle('active', tab === 'ingredients');
-    document.getElementById('tabPotions').classList.toggle('active', tab === 'potions');
-    document.getElementById('contentIngredients').classList.toggle('hidden', tab !== 'ingredients');
-    document.getElementById('contentIngredients').classList.toggle('flex', tab === 'ingredients'); // fix flex layout
-    document.getElementById('contentPotions').classList.toggle('hidden', tab !== 'potions');
-    document.getElementById('contentPotions').classList.toggle('flex', tab === 'potions');
+    const invEl = document.getElementById('inventoryList');
+    const potEl = document.getElementById('potionList');
+    const btnIng = document.getElementById('tabIngBtn');
+    const btnPot = document.getElementById('tabPotBtn');
+    const gmPanel = document.getElementById('gmPanel');
+
+    if (tab === 'ingredient') {
+        invEl.classList.remove('hidden');
+        potEl.classList.add('hidden');
+        gmPanel.classList.remove('hidden');
+        btnIng.className = 'flex-1 pb-2 text-center tab-active';
+        btnPot.className = 'flex-1 pb-2 text-center tab-inactive';
+    } else {
+        invEl.classList.add('hidden');
+        potEl.classList.remove('hidden');
+        gmPanel.classList.add('hidden');
+        btnIng.className = 'flex-1 pb-2 text-center tab-inactive';
+        btnPot.className = 'flex-1 pb-2 text-center tab-active';
+    }
 }
 
-// --- Inventory Functions ---
-
-async function loadAllInventory() {
+// --- Data Loading ---
+async function loadData() {
     if (!selectedCharId) return;
-    invList.innerHTML = '<div class="text-center text-gray-500"><i class="fas fa-sync fa-spin"></i> Loading...</div>';
-    potionList.innerHTML = '<div class="text-center text-gray-500"><i class="fas fa-sync fa-spin"></i> Loading...</div>';
+    invList.innerHTML = potList.innerHTML = '<div class="text-center text-gray-500"><i class="fas fa-sync fa-spin"></i> Loading...</div>';
 
-    const { data, error } = await supabase
-        .from('character_inventories')
-        .select('*')
-        .eq('character_id', selectedCharId)
-        .gt('quantity', 0)
-        .order('item_name');
+    // Load Ingredients
+    const { data: ingData } = await supabase.from('character_inventories')
+        .select('*').eq('character_id', selectedCharId).eq('category', 'ingredient').gt('quantity', 0).order('item_name');
+    currentInventory = ingData || [];
+    renderInventory();
 
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    currentIngredients = data.filter(i => i.category === 'ingredient');
-    currentPotions = data.filter(i => i.category === 'potion');
-    
-    renderIngredients();
+    // Load Potions
+    const { data: potData } = await supabase.from('character_inventories')
+        .select('*').eq('character_id', selectedCharId).eq('category', 'potion').gt('quantity', 0).order('item_name');
+    currentPotions = potData || [];
     renderPotions();
 }
 
-function renderIngredients() {
+// --- Render Inventory (Ingredients) with +/- ---
+function renderInventory() {
     invList.innerHTML = '';
-    if (currentIngredients.length === 0) {
+    if (currentInventory.length === 0) {
         invList.innerHTML = '<div class="text-center text-gray-500 py-4">ไม่มีวัตถุดิบ</div>';
         return;
     }
 
-    currentIngredients.forEach(item => {
-        const stats = INGREDIENTS_DB.find(i => i.name === item.item_name) || { combat: '?', utility: '?', whimsy: '?' };
-        
+    currentInventory.forEach(item => {
+        const stats = INGREDIENTS_DB.find(i => i.name === item.item_name) || { combat:'?', utility:'?', whimsy:'?' };
+        const safeName = item.item_name.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-2 rounded border border-gray-700 flex justify-between items-center group hover:border-gray-500 transition';
+        div.className = 'bg-gray-800 p-2 rounded border border-gray-700 flex justify-between items-center';
         div.innerHTML = `
-            <div class="flex-grow">
+            <div>
                 <div class="font-bold text-sm text-green-300">${item.item_name}</div>
-                <div class="text-[10px] text-gray-400 mt-0.5 flex gap-2">
-                    <span class="text-red-400">C:${stats.combat}</span>
-                    <span class="text-blue-400">U:${stats.utility}</span>
-                    <span class="text-purple-400">W:${stats.whimsy}</span>
+                <div class="text-xs text-gray-400 mb-1">
+                    <span class="mr-1 text-red-300">C:${stats.combat}</span>
+                    <span class="mr-1 text-blue-300">U:${stats.utility}</span>
+                    <span class="text-purple-300">W:${stats.whimsy}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="adjustQty('${safeName}', -1)" class="bg-gray-700 hover:bg-red-900 text-white w-5 h-5 rounded flex items-center justify-center text-xs">-</button>
+                    <span class="text-xs font-bold w-6 text-center text-white bg-gray-900 rounded">${item.quantity}</span>
+                    <button onclick="adjustQty('${safeName}', 1)" class="bg-gray-700 hover:bg-green-900 text-white w-5 h-5 rounded flex items-center justify-center text-xs">+</button>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <div class="flex items-center bg-gray-900 rounded px-1">
-                    <button onclick="updateQty('${item.item_name}', -1, 'ingredient')" class="text-gray-500 hover:text-red-400 px-1.5 py-0.5 text-xs">-</button>
-                    <span class="text-sm font-mono w-6 text-center text-white">${item.quantity}</span>
-                    <button onclick="updateQty('${item.item_name}', 1, 'ingredient')" class="text-gray-500 hover:text-green-400 px-1.5 py-0.5 text-xs">+</button>
-                </div>
-                <button onclick="addToSlot('${item.item_name}')" class="bg-blue-600 hover:bg-blue-500 text-white w-8 h-8 rounded flex items-center justify-center shadow">
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
+            <button onclick="addToSlot('${safeName}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs h-full ml-2">
+                ใส่
+            </button>
         `;
         invList.appendChild(div);
     });
 }
 
+// --- Render Potion Bag ---
 function renderPotions() {
-    potionList.innerHTML = '';
+    potList.innerHTML = '';
     if (currentPotions.length === 0) {
-        potionList.innerHTML = '<div class="text-center text-gray-500 py-4">ยังไม่มียาในกระเป๋า</div>';
+        potList.innerHTML = '<div class="text-center text-gray-500 py-4">ไม่มี Potion ที่ปรุงไว้</div>';
         return;
     }
 
     currentPotions.forEach(item => {
+        const safeName = item.item_name.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-3 rounded border border-gray-600 flex justify-between items-center';
+        div.className = 'bg-gray-800 p-2 rounded border border-gray-600 flex justify-between items-center';
         div.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="text-2xl text-purple-400"><i class="fas fa-flask"></i></div>
-                <div>
-                    <div class="font-bold text-white">${item.item_name}</div>
-                    <div class="text-xs text-gray-400">จำนวน: ${item.quantity} ขวด</div>
-                </div>
+            <div>
+                <div class="font-bold text-sm text-yellow-300">${item.item_name}</div>
+                <div class="text-xs text-gray-400">จำนวน: ${item.quantity}</div>
             </div>
-            <button onclick="deletePotion('${item.item_name}')" class="text-gray-500 hover:text-red-500 p-2" title="ลบทิ้ง">
-                <i class="fas fa-trash"></i>
+            <button onclick="deletePotion('${safeName}')" class="bg-red-900 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                <i class="fas fa-trash"></i> ลบ
             </button>
         `;
-        potionList.appendChild(div);
+        potList.appendChild(div);
     });
 }
 
-async function updateQty(itemName, change, category) {
-    if(!selectedCharId) return;
-    
-    // Find current qty
-    const list = category === 'ingredient' ? currentIngredients : currentPotions;
-    const item = list.find(i => i.item_name === itemName);
+// --- Adjust Quantity Logic ---
+async function adjustQty(name, delta) {
+    const item = currentInventory.find(i => i.item_name === name);
     if (!item) return;
 
-    const newQty = item.quantity + change;
+    const newQty = item.quantity + delta;
+    if (newQty < 0) return; // Prevent negative
 
-    try {
-        if (newQty <= 0) {
-            if(!confirm(`ต้องการลบ "${itemName}" ออกจากกระเป๋าใช่หรือไม่?`)) return;
-            await supabase.from('character_inventories')
-                .delete()
-                .eq('character_id', selectedCharId)
-                .eq('item_name', itemName);
-        } else {
-            await supabase.from('character_inventories')
-                .update({ quantity: newQty })
-                .eq('character_id', selectedCharId)
-                .eq('item_name', itemName);
-        }
-        loadAllInventory(); // Refresh UI
-    } catch(e) {
-        console.error(e);
-        alert('เกิดข้อผิดพลาดในการอัปเดต');
+    // Optimistic Update
+    item.quantity = newQty;
+    if (newQty === 0) {
+        currentInventory = currentInventory.filter(i => i.item_name !== name);
+    }
+    renderInventory();
+
+    // DB Update
+    if (newQty > 0) {
+        await supabase.from('character_inventories')
+            .update({ quantity: newQty })
+            .eq('character_id', selectedCharId).eq('item_name', name);
+    } else {
+        await supabase.from('character_inventories')
+            .delete()
+            .eq('character_id', selectedCharId).eq('item_name', name);
     }
 }
 
-async function deletePotion(itemName) {
-    updateQty(itemName, -1, 'potion'); // Use same logic, decrease by 1 or delete if 0
+async function deletePotion(name) {
+    if(!confirm(`ต้องการลบ ${name} ใช่หรือไม่?`)) return;
+    
+    // Find DB ID for specific deletion or just quantity decrement
+    // Here logic implies removing 1 qty
+    const item = currentPotions.find(i => i.item_name === name);
+    const newQty = item.quantity - 1;
+
+    if (newQty > 0) {
+        await supabase.from('character_inventories').update({ quantity: newQty }).eq('character_id', selectedCharId).eq('item_name', name);
+    } else {
+        await supabase.from('character_inventories').delete().eq('character_id', selectedCharId).eq('item_name', name).eq('category', 'potion');
+    }
+    loadData(); // Refresh full data
 }
 
 // --- Crafting Logic ---
 
 function addToSlot(itemName) {
-    const invItem = currentIngredients.find(i => i.item_name === itemName);
+    const invItem = currentInventory.find(i => i.item_name === itemName);
     const usedCount = craftingSlots.filter(s => s && s.name === itemName).length;
     
-    if (usedCount >= invItem.quantity) {
-        alert('วัตถุดิบนี้ถูกใช้จนหมดแล้วในช่องปรุงยา');
-        return;
+    if (!invItem || usedCount >= invItem.quantity) {
+        alert('วัตถุดิบไม่พอ'); return;
     }
-
     const emptyIndex = craftingSlots.findIndex(s => s === null);
-    if (emptyIndex === -1) {
-        alert('ช่องปรุงยาเต็มแล้ว');
-        return;
-    }
+    if (emptyIndex === -1) { alert('ช่องเต็ม'); return; }
 
-    const stats = INGREDIENTS_DB.find(i => i.name === itemName);
-    craftingSlots[emptyIndex] = stats;
+    craftingSlots[emptyIndex] = INGREDIENTS_DB.find(i => i.name === itemName);
     updateSlotsUI();
-    hideLog();
 }
 
 function removeIngredient(index) {
     craftingSlots[index] = null;
     updateSlotsUI();
-    hideLog();
 }
 
 function resetSlots() {
     craftingSlots = [null, null, null];
+    selectedAttribute = null;
+    tieBreakerDiv.classList.add('hidden');
+    document.getElementById('previewResult').classList.add('hidden');
+    craftBtn.disabled = true;
     updateSlotsUI();
-    hideLog();
 }
 
 function updateSlotsUI() {
@@ -233,24 +227,15 @@ function updateSlotsUI() {
     craftingSlots.forEach((item, index) => {
         const el = document.getElementById(`slot${index+1}`);
         if (item) {
-            el.innerHTML = `
-                <div class="text-center w-full h-full flex flex-col justify-center items-center bg-gray-800 rounded border border-green-900">
-                    <div class="text-xs font-bold text-white mb-1 truncate px-1 w-full">${item.name}</div>
-                    <div class="text-[10px] text-gray-400 flex gap-1">
-                        <span class="text-red-300">${item.combat}</span>
-                        <span class="text-blue-300">${item.utility}</span>
-                        <span class="text-purple-300">${item.whimsy}</span>
-                    </div>
-                </div>
-            `;
-            el.classList.add('filled', 'border-0', 'p-0');
+            el.innerHTML = `<div class="text-center"><div class="text-xs font-bold text-white">${item.name}</div></div>`;
+            el.classList.add('filled');
             totalC += parseInt(item.combat);
             totalU += parseInt(item.utility);
             totalW += parseInt(item.whimsy);
             filledCount++;
         } else {
-            el.innerHTML = `<span class="text-gray-600 text-sm">ว่าง</span>`;
-            el.classList.remove('filled', 'border-0', 'p-0');
+            el.innerHTML = `<span class="text-gray-500 text-sm">วัตถุดิบ ${index+1}</span>`;
+            el.classList.remove('filled');
         }
     });
 
@@ -258,91 +243,79 @@ function updateSlotsUI() {
     document.getElementById('totalUtility').innerText = totalU;
     document.getElementById('totalWhimsy').innerText = totalW;
 
-    // Craft Button & Preview Logic
     if (filledCount === 3) {
-        // Reset manual override
-        craftingSlots.selectedTypeOverride = null;
-        calculateResult(totalC, totalU, totalW);
+        // Check for Tie
+        const maxVal = Math.max(totalC, totalU, totalW);
+        const candidates = [];
+        if (totalC === maxVal) candidates.push('Combat');
+        if (totalU === maxVal) candidates.push('Utility');
+        if (totalW === maxVal) candidates.push('Whimsical');
+
+        if (candidates.length > 1) {
+            // Tie found -> Show Selector
+            tieBreakerDiv.classList.remove('hidden');
+            tieButtonsDiv.innerHTML = '';
+            
+            candidates.forEach(type => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 rounded text-sm border ${selectedAttribute === type ? 'bg-yellow-600 text-white border-white' : 'bg-gray-700 text-gray-300 border-gray-500 hover:bg-gray-600'}`;
+                
+                // Icon mapping
+                let icon = '';
+                if(type === 'Combat') icon = '<i class="fas fa-fist-raised"></i>';
+                if(type === 'Utility') icon = '<i class="fas fa-tools"></i>';
+                if(type === 'Whimsical') icon = '<i class="fas fa-hat-wizard"></i>';
+                
+                btn.innerHTML = `${icon} ${type}`;
+                btn.onclick = () => {
+                    selectedAttribute = type;
+                    updateSlotsUI(); // Re-run to update selection visual and preview
+                };
+                tieButtonsDiv.appendChild(btn);
+            });
+
+            // If user hasn't selected yet, disable craft
+            if (!selectedAttribute) {
+                craftBtn.disabled = true;
+                craftBtn.classList.add('bg-gray-700', 'text-gray-400');
+                document.getElementById('previewResult').classList.add('hidden');
+                return;
+            }
+        } else {
+            // No tie -> Auto select
+            selectedAttribute = candidates[0];
+            tieBreakerDiv.classList.add('hidden');
+        }
+
+        // Show Preview
+        craftBtn.disabled = false;
+        craftBtn.classList.remove('bg-gray-700', 'text-gray-400');
+        craftBtn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-500');
+        
+        // Find Result using selectedAttribute (needs to convert Whimsical -> Whimsy if needed, but DB uses keys)
+        // Adjust DB key in data.js to match: "Whimsical" or "Whimsy"
+        // Let's assume DB keys are: Combat, Utility, Whimsical
+        const result = findPotion(selectedAttribute, maxVal);
+        
+        if (result) {
+            document.getElementById('previewResult').classList.remove('hidden');
+            document.getElementById('potionName').innerText = result.name;
+            document.getElementById('potionDesc').innerText = result.desc;
+            craftingSlots.resultPotion = result;
+        }
+
     } else {
         craftBtn.disabled = true;
-        craftBtn.classList.add('bg-gray-700', 'text-gray-500');
-        craftBtn.classList.remove('bg-green-600', 'text-white', 'hover:bg-green-500');
-        craftBtn.innerText = 'เลือกวัตถุดิบให้ครบ 3 อย่าง';
-        previewSection.classList.add('hidden');
-        tieSection.classList.add('hidden');
+        craftBtn.classList.add('bg-gray-700', 'text-gray-400');
+        tieBreakerDiv.classList.add('hidden');
+        document.getElementById('previewResult').classList.add('hidden');
+        selectedAttribute = null;
     }
-}
-
-function calculateResult(c, u, w) {
-    let maxVal = Math.max(c, u, w);
-    
-    // Check for ties
-    let ties = [];
-    if (c === maxVal) ties.push('Combat');
-    if (u === maxVal) ties.push('Utility');
-    if (w === maxVal) ties.push('Whimsical');
-
-    // Case 1: Tie exists AND user hasn't selected yet
-    if (ties.length > 1 && !craftingSlots.selectedTypeOverride) {
-        showTieBreaker(ties, maxVal);
-        return;
-    }
-
-    // Case 2: No tie OR User selected override
-    let finalType = craftingSlots.selectedTypeOverride || ties[0];
-    
-    // Hide Tie Breaker UI
-    tieSection.classList.add('hidden');
-
-    const result = findPotion(finalType, maxVal);
-    
-    if (result) {
-        previewSection.classList.remove('hidden');
-        document.getElementById('potionName').innerText = result.name;
-        document.getElementById('potionDesc').innerText = result.desc;
-        
-        craftingSlots.resultPotion = result;
-        
-        // Enable Button
-        craftBtn.disabled = false;
-        craftBtn.classList.remove('bg-gray-700', 'text-gray-500');
-        craftBtn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-500');
-        craftBtn.innerText = 'ปรุงยา (Craft)';
-    }
-}
-
-function showTieBreaker(types, val) {
-    tieSection.classList.remove('hidden');
-    previewSection.classList.add('hidden');
-    craftBtn.disabled = true;
-    craftBtn.innerText = 'กรุณาเลือกสายพลังก่อน';
-
-    tieButtons.innerHTML = '';
-    
-    types.forEach(type => {
-        let colorClass = '';
-        let icon = '';
-        if(type === 'Combat') { colorClass = 'bg-red-900 hover:bg-red-800 text-red-100'; icon = 'fa-fist-raised'; }
-        if(type === 'Utility') { colorClass = 'bg-blue-900 hover:bg-blue-800 text-blue-100'; icon = 'fa-tools'; }
-        if(type === 'Whimsical') { colorClass = 'bg-purple-900 hover:bg-purple-800 text-purple-100'; icon = 'fa-hat-wizard'; }
-
-        const btn = document.createElement('button');
-        btn.className = `${colorClass} px-4 py-2 rounded text-sm font-bold transition`;
-        btn.innerHTML = `<i class="fas ${icon}"></i> ${type}`;
-        btn.onclick = () => {
-            craftingSlots.selectedTypeOverride = type; // Set override
-            // Re-calculate with selected type
-            const totalC = parseInt(document.getElementById('totalCombat').innerText);
-            const totalU = parseInt(document.getElementById('totalUtility').innerText);
-            const totalW = parseInt(document.getElementById('totalWhimsy').innerText);
-            calculateResult(totalC, totalU, totalW);
-        };
-        tieButtons.appendChild(btn);
-    });
 }
 
 async function craftPotion() {
     loading.classList.remove('hidden');
+    logArea.classList.add('hidden');
 
     try {
         // 1. Deduct Ingredients
@@ -350,85 +323,65 @@ async function craftPotion() {
         craftingSlots.forEach(item => { if(item) usage[item.name] = (usage[item.name] || 0) + 1; });
 
         for (const [name, qty] of Object.entries(usage)) {
-            const { data: curr } = await supabase
-                .from('character_inventories')
-                .select('quantity')
-                .eq('character_id', selectedCharId)
-                .eq('item_name', name)
-                .single();
-            
-            await supabase
-                .from('character_inventories')
-                .update({ quantity: curr.quantity - qty })
-                .eq('character_id', selectedCharId)
-                .eq('item_name', name);
+            const item = currentInventory.find(i => i.item_name === name);
+            const newQty = item.quantity - qty;
+            if (newQty > 0) {
+                await supabase.from('character_inventories').update({ quantity: newQty }).eq('character_id', selectedCharId).eq('item_name', name);
+            } else {
+                await supabase.from('character_inventories').delete().eq('character_id', selectedCharId).eq('item_name', name);
+            }
         }
 
         // 2. Add Potion
         const potionName = craftingSlots.resultPotion.name;
-        const { data: existPot } = await supabase
-            .from('character_inventories')
-            .select('quantity')
-            .eq('character_id', selectedCharId)
-            .eq('item_name', potionName)
-            .eq('category', 'potion')
-            .single();
+        const { data: exist } = await supabase.from('character_inventories')
+            .select('quantity').eq('character_id', selectedCharId).eq('item_name', potionName).eq('category', 'potion').single();
 
-        if (existPot) {
-            await supabase.from('character_inventories').update({ quantity: existPot.quantity + 1 }).eq('character_id', selectedCharId).eq('item_name', potionName);
+        if (exist) {
+            await supabase.from('character_inventories').update({ quantity: exist.quantity + 1 }).eq('character_id', selectedCharId).eq('item_name', potionName);
         } else {
             await supabase.from('character_inventories').insert({ character_id: selectedCharId, item_name: potionName, quantity: 1, category: 'potion' });
         }
 
-        // 3. Show Log
-        showCraftLog();
+        // 3. Generate Log
+        const usedIngs = craftingSlots.map(s => s.name).join(', ');
+        const logText = `ชื่อตัวละคร: ${selectedCharName}\nวัตถุดิบที่ใช้: ${usedIngs}\nPotion ที่ได้: ${potionName}`;
         
-        // Refresh & Reset
-        loadAllInventory();
+        logContent.innerText = logText;
+        logArea.classList.remove('hidden');
+
+        // Reset
         resetSlots();
+        loadData(); // Refresh Tabs
 
     } catch (err) {
         console.error(err);
-        alert('เกิดข้อผิดพลาดในการปรุงยา');
+        alert('Error Crafting');
     } finally {
         loading.classList.add('hidden');
     }
 }
 
-function showCraftLog() {
-    const charName = charSelect.options[charSelect.selectedIndex].text;
-    const ingredients = craftingSlots.filter(x=>x).map(x => x.name).join(', ');
-    const result = craftingSlots.resultPotion.name;
-
-    const log = `ชื่อตัวละคร: ${charName}\nวัตถุดิบที่ใช้: ${ingredients}\nPotion ที่ได้: ${result}`;
-    
-    logText.innerText = log;
-    craftLogSection.classList.remove('hidden');
-    
-    // Scroll to log
-    craftLogSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-function copyCraftLog() {
-    const text = logText.innerText;
+function copyLog() {
+    const text = document.getElementById('logContent').innerText;
     navigator.clipboard.writeText(text).then(() => {
-        const btn = document.querySelector('#craftResultLog button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => btn.innerHTML = originalText, 2000);
+        alert('คัดลอกเรียบร้อย! นำไปแปะใน Discord ได้เลย');
     });
 }
 
-function hideLog() {
-    craftLogSection.classList.add('hidden');
-}
-
-// --- GM Tool ---
+// GM Tool
 async function addManualItem() {
-    const itemName = addItemSelect.value;
+    const itemName = document.getElementById('addItemSelect').value;
     if (!itemName || !selectedCharId) return;
-    await updateQty(itemName, 1, 'ingredient');
     
-    // Check if user is in ingredients tab, if not switch? No need, just reload.
-    if(activeTab !== 'ingredients') switchTab('ingredients');
+    // Check local first to save bandwidth? or direct DB
+    const { data: exist } = await supabase.from('character_inventories')
+        .select('quantity').eq('character_id', selectedCharId).eq('item_name', itemName).eq('category', 'ingredient').single();
+
+    if (exist) {
+        await supabase.from('character_inventories').update({ quantity: exist.quantity + 1 }).eq('character_id', selectedCharId).eq('item_name', itemName);
+    } else {
+        await supabase.from('character_inventories').insert({ character_id: selectedCharId, item_name: itemName, quantity: 1, category: 'ingredient' });
+    }
+    loadData();
 }
