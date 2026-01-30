@@ -1,21 +1,37 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>The Spire Tracking - Admin Dashboard</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-    
-    body { font-family: 'Sarabun', sans-serif; }
-    
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #111827; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
 
     .glass-panel {
       background: rgba(31, 41, 55, 0.7);
@@ -23,7 +39,7 @@
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(75, 85, 99, 0.4);
     }
-    
+
     .gradient-text {
       background: linear-gradient(to right, #c084fc, #818cf8);
       -webkit-background-clip: text;
@@ -33,112 +49,119 @@
 
     /* Custom Select Style */
     select {
-        appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 1em;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1em;
     }
   </style>
 </head>
+
 <body class="bg-gray-950 text-gray-200 font-sans min-h-screen selection:bg-purple-500 selection:text-white">
-  
+
   <div class="max-w-[1440px] mx-auto p-4 sm:p-6 lg:p-8">
-    
+
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
       <div class="flex items-center gap-4">
         <div class="p-3 bg-gray-800 rounded-xl shadow-lg">
-            <span class="text-2xl">🏰</span>
+          <span class="text-2xl">🏰</span>
         </div>
         <div>
-            <h1 class="text-3xl font-bold text-white tracking-tight">
-                <span class="gradient-text">Admin</span> Dashboard
-            </h1>
-            <p class="text-xs text-gray-500 mt-1">The Spire Tracking</p>
+          <h1 class="text-3xl font-bold text-white tracking-tight">
+            <span class="gradient-text">Admin</span> Dashboard
+          </h1>
+          <p class="text-xs text-gray-500 mt-1">The Spire Tracking</p>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-3 justify-center">
         <div class="bg-gray-900 px-4 py-2 rounded-full border border-gray-800 flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-gray-400 text-xs font-medium">
-              Admin: <span id="userEmail" class="text-gray-200">...</span>
-            </span>
+          <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <span class="text-gray-400 text-xs font-medium">
+            Admin: <span id="userEmail" class="text-gray-200">...</span>
+          </span>
         </div>
 
-        <button id="btnRefresh" onclick="loadDashboardDataManual()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium border border-gray-700 transition flex items-center gap-2 group">
-            <span class="group-hover:rotate-180 transition-transform duration-500">🔄</span> 
+        <button id="btnRefresh" onclick="loadDashboardDataManual()"
+          class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium border border-gray-700 transition flex items-center gap-2 group">
+          <span class="group-hover:rotate-180 transition-transform duration-500">🔄</span>
         </button>
-        
-        <button onclick="location.href='characters.html'" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5">
+
+        <button onclick="location.href='characters.html'"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5">
           กลับหน้าตัวละคร
         </button>
-        <button onclick="logout()" 
-                class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-lg shadow-rose-500/20 transition hover:-translate-y-0.5">
+        <button onclick="logout()"
+          class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-lg shadow-rose-500/20 transition hover:-translate-y-0.5">
           ออกจากระบบ
         </button>
       </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
+      <div
+        class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
         <div class="flex justify-between items-start">
-            <div>
-                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">ตัวละครทั้งหมด</p>
-                <p id="totalChars" class="text-3xl font-bold text-white mt-1">0</p>
-            </div>
-            <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">👤</div>
-        </div>
-      </div>
-      
-      <div class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">ทองเฉลี่ย</p>
-                <p id="averageGold" class="text-3xl font-bold text-yellow-400 mt-1">0</p>
-            </div>
-            <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-400">💰</div>
+          <div>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">ตัวละครทั้งหมด</p>
+            <p id="totalChars" class="text-3xl font-bold text-white mt-1">0</p>
+          </div>
+          <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">👤</div>
         </div>
       </div>
 
-      <div class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
+      <div
+        class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
         <div class="flex justify-between items-start">
-            <div>
-                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">DM Logs รวม</p>
-                <p id="totalDmLogs" class="text-3xl font-bold text-indigo-400 mt-1">0</p>
-            </div>
-            <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">📜</div>
+          <div>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">ทองเฉลี่ย</p>
+            <p id="averageGold" class="text-3xl font-bold text-yellow-400 mt-1">0</p>
+          </div>
+          <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-400">💰</div>
         </div>
       </div>
 
-      <div class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
+      <div
+        class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
         <div class="flex justify-between items-start">
-            <div class="overflow-hidden w-full">
-                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">รวยที่สุด</p>
-                <div id="highestGoldCharContainer" class="mt-1">
-                    <p id="highestGoldName" class="text-lg font-bold text-white truncate">N/A</p>
-                    <p id="highestGoldAmount" class="text-sm font-medium text-emerald-400">0 GP</p>
-                </div>
+          <div>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">DM Logs รวม</p>
+            <p id="totalDmLogs" class="text-3xl font-bold text-indigo-400 mt-1">0</p>
+          </div>
+          <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">📜</div>
+        </div>
+      </div>
+
+      <div
+        class="glass-panel p-5 rounded-2xl shadow-lg flex flex-col justify-between h-full transform transition hover:scale-[1.02] duration-200">
+        <div class="flex justify-between items-start">
+          <div class="overflow-hidden w-full">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">รวยที่สุด</p>
+            <div id="highestGoldCharContainer" class="mt-1">
+              <p id="highestGoldName" class="text-lg font-bold text-white truncate">N/A</p>
+              <p id="highestGoldAmount" class="text-sm font-medium text-emerald-400">0 GP</p>
             </div>
-            <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400 shrink-0 ml-2">💎</div>
+          </div>
+          <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400 shrink-0 ml-2">💎</div>
         </div>
       </div>
     </div>
-    
+
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      
+
       <div class="lg:col-span-1 glass-panel p-6 rounded-2xl shadow-lg flex flex-col">
         <h2 class="text-lg font-semibold mb-6 text-white flex items-center gap-2">
-            <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span> สัดส่วนเลเวล
+          <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span> สัดส่วนเลเวล
         </h2>
         <div class="flex-1 flex items-center justify-center min-h-[200px]">
           <canvas id="levelChart"></canvas>
         </div>
       </div>
-      
+
       <div class="lg:col-span-1 glass-panel p-6 rounded-2xl shadow-lg flex flex-col">
         <h2 class="text-lg font-semibold mb-6 text-white flex items-center gap-2">
-            <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span> สัดส่วนอาชีพ
+          <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span> สัดส่วนอาชีพ
         </h2>
         <div class="flex-1 flex items-center justify-center min-h-[200px]">
           <canvas id="classChart"></canvas>
@@ -147,7 +170,7 @@
 
       <div class="lg:col-span-1 glass-panel p-6 rounded-2xl shadow-lg flex flex-col">
         <h2 class="text-lg font-semibold mb-6 text-white flex items-center gap-2">
-            <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> สัดส่วนเผ่า
+          <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> สัดส่วนเผ่า
         </h2>
         <div class="flex-1 flex items-center justify-center min-h-[200px]">
           <canvas id="raceChart"></canvas>
@@ -156,44 +179,178 @@
 
       <div class="lg:col-span-1 glass-panel p-0 rounded-2xl shadow-lg overflow-hidden flex flex-col">
         <div class="p-6 pb-4 bg-gradient-to-b from-gray-800 to-gray-800/50">
-            <h2 class="text-lg font-semibold mb-1 text-white">เลเวลสูงสุด</h2>
-            <p id="highestLevelChar" class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500 truncate mt-2">N/A</p>
+          <h2 class="text-lg font-semibold mb-1 text-white">เลเวลสูงสุด</h2>
+          <p id="highestLevelChar"
+            class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500 truncate mt-2">
+            N/A</p>
         </div>
-        
+
         <div class="p-6 pt-2 flex-1 flex flex-col">
-            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">กิจกรรมล่าสุด</h2>
-            <div id="latestChars" class="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-[200px]">
-              <p class="text-gray-500 text-sm animate-pulse">กำลังโหลด...</p>
+          <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">
+            กิจกรรมล่าสุด</h2>
+          <div id="latestChars" class="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-[200px]">
+            <p class="text-gray-500 text-sm animate-pulse">กำลังโหลด...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ดัชนีเศรษฐกิจเซิร์ฟเวอร์ (Economy Index) -->
+    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden mb-8">
+      <div class="p-6 border-b border-gray-700 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg shadow-lg shadow-green-500/20">
+              <span class="text-xl">📈</span>
             </div>
+            <div>
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                ดัชนีเศรษฐกิจเซิร์ฟเวอร์
+                <span
+                  class="flex items-center gap-1 text-xs font-medium text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full border border-green-700">
+                  <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  LIVE
+                </span>
+              </h2>
+              <p class="text-gray-500 text-xs mt-0.5">การไหลเวียนของทองในระบบแบบ Real-time</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select id="economyDateRange" onchange="loadEconomyData()"
+              class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent block pl-3 pr-10 py-2 cursor-pointer hover:bg-gray-750 transition">
+              <option value="1">วันนี้</option>
+              <option value="7">7 วันล่าสุด</option>
+              <option value="14" selected>14 วันล่าสุด</option>
+              <option value="30">30 วันล่าสุด</option>
+              <option value="90">90 วันล่าสุด</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Stats Row -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-gray-900/50 border-b border-gray-800">
+        <!-- ทองไหลเข้าวันนี้ -->
+        <div
+          class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-green-500/50 transition-colors group">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="inflowLabel"
+                class="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                <span class="text-green-500">💸</span> ไหลเข้า 14 วันล่าสุด
+              </p>
+              <p id="todayInflow" class="text-2xl font-bold text-green-400 mt-1">0</p>
+              <p class="text-xs text-gray-500 mt-0.5">GP</p>
+            </div>
+            <div id="inflowTrend"
+              class="text-xs font-medium text-green-400 flex items-center gap-0.5 opacity-0 transition-opacity">
+              ↑ 0%
+            </div>
+          </div>
+        </div>
+
+        <!-- ทองใช้จ่ายวันนี้ -->
+        <div
+          class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-red-500/50 transition-colors group">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="outflowLabel"
+                class="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                <span class="text-red-500">🛒</span> ใช้จ่าย 14 วันล่าสุด
+              </p>
+              <p id="todayOutflow" class="text-2xl font-bold text-red-400 mt-1">0</p>
+              <p class="text-xs text-gray-500 mt-0.5">GP</p>
+            </div>
+            <div id="outflowTrend"
+              class="text-xs font-medium text-red-400 flex items-center gap-0.5 opacity-0 transition-opacity">
+              ↓ 0%
+            </div>
+          </div>
+        </div>
+
+        <!-- Net Change -->
+        <div
+          class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-colors group">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="netLabel"
+                class="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                <span class="text-purple-500">📊</span> NET 14 วันล่าสุด
+              </p>
+              <p id="todayNet" class="text-2xl font-bold text-purple-400 mt-1">0</p>
+              <p class="text-xs text-gray-500 mt-0.5">GP</p>
+            </div>
+            <div id="netTrend"
+              class="text-xs font-medium text-purple-400 flex items-center gap-0.5 opacity-0 transition-opacity">
+              → 0%
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Market Cap -->
+        <div
+          class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-colors group">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                <span class="text-yellow-500">💰</span> มูลค่าตลาดรวม
+              </p>
+              <p id="totalMarketCap" class="text-2xl font-bold text-yellow-400 mt-1">0</p>
+              <p class="text-xs text-gray-500 mt-0.5">GP ทั้งเซิร์ฟเวอร์</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Area -->
+      <div class="p-6">
+        <div class="relative h-[300px]">
+          <canvas id="economyChart"></canvas>
+        </div>
+        <div class="flex justify-center gap-6 mt-4 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-0.5 bg-green-500 rounded"></span>
+            <span class="text-gray-400">ไหลเข้า (Inflow)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-0.5 bg-red-500 rounded"></span>
+            <span class="text-gray-400">ใช้จ่าย (Outflow)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-0.5 bg-purple-500 rounded"></span>
+            <span class="text-gray-400">สุทธิ (Net)</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="glass-panel rounded-2xl shadow-xl overflow-hidden mb-12">
-      <div class="p-6 border-b border-gray-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-900/50">
+      <div
+        class="p-6 border-b border-gray-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-900/50">
         <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            📂 จัดการตัวละครทั้งหมด
+          📂 จัดการตัวละครทั้งหมด
         </h2>
-        
+
         <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <div class="relative">
-              <select id="sortSelect" onchange="handleSort()" 
-                      class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent block w-full pl-3 pr-10 py-2.5 cursor-pointer hover:bg-gray-750 transition">
-                  <option value="level_desc">Level (มาก ➜ น้อย)</option>
-                  <option value="level_asc">Level (น้อย ➜ มาก)</option>
-                  <option value="gold_desc">Gold (มาก ➜ น้อย)</option>
-                  <option value="gold_asc">Gold (น้อย ➜ มาก)</option>
-                  <option value="name_asc">ชื่อ (A-Z)</option>
-                  <option value="created_desc">วันที่สร้างตัวละคร</option>
-              </select>
+            <select id="sortSelect" onchange="handleSort()"
+              class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent block w-full pl-3 pr-10 py-2.5 cursor-pointer hover:bg-gray-750 transition">
+              <option value="level_desc">Level (มาก ➜ น้อย)</option>
+              <option value="level_asc">Level (น้อย ➜ มาก)</option>
+              <option value="gold_desc">Gold (มาก ➜ น้อย)</option>
+              <option value="gold_asc">Gold (น้อย ➜ มาก)</option>
+              <option value="name_asc">ชื่อ (A-Z)</option>
+              <option value="created_desc">วันที่สร้างตัวละคร</option>
+            </select>
           </div>
 
           <div class="relative w-full sm:w-auto">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <span class="text-gray-400">🔍</span>
             </div>
-            <input type="text" id="searchInput" onkeyup="searchCharacters()" 
-              class="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent block w-full sm:w-64 pl-10 p-2.5 transition" 
+            <input type="text" id="searchInput" onkeyup="searchCharacters()"
+              class="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent block w-full sm:w-64 pl-10 p-2.5 transition"
               placeholder="ค้นหาชื่อ หรือ Email...">
           </div>
         </div>
@@ -203,54 +360,66 @@
         <table class="min-w-full divide-y divide-gray-800">
           <thead class="bg-gray-800/80">
             <tr>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">ชื่อตัวละคร</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">เลเวล</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Gold</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">เจ้าของ (Email)</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  วันที่สร้างตัวละคร
+                ชื่อตัวละคร</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                เลเวล</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Gold</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                เจ้าของ (Email)</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                วันที่สร้างตัวละคร
               </th>
-              <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+              <th scope="col"
+                class="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody id="allCharsTable" class="divide-y divide-gray-800 bg-gray-900/30">
-            </tbody>
+          </tbody>
         </table>
         <div id="tableLoadingText" class="py-12 text-center text-gray-500 hidden">
-            <div class="inline-block w-8 h-8 border-4 border-gray-600 border-t-purple-500 rounded-full animate-spin mb-2"></div>
-            <p>กำลังโหลดข้อมูล...</p>
+          <div class="inline-block w-8 h-8 border-4 border-gray-600 border-t-purple-500 rounded-full animate-spin mb-2">
+          </div>
+          <p>กำลังโหลดข้อมูล...</p>
         </div>
       </div>
-      
-      <div id="adminPagination" class="flex justify-center items-center space-x-2 p-4 border-t border-gray-800 bg-gray-900/50"></div>
+
+      <div id="adminPagination"
+        class="flex justify-center items-center space-x-2 p-4 border-t border-gray-800 bg-gray-900/50"></div>
     </div>
 
-    <div id="transferModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
-      <div class="glass-panel bg-gray-900 border border-gray-700 p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
-          <h3 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-              <span class="text-blue-500">🔄</span> ย้ายตัวละคร
-          </h3>
-          <p class="text-gray-400 text-sm mb-6 leading-relaxed">
-              คุณกำลังจะโอนกรรมสิทธิ์ตัวละครนี้ กรุณากรอก <span class="text-white font-medium">อีเมลของผู้รับ</span> ให้ถูกต้อง
-          </p>
-          
-          <input type="hidden" id="transferCharId">
-          
-          <div class="mb-6">
-              <label class="block text-gray-500 text-xs font-semibold uppercase mb-2">อีเมลปลายทาง (Target Email)</label>
-              <input type="email" id="targetEmail" 
-                    class="w-full bg-gray-800 border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-600"
-                    placeholder="example@email.com">
-          </div>
+    <div id="transferModal"
+      class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
+      <div
+        class="glass-panel bg-gray-900 border border-gray-700 p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100">
+        <h3 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+          <span class="text-blue-500">🔄</span> ย้ายตัวละคร
+        </h3>
+        <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+          คุณกำลังจะโอนกรรมสิทธิ์ตัวละครนี้ กรุณากรอก <span class="text-white font-medium">อีเมลของผู้รับ</span>
+          ให้ถูกต้อง
+        </p>
 
-          <div class="flex justify-end gap-3">
-              <button onclick="closeTransferModal()" class="px-5 py-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm font-medium">
-                  ยกเลิก
-              </button>
-              <button onclick="confirmTransfer()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-500/20 transition-all text-sm font-medium">
-                  ยืนยันการย้าย
-              </button>
-          </div>
+        <input type="hidden" id="transferCharId">
+
+        <div class="mb-6">
+          <label class="block text-gray-500 text-xs font-semibold uppercase mb-2">อีเมลปลายทาง (Target Email)</label>
+          <input type="email" id="targetEmail"
+            class="w-full bg-gray-800 border border-gray-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-600"
+            placeholder="example@email.com">
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button onclick="closeTransferModal()"
+            class="px-5 py-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm font-medium">
+            ยกเลิก
+          </button>
+          <button onclick="confirmTransfer()"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-500/20 transition-all text-sm font-medium">
+            ยืนยันการย้าย
+          </button>
+        </div>
       </div>
     </div>
 
@@ -268,115 +437,125 @@
     let allCharacters = [];
     let filteredCharacters = [];
     let chartInstances = [];
-    
+    let allGoldLogs = []; // Store gold logs for economy index
+    let allSessions = []; // Store sessions for economy index
+    let allDmLogs = []; // Store dm_logs for economy index
+    let economyChartInstance = null;
+
     // Pagination Config
     const ITEMS_PER_PAGE = 20;
     let currentAdminPage = 1;
 
     // Sorting State
     let currentSortMode = 'level_desc'; // Default sort
-    
+
     async function init() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { window.location.href = 'index.html'; return; }
-        
-        // เช็คสิทธิ์ Admin
-        const { data: isAdmin, error } = await supabase.rpc('is_admin');
-        
-        if (!isAdmin || error) {
-            alert('⛔️ พื้นที่สำหรับ Admin เท่านั้น');
-            window.location.href = 'characters.html';
-            return;
-        }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
 
-        isAdminUser = true;
-        currentUser = session.user;
-        document.getElementById('userEmail').textContent = currentUser.email;
+      // เช็คสิทธิ์ Admin
+      const { data: isAdmin, error } = await supabase.rpc('is_admin');
 
-        loadDashboardDataManual();
+      if (!isAdmin || error) {
+        alert('⛔️ พื้นที่สำหรับ Admin เท่านั้น');
+        window.location.href = 'characters.html';
+        return;
+      }
+
+      isAdminUser = true;
+      currentUser = session.user;
+      document.getElementById('userEmail').textContent = currentUser.email;
+
+      loadDashboardDataManual();
     }
     init();
 
     async function logout() {
-        await supabase.auth.signOut();
-        window.location.href = 'index.html';
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
     }
-    
+
     // --- Load Data ---
     async function loadDashboardDataManual() {
-        document.getElementById('tableLoadingText').style.display = 'block';
-        document.getElementById('allCharsTable').innerHTML = ''; // Clear table
-        const btnRefresh = document.getElementById('btnRefresh');
-        if(btnRefresh) { btnRefresh.disabled = true; btnRefresh.classList.add('opacity-50'); }
+      document.getElementById('tableLoadingText').style.display = 'block';
+      document.getElementById('allCharsTable').innerHTML = ''; // Clear table
+      const btnRefresh = document.getElementById('btnRefresh');
+      if (btnRefresh) { btnRefresh.disabled = true; btnRefresh.classList.add('opacity-50'); }
 
-        try {
-            console.log("🔄 Admin Loading: Fetching Raw Data...");
-            
-            const [chars, sessions, dmlogs, golds, favors, users] = await Promise.all([
-                supabase.from('characters').select('*'), 
-                supabase.from('sessions').select('*').order('created_at', { ascending: false }),
-                supabase.from('dm_logs').select('*'),
-                supabase.from('gold_logs').select('*'),
-                supabase.from('favor_logs').select('*'),
-                supabase.rpc('get_all_user_emails') 
-            ]);
+      try {
+        console.log("🔄 Admin Loading: Fetching Raw Data...");
 
-            if (chars.error) throw chars.error;
-            
-            const userMap = {};
-            if (users.data) {
-                users.data.forEach(u => userMap[u.id] = u.email);
-            }
+        const [chars, sessions, dmlogs, golds, favors, users] = await Promise.all([
+          supabase.from('characters').select('*'),
+          supabase.from('sessions').select('*').order('created_at', { ascending: false }),
+          supabase.from('dm_logs').select('*'),
+          supabase.from('gold_logs').select('*'),
+          supabase.from('favor_logs').select('*'),
+          supabase.rpc('get_all_user_emails')
+        ]);
 
-            console.log(`✅ Loaded: ${chars.data.length} chars`);
+        if (chars.error) throw chars.error;
 
-            const aggregatedChars = chars.data.map(c => {
-                const mySessions = sessions.data.filter(s => s.character_id === c.id);
-                const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
-                const myGoldLogs = golds.data.filter(g => g.character_id === c.id);
-                
-                // Sum Hours
-                const sessHours = mySessions.reduce((sum, s) => sum + (Number(s.hours) || 0), 0);
-                const dmHours = myDMs.reduce((sum, d) => sum + (Number(d.hours) || 0), 0);
-                const totalHours = sessHours + dmHours;
-
-                // Sum Gold
-                const startGold = Number(c.gold_start) || 0;
-                const sessGold = mySessions.reduce((sum, s) => sum + (Number(s.auto_gold) || 0), 0);
-                const dmGold = myDMs.reduce((sum, d) => sum + (Number(d.auto_gold) || 0), 0);
-                const logGold = myGoldLogs.reduce((sum, g) => sum + (Number(g.amount) || 0), 0);
-                const totalGold = startGold + sessGold + dmGold + logGold;
-
-                // Level Calc
-                const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
-
-                return {
-                    ...c,
-                    calculated_level: currentLevel,
-                    total_gold_num: totalGold,
-                    // Use created_at from DB, fallback to created_at
-                    create_date: c.created_at ? new Date(c.created_at) : new Date(0),
-                    user_email: userMap[c.user_id] || 'Unknown ID'
-                };
-            });
-            
-            allCharacters = aggregatedChars;
-            filteredCharacters = [...allCharacters]; // Clone
-            
-            // Apply sorting immediately
-            applySort();
-
-            renderStats(allCharacters, dmlogs.data.length);
-            renderAdminTable(1);
-            renderLatestActivity(sessions.data, allCharacters);
-
-        } catch (error) {
-            console.error("Error:", error);
-            alert("โหลดข้อมูลไม่สำเร็จ: " + error.message);
-        } finally {
-            document.getElementById('tableLoadingText').style.display = 'none';
-            if(btnRefresh) { btnRefresh.disabled = false; btnRefresh.classList.remove('opacity-50'); }
+        const userMap = {};
+        if (users.data) {
+          users.data.forEach(u => userMap[u.id] = u.email);
         }
+
+        console.log(`✅ Loaded: ${chars.data.length} chars`);
+
+        const aggregatedChars = chars.data.map(c => {
+          const mySessions = sessions.data.filter(s => s.character_id === c.id);
+          const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
+          const myGoldLogs = golds.data.filter(g => g.character_id === c.id);
+
+          // Sum Hours
+          const sessHours = mySessions.reduce((sum, s) => sum + (Number(s.hours) || 0), 0);
+          const dmHours = myDMs.reduce((sum, d) => sum + (Number(d.hours) || 0), 0);
+          const totalHours = sessHours + dmHours;
+
+          // Sum Gold
+          const startGold = Number(c.gold_start) || 0;
+          const sessGold = mySessions.reduce((sum, s) => sum + (Number(s.auto_gold) || 0), 0);
+          const dmGold = myDMs.reduce((sum, d) => sum + (Number(d.auto_gold) || 0), 0);
+          const logGold = myGoldLogs.reduce((sum, g) => sum + (Number(g.amount) || 0), 0);
+          const totalGold = startGold + sessGold + dmGold + logGold;
+
+          // Level Calc
+          const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
+
+          return {
+            ...c,
+            calculated_level: currentLevel,
+            total_gold_num: totalGold,
+            // Use created_at from DB, fallback to created_at
+            create_date: c.created_at ? new Date(c.created_at) : new Date(0),
+            user_email: userMap[c.user_id] || 'Unknown ID'
+          };
+        });
+
+        allCharacters = aggregatedChars;
+        filteredCharacters = [...allCharacters]; // Clone
+
+        // Apply sorting immediately
+        applySort();
+
+        renderStats(allCharacters, dmlogs.data.length);
+        renderAdminTable(1);
+        renderLatestActivity(sessions.data, allCharacters);
+
+        // Economy Index
+        allGoldLogs = golds.data || [];
+        allSessions = sessions.data || [];
+        allDmLogs = dmlogs.data || [];
+        renderEconomyIndex(allGoldLogs, allSessions, allDmLogs, allCharacters);
+
+      } catch (error) {
+        console.error("Error:", error);
+        alert("โหลดข้อมูลไม่สำเร็จ: " + error.message);
+      } finally {
+        document.getElementById('tableLoadingText').style.display = 'none';
+        if (btnRefresh) { btnRefresh.disabled = false; btnRefresh.classList.remove('opacity-50'); }
+      }
     }
 
     // --- Render Charts & Stats ---
@@ -392,20 +571,20 @@
       let totalGoldSum = 0;
       let highestGold = -1;
       let highestGoldCharName = 'N/A';
-      
+
       let highestLevel = -1;
       let highestLevelCharName = 'N/A';
-      
-      const levelCount = {}; 
-      const classCount = {}; 
-      const raceCount = {}; 
+
+      const levelCount = {};
+      const classCount = {};
+      const raceCount = {};
 
       chars.forEach(c => {
         const totalGold = c.total_gold_num;
         const currentLevel = c.calculated_level;
 
         totalGoldSum += totalGold;
-        
+
         // Max Gold Logic
         if (totalGold > highestGold) {
           highestGold = totalGold;
@@ -416,7 +595,7 @@
           highestLevel = currentLevel;
           highestLevelCharName = c.name;
         }
-        
+
         // Counts for Charts
         const levelKey = `Lv. ${currentLevel}`;
         levelCount[levelKey] = (levelCount[levelKey] || 0) + 1;
@@ -431,7 +610,7 @@
       const averageGold = chars.length > 0 ? (totalGoldSum / chars.length) : 0;
 
       document.getElementById('averageGold').textContent = `${averageGold.toFixed(0).toLocaleString()} GP`;
-      
+
       // ✅ Update Richest Character Display (Name + Gold)
       document.getElementById('highestGoldName').textContent = highestGoldCharName;
       document.getElementById('highestGoldAmount').textContent = `${highestGold.toLocaleString()} GP`;
@@ -441,7 +620,7 @@
       // --- Charts Config ---
       Chart.defaults.color = '#9ca3af';
       Chart.defaults.font.family = 'Sarabun';
-      
+
       // Level Chart
       const levelCtx = document.getElementById('levelChart')?.getContext('2d');
       if (levelCtx) {
@@ -453,24 +632,24 @@
             datasets: [{
               label: 'จำนวน',
               data: sortedLabels.map(l => levelCount[l]),
-              backgroundColor: '#a855f7', 
+              backgroundColor: '#a855f7',
               borderRadius: 4,
               hoverBackgroundColor: '#c084fc'
             }]
           },
-          options: { 
-              responsive: true, 
-              maintainAspectRatio: false, 
-              scales: { 
-                  y: { beginAtZero: true, grid: { color: '#374151' } }, 
-                  x: { grid: { display: false } } 
-              }, 
-              plugins: { legend: { display: false } } 
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#374151' } },
+              x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
           }
         });
         chartInstances.push(levelChart);
       }
-      
+
       // Class Chart
       const classCtx = document.getElementById('classChart')?.getContext('2d');
       if (classCtx) {
@@ -481,7 +660,7 @@
             datasets: [{
               data: Object.values(classCount),
               backgroundColor: ['#ec4899', '#3b82f6', '#eab308', '#10b981', '#8b5cf6', '#f97316'],
-              borderColor: '#1f2937', 
+              borderColor: '#1f2937',
               borderWidth: 0,
               hoverOffset: 4
             }]
@@ -501,7 +680,7 @@
             datasets: [{
               data: Object.values(raceCount),
               backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#14b8a6', '#a855f7', '#f97316', '#9ca3af'],
-              borderColor: '#1f2937', 
+              borderColor: '#1f2937',
               borderWidth: 0,
               hoverOffset: 4
             }]
@@ -520,14 +699,14 @@
         latestCharsList.innerHTML = '<p class="text-gray-500 text-sm">ไม่มีกิจกรรมล่าสุด</p>';
         return;
       }
-      
+
       const formatter = new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short' });
       sessions.slice(0, 10).forEach(s => {
-          const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
-          const ownerChar = chars.find(c => c.id === s.character_id);
-          const charName = ownerChar ? ownerChar.name : 'Unknown';
-          
-          latestCharsList.innerHTML += `
+        const dateStr = s.created_at ? formatter.format(new Date(s.created_at)) : '-';
+        const ownerChar = chars.find(c => c.id === s.character_id);
+        const charName = ownerChar ? ownerChar.name : 'Unknown';
+
+        latestCharsList.innerHTML += `
               <div class="p-3 bg-gray-700/50 rounded-lg flex justify-between items-center hover:bg-gray-700 transition duration-150 border border-transparent hover:border-gray-600">
                   <div class="flex items-center gap-3">
                       <div class="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-blue-400 text-xs font-bold">
@@ -548,78 +727,78 @@
 
     // Function เรียกเมื่อพิมพ์ค้นหา
     function searchCharacters() {
-        const query = document.getElementById('searchInput').value.toLowerCase().trim();
-        
-        if (!query) {
-            filteredCharacters = [...allCharacters];
-        } else {
-            filteredCharacters = allCharacters.filter(c => 
-                (c.name && c.name.toLowerCase().includes(query)) || 
-                (c.user_email && c.user_email.toLowerCase().includes(query))
-            );
-        }
-        applySort(); // Sort หลัง filter เสมอ
-        renderAdminTable(1);
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      if (!query) {
+        filteredCharacters = [...allCharacters];
+      } else {
+        filteredCharacters = allCharacters.filter(c =>
+          (c.name && c.name.toLowerCase().includes(query)) ||
+          (c.user_email && c.user_email.toLowerCase().includes(query))
+        );
+      }
+      applySort(); // Sort หลัง filter เสมอ
+      renderAdminTable(1);
     }
 
     // Function เรียกเมื่อเปลี่ยน Dropdown
     function handleSort() {
-        currentSortMode = document.getElementById('sortSelect').value;
-        applySort();
-        renderAdminTable(1);
+      currentSortMode = document.getElementById('sortSelect').value;
+      applySort();
+      renderAdminTable(1);
     }
 
     // ฟังก์ชันเรียงลำดับ array (Core Sort Logic)
     function applySort() {
-        filteredCharacters.sort((a, b) => {
-            switch (currentSortMode) {
-                case 'level_desc': // เลเวล มาก -> น้อย
-                    return b.calculated_level - a.calculated_level;
-                case 'level_asc': // เลเวล น้อย -> มาก
-                    return a.calculated_level - b.calculated_level;
-                case 'gold_desc': // ทอง มาก -> น้อย
-                    return b.total_gold_num - a.total_gold_num;
-                case 'gold_asc': // ทอง น้อย -> มาก
-                    return a.total_gold_num - b.total_gold_num;
-                case 'name_asc': // ชื่อ A-Z
-                    return a.name.localeCompare(b.name);
-                case 'created_desc': // อัพเดทล่าสุด
-                    return b.create_date - a.create_date;
-                default:
-                    return 0;
-            }
-        });
+      filteredCharacters.sort((a, b) => {
+        switch (currentSortMode) {
+          case 'level_desc': // เลเวล มาก -> น้อย
+            return b.calculated_level - a.calculated_level;
+          case 'level_asc': // เลเวล น้อย -> มาก
+            return a.calculated_level - b.calculated_level;
+          case 'gold_desc': // ทอง มาก -> น้อย
+            return b.total_gold_num - a.total_gold_num;
+          case 'gold_asc': // ทอง น้อย -> มาก
+            return a.total_gold_num - b.total_gold_num;
+          case 'name_asc': // ชื่อ A-Z
+            return a.name.localeCompare(b.name);
+          case 'created_desc': // อัพเดทล่าสุด
+            return b.create_date - a.create_date;
+          default:
+            return 0;
+        }
+      });
     }
 
     // --- Render Table with Pagination ---
     function renderAdminTable(page) {
-        currentAdminPage = page;
-        const from = (page - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE;
-        
-        const pageData = filteredCharacters.slice(from, to);
-        const totalPages = Math.ceil(filteredCharacters.length / ITEMS_PER_PAGE);
+      currentAdminPage = page;
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE;
 
-        const tbody = document.getElementById('allCharsTable');
-        tbody.innerHTML = '';
+      const pageData = filteredCharacters.slice(from, to);
+      const totalPages = Math.ceil(filteredCharacters.length / ITEMS_PER_PAGE);
 
-        if (filteredCharacters.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">ไม่พบข้อมูลตัวละคร</td></tr>`;
-            return;
+      const tbody = document.getElementById('allCharsTable');
+      tbody.innerHTML = '';
+
+      if (filteredCharacters.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">ไม่พบข้อมูลตัวละคร</td></tr>`;
+        return;
+      }
+
+      pageData.forEach(char => {
+        // Created At Display
+        let lastUpdateStr = '-';
+        if (char.created_at) {
+          lastUpdateStr = new Date(char.created_at).toLocaleDateString('th-TH', {
+            day: 'numeric', month: 'short', year: '2-digit'
+          });
         }
 
-        pageData.forEach(char => {
-            // Created At Display
-            let lastUpdateStr = '-';
-            if (char.created_at) {
-                lastUpdateStr = new Date(char.created_at).toLocaleDateString('th-TH', {
-                    day: 'numeric', month: 'short', year: '2-digit'
-                });
-            }
-
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-800/50 transition duration-150 group';
-            row.innerHTML = `
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-800/50 transition duration-150 group';
+        row.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-white mr-3 font-bold">
@@ -660,37 +839,37 @@
                     </div>
                 </td>
             `;
-            tbody.appendChild(row);
-        });
+        tbody.appendChild(row);
+      });
 
-        // Render Pagination
-        const container = document.getElementById('adminPagination');
-        container.innerHTML = '';
-        if (totalPages > 1) {
-            // Previous
-            const prevBtn = document.createElement('button');
-            prevBtn.innerText = '«';
-            prevBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${currentAdminPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`;
-            prevBtn.onclick = () => { if(currentAdminPage > 1) renderAdminTable(currentAdminPage - 1); };
-            container.appendChild(prevBtn);
+      // Render Pagination
+      const container = document.getElementById('adminPagination');
+      container.innerHTML = '';
+      if (totalPages > 1) {
+        // Previous
+        const prevBtn = document.createElement('button');
+        prevBtn.innerText = '«';
+        prevBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${currentAdminPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`;
+        prevBtn.onclick = () => { if (currentAdminPage > 1) renderAdminTable(currentAdminPage - 1); };
+        container.appendChild(prevBtn);
 
-            for (let i = 1; i <= totalPages; i++) {
-                if (totalPages > 10 && Math.abs(currentAdminPage - i) > 2 && i !== 1 && i !== totalPages) continue;
+        for (let i = 1; i <= totalPages; i++) {
+          if (totalPages > 10 && Math.abs(currentAdminPage - i) > 2 && i !== 1 && i !== totalPages) continue;
 
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${i === currentAdminPage ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
-                btn.onclick = () => renderAdminTable(i);
-                container.appendChild(btn);
-            }
-            
-             // Next
-            const nextBtn = document.createElement('button');
-            nextBtn.innerText = '»';
-            nextBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${currentAdminPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`;
-            nextBtn.onclick = () => { if(currentAdminPage < totalPages) renderAdminTable(currentAdminPage + 1); };
-            container.appendChild(nextBtn);
+          const btn = document.createElement('button');
+          btn.innerText = i;
+          btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${i === currentAdminPage ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
+          btn.onclick = () => renderAdminTable(i);
+          container.appendChild(btn);
         }
+
+        // Next
+        const nextBtn = document.createElement('button');
+        nextBtn.innerText = '»';
+        nextBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition ${currentAdminPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`;
+        nextBtn.onclick = () => { if (currentAdminPage < totalPages) renderAdminTable(currentAdminPage + 1); };
+        container.appendChild(nextBtn);
+      }
     }
 
     async function deleteChar(charId, charName) {
@@ -699,67 +878,344 @@
       try {
         const { error } = await supabase.from('characters').delete().eq('id', charId);
         if (error) throw error;
-        loadDashboardDataManual(); 
+        loadDashboardDataManual();
       } catch (error) {
-          alert('❌ การลบล้มเหลว: ' + error.message);
+        alert('❌ การลบล้มเหลว: ' + error.message);
+      }
+    }
+
+    // --- Economy Index Functions ---
+    function renderEconomyIndex(goldLogs, sessions, dmLogs, characters) {
+      const days = parseInt(document.getElementById('economyDateRange')?.value || 14);
+      const { dailyData, labels } = aggregateAllGoldByDate(goldLogs, sessions, dmLogs, days);
+
+      // Update labels based on selected date range
+      const rangeLabel = days === 1 ? 'วันนี้' : `${days} วันล่าสุด`;
+      document.getElementById('inflowLabel').innerHTML = `<span class="text-green-500">💸</span> ไหลเข้า ${rangeLabel}`;
+      document.getElementById('outflowLabel').innerHTML = `<span class="text-red-500">🛒</span> ใช้จ่าย ${rangeLabel}`;
+      document.getElementById('netLabel').innerHTML = `<span class="text-purple-500">📊</span> NET ${rangeLabel}`;
+
+      // Calculate total server wealth from all characters
+      const totalWealth = characters.reduce((sum, c) => sum + (c.total_gold_num || 0), 0);
+      document.getElementById('totalMarketCap').textContent = totalWealth.toLocaleString();
+
+      // Calculate totals for the selected date range
+      let rangeInflow = 0, rangeOutflow = 0, rangeNet = 0;
+      labels.forEach(date => {
+        const data = dailyData[date] || { inflow: 0, outflow: 0, net: 0 };
+        rangeInflow += data.inflow;
+        rangeOutflow += data.outflow;
+        rangeNet += data.net;
+      });
+
+      document.getElementById('todayInflow').textContent = rangeInflow.toLocaleString();
+      document.getElementById('todayOutflow').textContent = rangeOutflow.toLocaleString();
+
+      const netEl = document.getElementById('todayNet');
+      netEl.textContent = (rangeNet >= 0 ? '+' : '') + rangeNet.toLocaleString();
+      netEl.className = `text-2xl font-bold mt-1 ${rangeNet >= 0 ? 'text-green-400' : 'text-red-400'}`;
+
+      // Calculate trends (compare current period vs previous period)
+      const { dailyData: prevDailyData, labels: prevLabels } = aggregateAllGoldByDate(goldLogs, sessions, dmLogs, days * 2);
+      let prevInflow = 0, prevOutflow = 0, prevNet = 0;
+      // Use only the earlier half of the extended data for comparison
+      prevLabels.slice(0, days).forEach(date => {
+        const data = prevDailyData[date] || { inflow: 0, outflow: 0, net: 0 };
+        prevInflow += data.inflow;
+        prevOutflow += data.outflow;
+        prevNet += data.net;
+      });
+
+      updateTrendIndicator('inflowTrend', rangeInflow, prevInflow, true);
+      updateTrendIndicator('outflowTrend', rangeOutflow, prevOutflow, false);
+      updateTrendIndicator('netTrend', rangeNet, prevNet, true);
+
+      // Prepare chart data
+      const inflowData = labels.map(date => dailyData[date]?.inflow || 0);
+      const outflowData = labels.map(date => dailyData[date]?.outflow || 0);
+      const netData = labels.map(date => dailyData[date]?.net || 0);
+
+      renderEconomyChart(labels, inflowData, outflowData, netData);
+    }
+
+    function aggregateAllGoldByDate(goldLogs, sessions, dmLogs, days) {
+      const dailyData = {};
+      const labels = [];
+
+      // Generate labels for the last N days
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+        labels.push(date);
+        dailyData[date] = { inflow: 0, outflow: 0, net: 0 };
+      }
+
+      // Aggregate gold_logs (manual gold transactions)
+      goldLogs.forEach(log => {
+        if (!log.created_at) return;
+        const date = log.created_at.split('T')[0];
+        if (!dailyData[date]) return;
+
+        const amount = Number(log.amount) || 0;
+        if (amount >= 0) {
+          dailyData[date].inflow += amount;
+        } else {
+          dailyData[date].outflow += Math.abs(amount);
+        }
+        dailyData[date].net += amount;
+      });
+
+      // Aggregate sessions auto_gold (session rewards)
+      sessions.forEach(session => {
+        if (!session.created_at) return;
+        const date = session.created_at.split('T')[0];
+        if (!dailyData[date]) return;
+
+        const autoGold = Number(session.auto_gold) || 0;
+        if (autoGold > 0) {
+          dailyData[date].inflow += autoGold;
+          dailyData[date].net += autoGold;
+        }
+      });
+
+      // Aggregate dm_logs auto_gold (DM rewards)
+      dmLogs.forEach(dmLog => {
+        if (!dmLog.created_at) return;
+        const date = dmLog.created_at.split('T')[0];
+        if (!dailyData[date]) return;
+
+        const autoGold = Number(dmLog.auto_gold) || 0;
+        if (autoGold > 0) {
+          dailyData[date].inflow += autoGold;
+          dailyData[date].net += autoGold;
+        }
+      });
+
+      return { dailyData, labels };
+    }
+
+    function updateTrendIndicator(elementId, current, previous, higherIsBetter) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      if (previous === 0) {
+        el.style.opacity = '0';
+        return;
+      }
+
+      const change = ((current - previous) / Math.abs(previous)) * 100;
+      const isPositive = change >= 0;
+
+      let arrow, colorClass;
+      if (higherIsBetter) {
+        arrow = isPositive ? '↑' : '↓';
+        colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+      } else {
+        arrow = isPositive ? '↑' : '↓';
+        colorClass = isPositive ? 'text-red-400' : 'text-green-400';
+      }
+
+      el.innerHTML = `${arrow} ${Math.abs(change).toFixed(0)}%`;
+      el.className = `text-xs font-medium flex items-center gap-0.5 opacity-100 transition-opacity ${colorClass}`;
+    }
+
+    function renderEconomyChart(labels, inflowData, outflowData, netData) {
+      const ctx = document.getElementById('economyChart')?.getContext('2d');
+      if (!ctx) return;
+
+      // Destroy existing chart
+      if (economyChartInstance) {
+        economyChartInstance.destroy();
+      }
+
+      // Format labels for display (short date format)
+      const displayLabels = labels.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+      });
+
+      // Create gradient fills
+      const greenGradient = ctx.createLinearGradient(0, 0, 0, 300);
+      greenGradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+      greenGradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+      const redGradient = ctx.createLinearGradient(0, 0, 0, 300);
+      redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+      redGradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+      const purpleGradient = ctx.createLinearGradient(0, 0, 0, 300);
+      purpleGradient.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+      purpleGradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+
+      economyChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: displayLabels,
+          datasets: [
+            {
+              label: 'ไหลเข้า (Inflow)',
+              data: inflowData,
+              borderColor: '#22c55e',
+              backgroundColor: greenGradient,
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#22c55e',
+              pointBorderColor: '#1f2937',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'ใช้จ่าย (Outflow)',
+              data: outflowData,
+              borderColor: '#ef4444',
+              backgroundColor: redGradient,
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#ef4444',
+              pointBorderColor: '#1f2937',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'สุทธิ (Net)',
+              data: netData,
+              borderColor: '#a855f7',
+              backgroundColor: purpleGradient,
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#a855f7',
+              pointBorderColor: '#1f2937',
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(31, 41, 55, 0.95)',
+              titleColor: '#fff',
+              bodyColor: '#9ca3af',
+              borderColor: '#4b5563',
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: true,
+              callbacks: {
+                label: function (context) {
+                  const value = context.parsed.y || 0;
+                  return `${context.dataset.label}: ${value.toLocaleString()} GP`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(75, 85, 99, 0.3)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#9ca3af',
+                callback: function (value) {
+                  if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                  return value;
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#9ca3af',
+                maxRotation: 0
+              }
+            }
+          }
+        }
+      });
+
+      chartInstances.push(economyChartInstance);
+    }
+
+    function loadEconomyData() {
+      // Re-render with existing data but new date range
+      if (allGoldLogs.length > 0 || allSessions.length > 0 || allDmLogs.length > 0) {
+        renderEconomyIndex(allGoldLogs, allSessions, allDmLogs, allCharacters);
       }
     }
 
     const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
     function calculateCurrentLevel(startLevel, totalHours) {
-        const maxLevel = 30;
-        if (startLevel >= maxLevel) return { level: maxLevel, hoursToNextLevel: 0 };
-        const baseHours = LEVEL_HOURS[startLevel] || 0;
-        const totalHoursWithBase = baseHours + totalHours;
-        let currentLevel = startLevel;
-        for (let level = startLevel + 1; level <= maxLevel; level++) {
-            if (totalHoursWithBase >= LEVEL_HOURS[level]) currentLevel = level;
-            else break;
-        }
-        return { level: currentLevel, hoursToNextLevel: 0 };
+      const maxLevel = 30;
+      if (startLevel >= maxLevel) return { level: maxLevel, hoursToNextLevel: 0 };
+      const baseHours = LEVEL_HOURS[startLevel] || 0;
+      const totalHoursWithBase = baseHours + totalHours;
+      let currentLevel = startLevel;
+      for (let level = startLevel + 1; level <= maxLevel; level++) {
+        if (totalHoursWithBase >= LEVEL_HOURS[level]) currentLevel = level;
+        else break;
+      }
+      return { level: currentLevel, hoursToNextLevel: 0 };
     }
 
     // --- Transfer Logic ---
     function openTransferModal(charId) {
-        document.getElementById('transferCharId').value = charId;
-        document.getElementById('targetEmail').value = '';
-        document.getElementById('transferModal').classList.remove('hidden');
-        document.getElementById('transferModal').classList.add('flex');
+      document.getElementById('transferCharId').value = charId;
+      document.getElementById('targetEmail').value = '';
+      document.getElementById('transferModal').classList.remove('hidden');
+      document.getElementById('transferModal').classList.add('flex');
     }
 
     function closeTransferModal() {
-        document.getElementById('transferModal').classList.add('hidden');
-        document.getElementById('transferModal').classList.remove('flex');
+      document.getElementById('transferModal').classList.add('hidden');
+      document.getElementById('transferModal').classList.remove('flex');
     }
 
     async function confirmTransfer() {
-        const charId = document.getElementById('transferCharId').value;
-        const email = document.getElementById('targetEmail').value;
-        if (!email) return alert('กรุณากรอกอีเมลผู้รับ');
-        if (!confirm(`ยืนยันที่จะย้ายตัวละครไปให้: ${email} ?`)) return;
+      const charId = document.getElementById('transferCharId').value;
+      const email = document.getElementById('targetEmail').value;
+      if (!email) return alert('กรุณากรอกอีเมลผู้รับ');
+      if (!confirm(`ยืนยันที่จะย้ายตัวละครไปให้: ${email} ?`)) return;
 
-        try {
-            const { data, error } = await supabase
-                .rpc('transfer_character_by_email', { 
-                    target_email: email, 
-                    char_id: charId 
-                });
+      try {
+        const { data, error } = await supabase
+          .rpc('transfer_character_by_email', {
+            target_email: email,
+            char_id: charId
+          });
 
-            if (error) throw error;
+        if (error) throw error;
 
-            if (data === 'Success') {
-                alert('✅ ย้ายตัวละครสำเร็จเรียบร้อย');
-                closeTransferModal();
-                loadDashboardDataManual();
-            } else if (data === 'User not found') {
-                alert('❌ ไม่พบอีเมลนี้ในระบบ');
-            } else {
-                alert('❌ ไม่สามารถย้ายได้: ' + data);
-            }
-        } catch (err) {
-            console.error(err);
-            alert('❌ Error: ' + err.message);
+        if (data === 'Success') {
+          alert('✅ ย้ายตัวละครสำเร็จเรียบร้อย');
+          closeTransferModal();
+          loadDashboardDataManual();
+        } else if (data === 'User not found') {
+          alert('❌ ไม่พบอีเมลนี้ในระบบ');
+        } else {
+          alert('❌ ไม่สามารถย้ายได้: ' + data);
         }
+      } catch (err) {
+        console.error(err);
+        alert('❌ Error: ' + err.message);
+      }
     }
   </script>
 </body>
