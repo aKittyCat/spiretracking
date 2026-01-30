@@ -181,9 +181,14 @@
 
                 <!-- GM Panel -->
                 <div id="gmPanel" class="mb-4 flex gap-2">
-                    <select id="addItemSelect" class="flex-grow p-2.5 rounded-xl input-primary text-sm pr-10">
-                        <option value="">+ เพิ่มวัตถุดิบ</option>
-                    </select>
+                    <div class="relative flex-grow">
+                        <input type="text" id="addItemInput" placeholder="+ เพิ่มวัตถุดิบ (พิมพ์เพื่อค้นหา...)"
+                            class="w-full p-2.5 rounded-xl input-primary text-sm pr-10" autocomplete="off">
+                        <input type="hidden" id="addItemSelect" value="">
+                        <div id="addItemDropdown"
+                            class="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-xl max-h-60 overflow-y-auto z-50 hidden shadow-xl">
+                        </div>
+                    </div>
                     <button onclick="addManualItem()"
                         class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-xl text-sm font-medium transition shadow-lg shadow-green-600/20">
                         <i class="fas fa-plus"></i>
@@ -306,5 +311,4 @@
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
 </body>
-
 </html>

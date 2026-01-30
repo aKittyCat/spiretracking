@@ -29,12 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         charSelect.appendChild(opt);
     });
 
-    // Populate GM Item List
-    INGREDIENTS_DB.sort((a, b) => a.name.localeCompare(b.name)).forEach(ing => {
-        const opt = document.createElement('option');
-        opt.value = ing.name; opt.innerText = ing.name;
-        document.getElementById('addItemSelect').appendChild(opt);
-    });
+    // Initialize Searchable Dropdown for GM Item List
+    initSearchableDropdown();
 
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
@@ -369,9 +365,72 @@ function copyLog() {
     });
 }
 
+// --- Searchable Dropdown ---
+function initSearchableDropdown() {
+    const input = document.getElementById('addItemInput');
+    const hidden = document.getElementById('addItemSelect');
+    const dropdown = document.getElementById('addItemDropdown');
+
+    // Sort ingredients
+    const sortedIngredients = [...INGREDIENTS_DB].sort((a, b) => a.name.localeCompare(b.name));
+
+    function renderDropdownItems(filter = '') {
+        dropdown.innerHTML = '';
+        const filtered = sortedIngredients.filter(ing =>
+            ing.name.toLowerCase().includes(filter.toLowerCase())
+        );
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="p-3 text-gray-500 text-sm">ไม่พบวัตถุดิบ</div>';
+            return;
+        }
+
+        filtered.forEach(ing => {
+            const item = document.createElement('div');
+            item.className = 'p-2.5 cursor-pointer hover:bg-green-600/20 text-sm text-gray-200 transition flex justify-between items-center border-b border-gray-800 last:border-b-0';
+            item.innerHTML = `
+                <span>${ing.name}</span>
+                <span class="text-xs text-gray-500">
+                    <span class="text-red-400">C:${ing.combat}</span>
+                    <span class="text-blue-400 ml-1">U:${ing.utility}</span>
+                    <span class="text-purple-400 ml-1">W:${ing.whimsy}</span>
+                </span>
+            `;
+            item.addEventListener('click', () => {
+                input.value = ing.name;
+                hidden.value = ing.name;
+                dropdown.classList.add('hidden');
+            });
+            dropdown.appendChild(item);
+        });
+    }
+
+    // Show dropdown on focus
+    input.addEventListener('focus', () => {
+        renderDropdownItems(input.value);
+        dropdown.classList.remove('hidden');
+    });
+
+    // Filter on input
+    input.addEventListener('input', () => {
+        hidden.value = ''; // Reset selected value when typing
+        renderDropdownItems(input.value);
+        dropdown.classList.remove('hidden');
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+}
+
 // GM Tool
 async function addManualItem() {
-    const itemName = document.getElementById('addItemSelect').value;
+    const hidden = document.getElementById('addItemSelect');
+    const input = document.getElementById('addItemInput');
+    const itemName = hidden.value;
     if (!itemName || !selectedCharId) return;
 
     // Check local first to save bandwidth? or direct DB
@@ -383,5 +442,10 @@ async function addManualItem() {
     } else {
         await supabase.from('character_inventories').insert({ character_id: selectedCharId, item_name: itemName, quantity: 1, category: 'ingredient' });
     }
+
+    // Reset searchable dropdown
+    input.value = '';
+    hidden.value = '';
+
     loadData();
 }
