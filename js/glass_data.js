@@ -329,6 +329,19 @@ const POTIONS_DB = {
     }
 };
 
+const OTTGBOONS_DB = [
+    { name: "Acceptance", shards: "5", desc: "When making a skill check you can choose to add a +5 bonus to the roll. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Envy", shards: "5", desc: "(นับว่าเป็นการ PvP ต้องได้รับการยินยอมจากอีกฝ่ายก่อน) Choose an ally creature that you can see and gain proficiency in a skill they have proficiency in. This effect lasts for 1 hour. While you have proficiency in the chosen skill, the ally you copied it from has disadvantage in all checks that use that skill.", books: "" },
+    { name: "Fearful", shards: "10", desc: "(นับว่าเป็นการ PvP ต้องได้รับการยินยอมจากอีกฝ่ายก่อน) If you are hit by an attack while an ally creature is within 5 feet of you, you can choose to have the ally take the damage instead of you. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Forgiveness", shards: "10", desc: "When you are hit by an attack, you can choose to cause all subsequent attacks made by the creature to be made at disadvantage. This effect lasts until the end of your next turn. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Hate", shards: "15", desc: "When you make an attack roll or skill check you can choose to change the roll to a 20. If you choose to do this all Charisma, Intelligence, and Wisdom checks are made at disadvantage for the next hour. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Heroic", shards: "15", desc: "When you would fail a Wisdom, Charisma, or Intelligence saving throw, you can instead choose to succeed. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Mercy", shards: "5", desc: "When you make an attack that would drop a creature below zero hit points, you can choose to forgo the damage, making a Charisma skill check with advantage instead. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Selfishness", shards: "10", desc: "(นับว่าเป็นการ PvP ต้องได้รับการยินยอมจากอีกฝ่ายก่อน) When you take damage, you can choose to regain 2 hit points for each ally you have within 30 feet of you. When you do so, each ally suffers a number of Necrotic damage equal to the hit points you recovered. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Selfless", shards: "5", desc: "(Simulacrums จะไม่ได้รับผลของเอฟเฟคนี้) On your turn, you can forgo your action, allowing a character that can see or hear you to take an action or move. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
+    { name: "Shame", shards: "15", desc: "(DC จะเท่ากับ DC เวทย์มนต์ของตัวละครแทน(ถ้าไม่มี DC จะเท่ากับ Proficiency Bonus+Con+8)) As a bonus action, all creatures within 60 feet of you must succeed on a Wisdom saving throw or be unable to look in your direction until the end of your next turn. The DC for this boon is equal to 10 + your level. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" }
+];
+
 // Helper function to find potion
 function findPotion(type, value) {
     const category = POTIONS_DB[type];
