@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = 'index.html'; return; }
 
+    // Display user email
+    document.getElementById('userEmail').textContent = user.email;
+
     const { data: chars } = await supabase.from('characters').select('id, name').eq('user_id', user.id);
     chars.forEach(c => {
         const opt = document.createElement('option');
@@ -802,4 +805,10 @@ async function addManualItem() {
     hidden.value = '';
 
     loadData();
+}
+
+// Logout function
+async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
 }
