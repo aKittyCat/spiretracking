@@ -547,9 +547,39 @@ function updateSlotsUI() {
     document.getElementById('totalUtility').innerText = totalU;
     document.getElementById('totalWhimsy').innerText = totalW;
 
+    // Reset all stat box highlights
+    const statBoxCombat = document.getElementById('statBoxCombat');
+    const statBoxUtility = document.getElementById('statBoxUtility');
+    const statBoxWhimsy = document.getElementById('statBoxWhimsy');
+
+    const defaultBoxClasses = 'bg-gray-900/50 border-gray-700/30';
+    const highlightCombat = 'bg-red-900/30 border-red-500/50 ring-2 ring-red-500/30';
+    const highlightUtility = 'bg-blue-900/30 border-blue-500/50 ring-2 ring-blue-500/30';
+    const highlightWhimsy = 'bg-purple-900/30 border-purple-500/50 ring-2 ring-purple-500/30';
+
+    // Remove all highlights first
+    statBoxCombat.className = 'bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all';
+    statBoxUtility.className = 'bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all';
+    statBoxWhimsy.className = 'bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all';
+
+    // Check for single highest value and highlight it
+    const maxVal = Math.max(totalC, totalU, totalW);
+    if (maxVal > 0) {
+        const highCount = [totalC, totalU, totalW].filter(v => v === maxVal).length;
+        if (highCount === 1) {
+            // Only one highest - highlight it
+            if (totalC === maxVal) {
+                statBoxCombat.className = 'bg-red-900/30 rounded-xl p-3 border-2 border-red-500/50 ring-2 ring-red-500/30 transition-all';
+            } else if (totalU === maxVal) {
+                statBoxUtility.className = 'bg-blue-900/30 rounded-xl p-3 border-2 border-blue-500/50 ring-2 ring-blue-500/30 transition-all';
+            } else if (totalW === maxVal) {
+                statBoxWhimsy.className = 'bg-purple-900/30 rounded-xl p-3 border-2 border-purple-500/50 ring-2 ring-purple-500/30 transition-all';
+            }
+        }
+    }
+
     if (filledCount === 3) {
         // Check for Tie
-        const maxVal = Math.max(totalC, totalU, totalW);
         const candidates = [];
         if (totalC === maxVal) candidates.push('Combat');
         if (totalU === maxVal) candidates.push('Utility');
@@ -605,6 +635,22 @@ function updateSlotsUI() {
             document.getElementById('previewResult').classList.remove('hidden');
             document.getElementById('potionName').innerText = result.name;
             document.getElementById('potionDesc').innerText = result.desc;
+
+            // Set type badge styling and value
+            const potionTypeEl = document.getElementById('potionType');
+            const potionValueEl = document.getElementById('potionValue');
+
+            const typeStyles = {
+                'Combat': { bg: 'bg-red-600/30 text-red-300', icon: '<i class="fas fa-fist-raised mr-1"></i>' },
+                'Utility': { bg: 'bg-blue-600/30 text-blue-300', icon: '<i class="fas fa-tools mr-1"></i>' },
+                'Whimsical': { bg: 'bg-purple-600/30 text-purple-300', icon: '<i class="fas fa-hat-wizard mr-1"></i>' }
+            };
+            const style = typeStyles[selectedAttribute] || typeStyles['Combat'];
+
+            potionTypeEl.className = `text-sm px-3 py-1 rounded-full ${style.bg} font-medium`;
+            potionTypeEl.innerHTML = `${style.icon}${selectedAttribute}`;
+            potionValueEl.innerText = `Attribute: ${maxVal}`;
+
             craftingSlots.resultPotion = result;
         }
 
