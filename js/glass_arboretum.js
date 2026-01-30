@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderPotionsGrid();
     updatePotionStats();
 
+    // Initialize Boons Grid
+    renderBoonsGrid();
+    updateBoonStats();
+
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
         selectedCharName = e.target.options[e.target.selectedIndex].text;
@@ -57,16 +61,19 @@ function switchMainPage(page) {
     const pageGuide = document.getElementById('page-guide');
     const pageIngredients = document.getElementById('page-ingredients');
     const pagePotions = document.getElementById('page-potions');
+    const pageBoons = document.getElementById('page-boons');
     const btnCrafter = document.getElementById('mainTabCrafter');
     const btnGuide = document.getElementById('mainTabGuide');
     const btnIngredients = document.getElementById('mainTabIngredients');
     const btnPotions = document.getElementById('mainTabPotions');
+    const btnBoons = document.getElementById('mainTabBoons');
 
     // Hide all pages
     pageCrafter.classList.add('hidden');
     pageGuide.classList.add('hidden');
     pageIngredients.classList.add('hidden');
     pagePotions.classList.add('hidden');
+    pageBoons.classList.add('hidden');
 
     // Deactivate all buttons
     btnCrafter.classList.remove('active', 'text-green-400');
@@ -77,6 +84,8 @@ function switchMainPage(page) {
     btnIngredients.classList.add('text-gray-400');
     btnPotions.classList.remove('active', 'text-green-400');
     btnPotions.classList.add('text-gray-400');
+    btnBoons.classList.remove('active', 'text-green-400');
+    btnBoons.classList.add('text-gray-400');
 
     // Show selected page and activate button
     if (page === 'crafter') {
@@ -95,6 +104,10 @@ function switchMainPage(page) {
         pagePotions.classList.remove('hidden');
         btnPotions.classList.add('active', 'text-green-400');
         btnPotions.classList.remove('text-gray-400');
+    } else if (page === 'boons') {
+        pageBoons.classList.remove('hidden');
+        btnBoons.classList.add('active', 'text-green-400');
+        btnBoons.classList.remove('text-gray-400');
     }
 }
 
@@ -264,6 +277,77 @@ function updatePotionStats() {
     document.getElementById('combatPotionsCount').textContent = combat;
     document.getElementById('utilityPotionsCount').textContent = utility;
     document.getElementById('whimsicalPotionsCount').textContent = whimsical;
+}
+
+// --- Boons Grid ---
+function renderBoonsGrid(filteredData = null) {
+    const grid = document.getElementById('boonsGrid');
+    const data = filteredData || BOONS_DB;
+
+    grid.innerHTML = '';
+
+    if (data.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fas fa-search text-4xl mb-3 block"></i>ไม่พบ Boon ที่ค้นหา</div>';
+        return;
+    }
+
+    // Sort by shards then by name
+    const sorted = [...data].sort((a, b) => {
+        const shardsA = parseInt(a.shards);
+        const shardsB = parseInt(b.shards);
+        if (shardsA !== shardsB) return shardsA - shardsB;
+        return a.name.localeCompare(b.name);
+    });
+
+    sorted.forEach(boon => {
+        const card = document.createElement('div');
+        const shards = parseInt(boon.shards);
+
+        // Color based on shards cost
+        const shardColors = {
+            5: { bg: 'border-green-500/40', badge: 'bg-green-500/20 text-green-400', icon: 'text-green-400' },
+            10: { bg: 'border-amber-500/40', badge: 'bg-amber-500/20 text-amber-400', icon: 'text-amber-400' },
+            15: { bg: 'border-red-500/40', badge: 'bg-red-500/20 text-red-400', icon: 'text-red-400' }
+        };
+        const colors = shardColors[shards] || shardColors[5];
+
+        card.className = `bg-gray-900/50 p-4 rounded-xl border-2 ${colors.bg} hover:border-opacity-70 transition`;
+        card.innerHTML = `
+            <div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+                <h3 class="font-bold text-white text-lg">${boon.name}</h3>
+                <span class="text-xs px-3 py-1 rounded-full ${colors.badge} font-semibold flex items-center gap-1">
+                    <i class="fas fa-gem ${colors.icon}"></i> ${boon.shards} Shards
+                </span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">${boon.desc}</p>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function filterBoons() {
+    const searchTerm = document.getElementById('boonSearch').value.toLowerCase();
+    const shardFilter = document.getElementById('boonShardFilter').value;
+
+    let filtered = BOONS_DB.filter(boon => {
+        const matchesSearch = boon.name.toLowerCase().includes(searchTerm) || boon.desc.toLowerCase().includes(searchTerm);
+        const matchesShards = !shardFilter || boon.shards === shardFilter;
+        return matchesSearch && matchesShards;
+    });
+
+    renderBoonsGrid(filtered);
+}
+
+function updateBoonStats() {
+    const total = BOONS_DB.length;
+    const shards5 = BOONS_DB.filter(b => b.shards === '5').length;
+    const shards10 = BOONS_DB.filter(b => b.shards === '10').length;
+    const shards15 = BOONS_DB.filter(b => b.shards === '15').length;
+
+    document.getElementById('totalBoonsCount').textContent = total;
+    document.getElementById('boons5Count').textContent = shards5;
+    document.getElementById('boons10Count').textContent = shards10;
+    document.getElementById('boons15Count').textContent = shards15;
 }
 
 // --- Tab System ---

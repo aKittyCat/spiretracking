@@ -311,6 +311,10 @@
                 class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
                 <i class="fas fa-prescription-bottle"></i> รายการยา
             </button>
+            <button id="mainTabBoons" onclick="switchMainPage('boons')"
+                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                <i class="fas fa-gem"></i> รายการ Boons
+            </button>
         </div>
 
         <!-- ==================== PAGE 1: POTION CRAFTER ==================== -->
@@ -810,6 +814,74 @@
             </div>
         </div>
 
+        <!-- ==================== PAGE 5: BOONS LIST ==================== -->
+        <div id="page-boons" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="bg-amber-500/20 text-amber-400 p-2 rounded-lg"><i class="fas fa-gem"></i></span>
+                    รายการ Boons ทั้งหมด
+                </h2>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <input type="text" id="boonSearch" placeholder="ค้นหา Boon..."
+                        class="input-primary text-sm flex-grow md:w-64" oninput="filterBoons()">
+                    <select id="boonShardFilter" class="input-primary text-sm pr-10" onchange="filterBoons()">
+                        <option value="">ทุกระดับ Shards</option>
+                        <option value="5">5 Shards</option>
+                        <option value="10">10 Shards</option>
+                        <option value="15">15 Shards</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Conditions -->
+            <div class="bg-amber-900/20 border border-amber-600/30 rounded-xl p-4 mb-6">
+                <h3 class="text-amber-400 font-semibold mb-2 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i> เงื่อนไข
+                </h3>
+                <ul class="text-gray-300 space-y-2 list-disc list-inside text-sm">
+                    <li>ตัวละครจะมี Boon ได้แค่ <span class="text-amber-400 font-semibold">1 อันเท่านั้น</span></li>
+                    <li>เมื่อมี Boon Shard เพียงพอที่จะแลก ผู้เล่นต้องลงบันทึกในช่อง <span
+                            class="text-cyan-400 font-mono">#บันทึกartifactและboon</span> โดยระบุว่าเป็น <span
+                            class="text-amber-400 font-semibold">"Obojima Boon"</span></li>
+                </ul>
+            </div>
+
+            <!-- Shards Legend -->
+            <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> 5
+                    Shards</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> 10
+                    Shards</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> 15
+                    Shards</span>
+            </div>
+
+            <!-- Stats Summary -->
+            <div id="boonStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-white" id="totalBoonsCount">0</div>
+                    <div class="text-xs text-gray-400">Boons ทั้งหมด</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-green-400" id="boons5Count">0</div>
+                    <div class="text-xs text-gray-400">5 Shards</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-amber-400" id="boons10Count">0</div>
+                    <div class="text-xs text-gray-400">10 Shards</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="boons15Count">0</div>
+                    <div class="text-xs text-gray-400">15 Shards</div>
+                </div>
+            </div>
+
+            <!-- Boons Grid -->
+            <div id="boonsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="mt-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
             <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
@@ -828,5 +900,4 @@
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
 </body>
-
 </html>
