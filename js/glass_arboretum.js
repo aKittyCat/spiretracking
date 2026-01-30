@@ -240,7 +240,7 @@ function renderPotionsGrid(filteredData = null) {
                 <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <span class="text-xs px-2 py-0.5 rounded type-badge-${potion.type} font-medium">${potion.type}</span>
-                        <span class="text-xs text-gray-500">#${potion.num}</span>
+                        <span class="text-xs text-gray-500">ค่า Attribute สูงสุด: ${potion.num}</span>
                     </div>
                     <span class="text-xs px-2 py-0.5 rounded ${rarityBadgeClass[potion.rarity] || ''} font-medium capitalize">${potion.rarity}</span>
                 </div>
