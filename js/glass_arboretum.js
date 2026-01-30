@@ -534,7 +534,16 @@ function updateSlotsUI() {
     craftingSlots.forEach((item, index) => {
         const el = document.getElementById(`slot${index + 1}`);
         if (item) {
-            el.innerHTML = `<div class="text-center"><div class="text-xs font-bold text-white">${item.name}</div></div>`;
+            el.innerHTML = `
+                <div class="text-center">
+                    <div class="text-xs font-bold text-white mb-1">${item.name}</div>
+                    <div class="flex justify-center gap-2 text-[10px]">
+                        <span class="text-red-400">C:${item.combat}</span>
+                        <span class="text-blue-400">U:${item.utility}</span>
+                        <span class="text-purple-400">W:${item.whimsy}</span>
+                    </div>
+                </div>
+            `;
             el.classList.add('filled');
             totalC += parseInt(item.combat);
             totalU += parseInt(item.utility);
@@ -549,6 +558,11 @@ function updateSlotsUI() {
     document.getElementById('totalCombat').innerText = totalC;
     document.getElementById('totalUtility').innerText = totalU;
     document.getElementById('totalWhimsy').innerText = totalW;
+
+    // Update Progression Graph (single bar based on ingredient count)
+    const progressPercent = (filledCount / 3) * 100;
+    document.getElementById('progressBar').style.width = progressPercent + '%';
+    document.getElementById('progressLabel').innerText = `${filledCount} / 3`;
 
     // Reset all stat box highlights
     const statBoxCombat = document.getElementById('statBoxCombat');
