@@ -329,7 +329,7 @@ const POTIONS_DB = {
     }
 };
 
-const OTTGBOONS_DB = [
+const BOONS_DB = [
     { name: "Acceptance", shards: "5", desc: "When making a skill check you can choose to add a +5 bonus to the roll. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
     { name: "Envy", shards: "5", desc: "(นับว่าเป็นการ PvP ต้องได้รับการยินยอมจากอีกฝ่ายก่อน) Choose an ally creature that you can see and gain proficiency in a skill they have proficiency in. This effect lasts for 1 hour. While you have proficiency in the chosen skill, the ally you copied it from has disadvantage in all checks that use that skill.", books: "" },
     { name: "Fearful", shards: "10", desc: "(นับว่าเป็นการ PvP ต้องได้รับการยินยอมจากอีกฝ่ายก่อน) If you are hit by an attack while an ally creature is within 5 feet of you, you can choose to have the ally take the damage instead of you. Once you use this boon, you can't do so again until you finish a long rest.", books: "O:TTG" },
