@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Searchable Dropdown for GM Item List
     initSearchableDropdown();
 
+    // Initialize Ingredients Grid
+    renderIngredientsGrid();
+    updateIngredientStats();
+
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
         selectedCharName = e.target.options[e.target.selectedIndex].text;
@@ -41,6 +45,112 @@ document.addEventListener('DOMContentLoaded', async () => {
         logArea.classList.add('hidden');
     });
 });
+
+// --- Main Page Navigation ---
+function switchMainPage(page) {
+    const pageCrafter = document.getElementById('page-crafter');
+    const pageGuide = document.getElementById('page-guide');
+    const pageIngredients = document.getElementById('page-ingredients');
+    const btnCrafter = document.getElementById('mainTabCrafter');
+    const btnGuide = document.getElementById('mainTabGuide');
+    const btnIngredients = document.getElementById('mainTabIngredients');
+
+    // Hide all pages
+    pageCrafter.classList.add('hidden');
+    pageGuide.classList.add('hidden');
+    pageIngredients.classList.add('hidden');
+
+    // Deactivate all buttons
+    btnCrafter.classList.remove('active', 'text-green-400');
+    btnCrafter.classList.add('text-gray-400');
+    btnGuide.classList.remove('active', 'text-green-400');
+    btnGuide.classList.add('text-gray-400');
+    btnIngredients.classList.remove('active', 'text-green-400');
+    btnIngredients.classList.add('text-gray-400');
+
+    // Show selected page and activate button
+    if (page === 'crafter') {
+        pageCrafter.classList.remove('hidden');
+        btnCrafter.classList.add('active', 'text-green-400');
+        btnCrafter.classList.remove('text-gray-400');
+    } else if (page === 'guide') {
+        pageGuide.classList.remove('hidden');
+        btnGuide.classList.add('active', 'text-green-400');
+        btnGuide.classList.remove('text-gray-400');
+    } else if (page === 'ingredients') {
+        pageIngredients.classList.remove('hidden');
+        btnIngredients.classList.add('active', 'text-green-400');
+        btnIngredients.classList.remove('text-gray-400');
+    }
+}
+
+// --- Ingredients Grid ---
+function renderIngredientsGrid(filteredData = null) {
+    const grid = document.getElementById('ingredientsGrid');
+    const data = filteredData || INGREDIENTS_DB;
+
+    grid.innerHTML = '';
+
+    if (data.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fas fa-search text-4xl mb-3 block"></i>ไม่พบวัตถุดิบที่ค้นหา</div>';
+        return;
+    }
+
+    // Sort by name
+    const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+
+    sorted.forEach(ing => {
+        const card = document.createElement('div');
+        card.className = `bg-gray-900/50 p-4 rounded-xl border border-gray-800 hover:border-gray-600 transition rarity-badge-${ing.rarity}`;
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <span class="font-semibold text-white text-sm">${ing.name}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full rarity-${ing.rarity} font-medium">${getRarityLabel(ing.rarity)}</span>
+            </div>
+            <div class="flex gap-3 text-sm">
+                <span class="text-red-400"><i class="fas fa-fist-raised"></i> ${ing.combat}</span>
+                <span class="text-blue-400"><i class="fas fa-tools"></i> ${ing.utility}</span>
+                <span class="text-purple-400"><i class="fas fa-hat-wizard"></i> ${ing.whimsy}</span>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function getRarityLabel(rarity) {
+    switch (rarity) {
+        case 'C': return 'Common';
+        case 'U': return 'Uncommon';
+        case 'R': return 'Rare';
+        case 'VR': return 'Very Rare';
+        default: return rarity;
+    }
+}
+
+function filterIngredients() {
+    const searchTerm = document.getElementById('ingredientSearch').value.toLowerCase();
+    const rarityFilter = document.getElementById('rarityFilter').value;
+
+    let filtered = INGREDIENTS_DB.filter(ing => {
+        const matchesSearch = ing.name.toLowerCase().includes(searchTerm);
+        const matchesRarity = !rarityFilter || ing.rarity === rarityFilter;
+        return matchesSearch && matchesRarity;
+    });
+
+    renderIngredientsGrid(filtered);
+}
+
+function updateIngredientStats() {
+    const total = INGREDIENTS_DB.length;
+    const common = INGREDIENTS_DB.filter(i => i.rarity === 'C').length;
+    const uncommon = INGREDIENTS_DB.filter(i => i.rarity === 'U').length;
+    const rare = INGREDIENTS_DB.filter(i => i.rarity === 'R').length;
+
+    document.getElementById('totalIngredients').textContent = total;
+    document.getElementById('commonCount').textContent = common;
+    document.getElementById('uncommonCount').textContent = uncommon;
+    document.getElementById('rareCount').textContent = rare;
+}
 
 // --- Tab System ---
 function switchTab(tab) {
