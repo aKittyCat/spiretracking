@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderIngredientsGrid();
     updateIngredientStats();
 
+    // Initialize Potions Grid
+    initPotionsData();
+    renderPotionsGrid();
+    updatePotionStats();
+
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
         selectedCharName = e.target.options[e.target.selectedIndex].text;
@@ -51,14 +56,17 @@ function switchMainPage(page) {
     const pageCrafter = document.getElementById('page-crafter');
     const pageGuide = document.getElementById('page-guide');
     const pageIngredients = document.getElementById('page-ingredients');
+    const pagePotions = document.getElementById('page-potions');
     const btnCrafter = document.getElementById('mainTabCrafter');
     const btnGuide = document.getElementById('mainTabGuide');
     const btnIngredients = document.getElementById('mainTabIngredients');
+    const btnPotions = document.getElementById('mainTabPotions');
 
     // Hide all pages
     pageCrafter.classList.add('hidden');
     pageGuide.classList.add('hidden');
     pageIngredients.classList.add('hidden');
+    pagePotions.classList.add('hidden');
 
     // Deactivate all buttons
     btnCrafter.classList.remove('active', 'text-green-400');
@@ -67,6 +75,8 @@ function switchMainPage(page) {
     btnGuide.classList.add('text-gray-400');
     btnIngredients.classList.remove('active', 'text-green-400');
     btnIngredients.classList.add('text-gray-400');
+    btnPotions.classList.remove('active', 'text-green-400');
+    btnPotions.classList.add('text-gray-400');
 
     // Show selected page and activate button
     if (page === 'crafter') {
@@ -81,6 +91,10 @@ function switchMainPage(page) {
         pageIngredients.classList.remove('hidden');
         btnIngredients.classList.add('active', 'text-green-400');
         btnIngredients.classList.remove('text-gray-400');
+    } else if (page === 'potions') {
+        pagePotions.classList.remove('hidden');
+        btnPotions.classList.add('active', 'text-green-400');
+        btnPotions.classList.remove('text-gray-400');
     }
 }
 
@@ -150,6 +164,106 @@ function updateIngredientStats() {
     document.getElementById('commonCount').textContent = common;
     document.getElementById('uncommonCount').textContent = uncommon;
     document.getElementById('rareCount').textContent = rare;
+}
+
+// --- Potions Grid ---
+let allPotionsFlat = [];
+
+function initPotionsData() {
+    allPotionsFlat = [];
+    ['Combat', 'Utility', 'Whimsical'].forEach(type => {
+        if (POTIONS_DB[type]) {
+            Object.entries(POTIONS_DB[type]).forEach(([num, potion]) => {
+                allPotionsFlat.push({
+                    num: parseInt(num),
+                    type: type,
+                    name: potion.name,
+                    rarity: potion.rarity,
+                    desc: potion.desc
+                });
+            });
+        }
+    });
+}
+
+function renderPotionsGrid(filteredData = null) {
+    const grid = document.getElementById('potionsGrid');
+    const data = filteredData || allPotionsFlat;
+
+    grid.innerHTML = '';
+
+    if (data.length === 0) {
+        grid.innerHTML = '<div class="text-center text-gray-500 py-10"><i class="fas fa-search text-4xl mb-3 block"></i>ไม่พบยาที่ค้นหา</div>';
+        return;
+    }
+
+    // Sort by type then by number
+    const sorted = [...data].sort((a, b) => {
+        const typeOrder = { 'Combat': 1, 'Utility': 2, 'Whimsical': 3 };
+        if (typeOrder[a.type] !== typeOrder[b.type]) {
+            return typeOrder[a.type] - typeOrder[b.type];
+        }
+        return a.num - b.num;
+    });
+
+    sorted.forEach(potion => {
+        const card = document.createElement('div');
+        card.className = `potion-card bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden potion-type-${potion.type}`;
+
+        const typeColor = {
+            'Combat': 'text-red-400',
+            'Utility': 'text-blue-400',
+            'Whimsical': 'text-purple-400'
+        };
+
+        const rarityBadgeClass = {
+            'common': 'bg-gray-600/30 text-gray-300',
+            'uncommon': 'bg-green-600/30 text-green-300',
+            'rare': 'bg-blue-600/30 text-blue-300'
+        };
+
+        card.innerHTML = `
+            <div class="p-4">
+                <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs px-2 py-0.5 rounded type-badge-${potion.type} font-medium">${potion.type}</span>
+                        <span class="text-xs text-gray-500">#${potion.num}</span>
+                    </div>
+                    <span class="text-xs px-2 py-0.5 rounded ${rarityBadgeClass[potion.rarity] || ''} font-medium capitalize">${potion.rarity}</span>
+                </div>
+                <h3 class="font-bold text-white text-lg mb-2">${potion.name}</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">${potion.desc}</p>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function filterPotions() {
+    const searchTerm = document.getElementById('potionSearch').value.toLowerCase();
+    const typeFilter = document.getElementById('potionTypeFilter').value;
+    const rarityFilter = document.getElementById('potionRarityFilter').value;
+
+    let filtered = allPotionsFlat.filter(potion => {
+        const matchesSearch = potion.name.toLowerCase().includes(searchTerm) || potion.desc.toLowerCase().includes(searchTerm);
+        const matchesType = !typeFilter || potion.type === typeFilter;
+        const matchesRarity = !rarityFilter || potion.rarity === rarityFilter;
+        return matchesSearch && matchesType && matchesRarity;
+    });
+
+    renderPotionsGrid(filtered);
+}
+
+function updatePotionStats() {
+    const total = allPotionsFlat.length;
+    const combat = allPotionsFlat.filter(p => p.type === 'Combat').length;
+    const utility = allPotionsFlat.filter(p => p.type === 'Utility').length;
+    const whimsical = allPotionsFlat.filter(p => p.type === 'Whimsical').length;
+
+    document.getElementById('totalPotionsCount').textContent = total;
+    document.getElementById('combatPotionsCount').textContent = combat;
+    document.getElementById('utilityPotionsCount').textContent = utility;
+    document.getElementById('whimsicalPotionsCount').textContent = whimsical;
 }
 
 // --- Tab System ---

@@ -219,6 +219,46 @@
         .mishap-table tr:last-child td {
             border-bottom: none;
         }
+
+        /* Potion Type Colors */
+        .potion-type-Combat {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .potion-type-Utility {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .potion-type-Whimsical {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .type-badge-Combat {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .type-badge-Utility {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .type-badge-Whimsical {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .potion-card {
+            transition: all 0.3s ease;
+        }
+
+        .potion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 
@@ -266,6 +306,10 @@
             <button id="mainTabIngredients" onclick="switchMainPage('ingredients')"
                 class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
                 <i class="fas fa-leaf"></i> รายการวัตถุดิบ
+            </button>
+            <button id="mainTabPotions" onclick="switchMainPage('potions')"
+                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                <i class="fas fa-prescription-bottle"></i> รายการยา
             </button>
         </div>
 
@@ -462,7 +506,8 @@
                     <p class="text-gray-200">เข้าไปที่ช่อง <span
                             class="text-cyan-400 font-mono">#the-glass-arboretum</span> ใน Activities จากนั้นใช้คำสั่ง
                         <code class="bg-gray-700 px-2 py-1 rounded text-green-400">!harvest</code>
-                        (อย่าลืมหักทองออกด้วย)</p>
+                        (อย่าลืมหักทองออกด้วย)
+                    </p>
                 </div>
             </div>
 
@@ -703,6 +748,68 @@
             </div>
         </div>
 
+        <!-- ==================== PAGE 4: POTIONS LIST ==================== -->
+        <div id="page-potions" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg"><i
+                            class="fas fa-prescription-bottle"></i></span>
+                    รายการยาทั้งหมด
+                </h2>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <input type="text" id="potionSearch" placeholder="ค้นหายา..."
+                        class="input-primary text-sm flex-grow md:w-64" oninput="filterPotions()">
+                    <select id="potionTypeFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
+                        <option value="">ทุกประเภท</option>
+                        <option value="Combat">Combat</option>
+                        <option value="Utility">Utility</option>
+                        <option value="Whimsical">Whimsical</option>
+                    </select>
+                    <select id="potionRarityFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
+                        <option value="">ทุก Rarity</option>
+                        <option value="common">Common</option>
+                        <option value="uncommon">Uncommon</option>
+                        <option value="rare">Rare</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Type Legend -->
+            <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span>
+                    Combat</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                    Utility</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                    Whimsical</span>
+            </div>
+
+            <!-- Stats Summary -->
+            <div id="potionStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-white" id="totalPotionsCount">0</div>
+                    <div class="text-xs text-gray-400">ยาทั้งหมด</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="combatPotionsCount">0</div>
+                    <div class="text-xs text-gray-400">Combat</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-blue-400" id="utilityPotionsCount">0</div>
+                    <div class="text-xs text-gray-400">Utility</div>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                    <div class="text-2xl font-bold text-purple-400" id="whimsicalPotionsCount">0</div>
+                    <div class="text-xs text-gray-400">Whimsical</div>
+                </div>
+            </div>
+
+            <!-- Potions Grid -->
+            <div id="potionsGrid" class="space-y-3">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="mt-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
             <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
@@ -721,4 +828,5 @@
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
 </body>
+
 </html>
