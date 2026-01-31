@@ -1,1035 +1,1195 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="env.js"></script>
-  <script src="supabase-config.js"></script>
-  <title>The Spire Tracking - รายละเอียดตัวละคร</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-    
-    body { font-family: 'Sarabun', sans-serif; }
-    
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #111827; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <title>The Spire Tracking - รายละเอียดตัวละคร</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 
-    .glass-panel {
-      background: rgba(31, 41, 55, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(75, 85, 99, 0.4);
-    }
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
-    
-    @keyframes fadeIn { 
-        from { opacity: 0; transform: translateY(10px); } 
-        to { opacity: 1; transform: translateY(0); } 
-    }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
 
-    .tab-btn {
-        position: relative;
-        transition: all 0.3s ease;
-    }
-    .tab-btn::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 0%;
-        height: 2px;
-        background: currentColor;
-        transition: width 0.3s ease;
-    }
-    .tab-btn.active::after { width: 100%; }
-    
-    .input-primary {
-        background-color: rgba(17, 24, 39, 0.6);
-        border: 1px solid #374151;
-        color: #e5e7eb;
-        transition: all 0.2s;
-    }
-    .input-primary:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        outline: none;
-    }
-  </style>
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: currentColor;
+            transition: width 0.3s ease;
+        }
+
+        .tab-btn.active::after {
+            width: 100%;
+        }
+
+        .input-primary {
+            background-color: rgba(17, 24, 39, 0.6);
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .input-primary:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+    </style>
 </head>
+
 <body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-indigo-500 selection:text-white pb-10">
-  
-  <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
-    
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 pb-6 border-b border-gray-800 gap-4">
-      <div class="flex items-center gap-4">
-        <a href="characters.html" class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group" title="กลับหน้าตัวละคร">
-            <i class="fa-solid fa-arrow-left text-gray-400 group-hover:text-white"></i>
-        </a> 
-        <button onclick="manualRefresh()" id="btnRefresh" class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group" title="รีเฟรชข้อมูลล่าสุด">
-            <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-gray-400 group-hover:text-white"></i>
-        </button>
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-                📜 รายละเอียดตัวละคร
-            </h1>
-            <p class="text-xs text-gray-500 mt-1">Manage your character stats and logs</p>
-        </div>
-      </div>
 
-      <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
-        <div class="px-3 flex flex-col items-end">
-             <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
-             <span id="userEmail" class="text-sm font-medium text-gray-300">...</span>
-        </div>
-        <button onclick="logout()" class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20" title="ออกจากระบบ">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
+    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
 
-    <div id="charInfo" class="glass-panel p-6 rounded-2xl shadow-xl mb-8 relative overflow-hidden group">
-      <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10 group-hover:bg-indigo-600/15 transition duration-1000"></div>
-
-      <div class="flex flex-col lg:flex-row gap-8 items-stretch">
-        <div class="lg:w-1/3 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-700/50 pb-6 lg:pb-0 lg:pr-8">
-            <div>
-                <div class="flex justify-between items-start mb-4">
-                     <span id="charTier" class="px-3 py-1 bg-gray-800/80 text-gray-300 border border-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">TIER ?</span>
-                     <button onclick="editCharacter()" class="text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700 p-2 rounded-lg transition border border-transparent hover:border-gray-600" title="แก้ไขข้อมูล">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                     </button>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 pb-6 border-b border-gray-800 gap-4">
+            <div class="flex items-center gap-4">
+                <a href="characters.html"
+                    class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group"
+                    title="กลับหน้าตัวละคร">
+                    <i class="fa-solid fa-arrow-left text-gray-400 group-hover:text-white"></i>
+                </a>
+                <button onclick="manualRefresh()" id="btnRefresh"
+                    class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group"
+                    title="รีเฟรชข้อมูลล่าสุด">
+                    <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-gray-400 group-hover:text-white"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
+                        📜 รายละเอียดตัวละคร
+                    </h1>
+                    <p class="text-xs text-gray-500 mt-1">Manage your character stats and logs</p>
                 </div>
+            </div>
 
-                <div class="mb-5">
-                    <h2 class="text-4xl font-bold text-white tracking-tight mb-2 leading-none" id="charName">...</h2>
-                    <div class="flex items-center gap-2 text-sm text-gray-400">
-                        <span id="charRace" class="text-indigo-300 font-medium">...</span>
-                        <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
-                        <span id="charClass">...</span>
+            <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
+                <div class="px-3 flex flex-col items-end">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300">...</span>
+                </div>
+                <button onclick="logout()"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20"
+                    title="ออกจากระบบ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="charInfo" class="glass-panel p-6 rounded-2xl shadow-xl mb-8 relative overflow-hidden group">
+            <div
+                class="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10 group-hover:bg-indigo-600/15 transition duration-1000">
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+                <div
+                    class="lg:w-1/3 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-700/50 pb-6 lg:pb-0 lg:pr-8">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span id="charTier"
+                                class="px-3 py-1 bg-gray-800/80 text-gray-300 border border-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">TIER
+                                ?</span>
+                            <button onclick="editCharacter()"
+                                class="text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700 p-2 rounded-lg transition border border-transparent hover:border-gray-600"
+                                title="แก้ไขข้อมูล">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </div>
+
+                        <div class="mb-5">
+                            <h2 class="text-4xl font-bold text-white tracking-tight mb-2 leading-none" id="charName">...
+                            </h2>
+                            <div class="flex items-center gap-2 text-sm text-gray-400">
+                                <span id="charRace" class="text-indigo-300 font-medium">...</span>
+                                <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                <span id="charClass">...</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <span id="charAlignment"
+                                class="px-3 py-1.5 rounded-lg bg-gray-800/50 border border-gray-700 text-xs text-gray-400 font-medium">Neutral</span>
+                            <a id="sheetLink" href="#" target="_blank"
+                                class="px-3 py-1.5 rounded-lg bg-blue-600/10 border border-blue-600/30 text-blue-400 text-xs font-medium hover:bg-blue-600 hover:text-white transition flex items-center gap-2 group/link">
+                                <i class="fa-solid fa-scroll group-hover/link:rotate-12 transition-transform"></i> Sheet
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-800/50">
+                        <div
+                            class="flex items-center gap-2 text-[10px] text-gray-500 uppercase font-bold tracking-wide mb-1">
+                            <i class="fa-solid fa-paw"></i> Companion
+                        </div>
+                        <p id="charPets" class="text-gray-300 text-sm">None</p>
                     </div>
                 </div>
-                
-                <div class="flex flex-wrap gap-2">
-                     <span id="charAlignment" class="px-3 py-1.5 rounded-lg bg-gray-800/50 border border-gray-700 text-xs text-gray-400 font-medium">Neutral</span>
-                     <a id="sheetLink" href="#" target="_blank" class="px-3 py-1.5 rounded-lg bg-blue-600/10 border border-blue-600/30 text-blue-400 text-xs font-medium hover:bg-blue-600 hover:text-white transition flex items-center gap-2 group/link">
-                        <i class="fa-solid fa-scroll group-hover/link:rotate-12 transition-transform"></i> Sheet
-                     </a>
-                </div>
-            </div>
-            
-            <div class="mt-6 pt-4 border-t border-gray-800/50">
-                <div class="flex items-center gap-2 text-[10px] text-gray-500 uppercase font-bold tracking-wide mb-1">
-                    <i class="fa-solid fa-paw"></i> Companion
-                </div>
-                <p id="charPets" class="text-gray-300 text-sm">None</p>
-            </div>
-        </div>
 
-        <div class="lg:w-2/3 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            
-            <div class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition"></div>
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Level</span>
-                <span id="charCurrentLevel" class="text-4xl font-bold text-white leading-none mb-2">0</span>
-                <span class="text-[10px] text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 whitespace-nowrap">
-                    Next: <span id="charHoursToLevelUp">0</span> hrs
-                </span>
-            </div>
+                <div class="lg:w-2/3 grid grid-cols-2 sm:grid-cols-4 gap-4">
 
-            <div class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition"></div>
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Gold</span>
-                <div class="flex items-baseline gap-1 mb-2">
-                    <span id="charTotalGold" class="text-3xl font-bold text-yellow-400 leading-none">0</span>
-                    <span class="text-[10px] text-yellow-600 font-bold">GP</span>
-                </div>
-                <span class="text-[10px] text-gray-500 bg-gray-900/50 px-2 py-0.5 rounded border border-gray-700">ทองเริ่มต้น: <span id="charGoldStart">0</span></span>
-            </div>
+                    <div
+                        class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition">
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Level</span>
+                        <span id="charCurrentLevel" class="text-4xl font-bold text-white leading-none mb-2">0</span>
+                        <span
+                            class="text-[10px] text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 whitespace-nowrap">
+                            Next: <span id="charHoursToLevelUp">0</span> hrs
+                        </span>
+                    </div>
 
-            <div class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition"></div>
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Favor</span>
-                <span id="charTotalFavor" class="text-3xl font-bold text-purple-400 leading-none mb-2">0</span>
-                <span class="text-[10px] text-purple-400/40 font-medium">Points</span>
-            </div>
+                    <div
+                        class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition">
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Gold</span>
+                        <div class="flex items-baseline gap-1 mb-2">
+                            <span id="charTotalGold" class="text-3xl font-bold text-yellow-400 leading-none">0</span>
+                            <span class="text-[10px] text-yellow-600 font-bold">GP</span>
+                        </div>
+                        <span
+                            class="text-[10px] text-gray-500 bg-gray-900/50 px-2 py-0.5 rounded border border-gray-700">ทองเริ่มต้น:
+                            <span id="charGoldStart">0</span></span>
+                    </div>
 
-            <div class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition"></div>
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Playtime</span>
-                <div class="flex items-baseline gap-1 mb-2">
-                    <span id="charTotalHours" class="text-3xl font-bold text-green-400 leading-none">0</span>
-                    <span class="text-[10px] text-green-600 font-bold">Hrs</span>
-                </div>
-                <span class="text-[10px] text-gray-500">Total Hours</span>
-            </div>
+                    <div
+                        class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition">
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Favor</span>
+                        <span id="charTotalFavor" class="text-3xl font-bold text-purple-400 leading-none mb-2">0</span>
+                        <span class="text-[10px] text-purple-400/40 font-medium">Points</span>
+                    </div>
 
-        </div>
-      </div>
-    </div>
+                    <div
+                        class="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:bg-gray-800/50 transition duration-300">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition">
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Playtime</span>
+                        <div class="flex items-baseline gap-1 mb-2">
+                            <span id="charTotalHours" class="text-3xl font-bold text-green-400 leading-none">0</span>
+                            <span class="text-[10px] text-green-600 font-bold">Hrs</span>
+                        </div>
+                        <span class="text-[10px] text-gray-500">Total Hours</span>
+                    </div>
 
-    <div class="flex mb-6 border-b border-gray-800 overflow-x-auto pb-1 scrollbar-hide gap-6 px-2">
-      <button onclick="openTab('session')" id="tab-session" class="tab-btn active whitespace-nowrap py-3 font-medium text-gray-400 hover:text-white flex items-center gap-2">
-          <i class="fa-solid fa-gamepad"></i> Sessions
-      </button>
-      <button onclick="openTab('gold')" id="tab-gold" class="tab-btn whitespace-nowrap py-3 font-medium text-yellow-400 hover:text-yellow-300 flex items-center gap-2">
-          <i class="fa-solid fa-coins"></i> Gold Logs
-      </button>
-      <button onclick="openTab('favor')" id="tab-favor" class="tab-btn whitespace-nowrap py-3 font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2">
-          <i class="fa-solid fa-star"></i> Favor Logs
-      </button>
-      <button onclick="openTab('dm')" id="tab-dm" class="tab-btn whitespace-nowrap py-3 font-medium text-red-400 hover:text-red-300 flex items-center gap-2">
-          <i class="fa-solid fa-dungeon"></i> DM Logs
-      </button>
-      <button onclick="openTab('char-notes')" id="tab-char-notes" class="tab-btn whitespace-nowrap py-3 font-medium text-blue-300 hover:text-blue-400 flex items-center gap-2">
-          <i class="fa-solid fa-book"></i> Notes
-      </button>
-    </div>
-
-    <div id="session" class="tab-content active">
-      <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8" id="sessionFormCard">
-        <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
-            <span class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></span> บันทึกการเล่น (Session)
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div class="col-span-1 md:col-span-2">
-             <label class="text-xs text-gray-500 ml-1">ชื่อ Session / ภารกิจ</label>
-             <input id="sessionName" placeholder="เช่น บุกถิ่นแมวเป้า..." class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-          <div>
-             <label class="text-xs text-gray-500 ml-1">ชื่อ DM</label>
-             <input id="dmName" placeholder="Dungeon Master" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-          <div>
-             <label class="text-xs text-gray-500 ml-1">วันที่เล่น</label>
-             <input id="sessionDate" type="date" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-            <div class="md:col-span-2">
-                <label class="text-xs text-gray-500 ml-1">ชั่วโมง (Hrs)</label>
-                <input id="hours" type="number" min="0" step="0.5" placeholder="0" class="w-full p-2.5 rounded-xl input-primary text-center" onchange="calculateAutoGold()"/>
-            </div>
-            <div class="md:col-span-10">
-                <label class="text-xs text-gray-500 ml-1">ไอเทมที่ได้รับ / หมายเหตุ</label>
-                <input id="gotItems" placeholder="เช่น ได้รับ Potion x2, ดาบยาว..." class="w-full p-2.5 rounded-xl input-primary"/>
-            </div>
-        </div>
-        
-        <textarea id="notes" placeholder="Notes (บันทึกย่อสำหรับ Session นี้)" class="w-full p-3 mb-4 rounded-xl input-primary h-20 resize-none"></textarea>
-        
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-900/40 p-4 rounded-xl border border-gray-800">
-            <div class="flex items-center gap-3">
-                 <input id="noGold" type="checkbox" class="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-800" onchange="calculateAutoGold()"/>
-                 <label class="text-sm text-gray-300 select-none cursor-pointer" for="noGold">ไม่ได้รับทอง</label>
-            </div>
-            
-            <div class="flex gap-6">
-                <div class="flex flex-col items-end">
-                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1.5 mb-1">
-                        <i class="fa-solid fa-sack-dollar text-yellow-500 drop-shadow-sm"></i> Calculated Gold
-                    </span>
-                    <span class="font-mono text-yellow-400 font-bold text-lg drop-shadow-[0_0_10px_rgba(250,204,21,0.2)]">
-                        <span id="autoGoldAmount">0</span> <span class="text-xs text-yellow-600">GP</span>
-                    </span>
-                </div>
-                <div class="flex flex-col items-end">
-                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1.5 mb-1">
-                        <i class="fa-solid fa-star text-purple-500 drop-shadow-sm"></i> Calculated Favor
-                    </span>
-                    <span class="font-mono text-purple-400 font-bold text-lg drop-shadow-[0_0_10px_rgba(192,132,252,0.2)]">
-                        <span id="autoFavorAmount">0</span>
-                    </span>
                 </div>
             </div>
         </div>
 
-        <div class="mt-6 flex gap-3">
-            <button id="btnSaveSession" onclick="saveSession()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5">
-                <i class="fa-solid fa-save mr-2"></i> บันทึก Session
+        <div class="flex mb-6 border-b border-gray-800 overflow-x-auto pb-1 scrollbar-hide gap-6 px-2">
+            <button onclick="openTab('session')" id="tab-session"
+                class="tab-btn active whitespace-nowrap py-3 font-medium text-gray-400 hover:text-white flex items-center gap-2">
+                <i class="fa-solid fa-gamepad"></i> Sessions
             </button>
-            <button id="btnCancelSession" onclick="cancelEditSession()" class="hidden bg-gray-700 hover:bg-gray-600 text-white font-medium px-6 py-2.5 rounded-xl transition">
-                ยกเลิก
+            <button onclick="openTab('gold')" id="tab-gold"
+                class="tab-btn whitespace-nowrap py-3 font-medium text-yellow-400 hover:text-yellow-300 flex items-center gap-2">
+                <i class="fa-solid fa-coins"></i> Gold Logs
+            </button>
+            <button onclick="openTab('favor')" id="tab-favor"
+                class="tab-btn whitespace-nowrap py-3 font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2">
+                <i class="fa-solid fa-star"></i> Favor Logs
+            </button>
+            <button onclick="openTab('dm')" id="tab-dm"
+                class="tab-btn whitespace-nowrap py-3 font-medium text-red-400 hover:text-red-300 flex items-center gap-2">
+                <i class="fa-solid fa-dungeon"></i> DM Logs
+            </button>
+            <button onclick="openTab('char-notes')" id="tab-char-notes"
+                class="tab-btn whitespace-nowrap py-3 font-medium text-blue-300 hover:text-blue-400 flex items-center gap-2">
+                <i class="fa-solid fa-book"></i> Notes
             </button>
         </div>
-      </div>
 
-      <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm text-gray-300">
-            <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
-              <tr>
-                  <th class="py-4 px-6">ชื่อ Session</th>
-                  <th class="py-4 px-6">DM</th>
-                  <th class="py-4 px-6">วันที่</th>
-                  <th class="py-4 px-6">Hrs</th>
-                  <th class="py-4 px-6">Reward</th>
-                  <th class="py-4 px-6 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="sessionsBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
-          </table>
-        </div>
-        <div id="sessionPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
-      </div>
-    </div>
+        <div id="session" class="tab-content active">
+            <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8" id="sessionFormCard">
+                <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
+                    <span class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg text-sm"><i
+                            class="fa-solid fa-plus"></i></span> บันทึกการเล่น (Session)
+                </h2>
 
-    <div id="gold" class="tab-content">
-      <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8">
-        <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
-            <span class="bg-yellow-500/20 text-yellow-400 p-1.5 rounded-lg text-sm"><i class="fa-solid fa-coins"></i></span> จัดการทอง (Gold Transaction)
-        </h2>
-        <div class="flex flex-col sm:flex-row gap-4 mb-4">
-          <div class="w-full sm:w-1/4">
-              <select id="goldType" class="w-full p-2.5 rounded-xl input-primary">
-                <option value="spend">💸 ใช้จ่าย (ลบ)</option>
-                <option value="receive">💰 ได้รับ (บวก)</option>
-              </select>
-          </div>
-          <div class="w-full sm:w-1/4">
-               <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวน (GP)" class="w-full p-2.5 rounded-xl input-primary"/>    
-          </div>
-          <div class="w-full sm:w-2/4">
-               <input id="goldDesc" placeholder="รายละเอียด (เช่น ซื้อ Potion, ขายขยะ...)" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-        </div>
-        <button onclick="addGoldEntry()" class="bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-green-600/20 transition-all hover:-translate-y-0.5">
-            <i class="fa-solid fa-check mr-1"></i> บันทึก
-        </button>
-      </div>
-      
-      <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm text-gray-300">
-            <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
-                <tr>
-                    <th class="py-4 px-6">รายการ</th>
-                    <th class="py-4 px-6">จำนวน (GP)</th>
-                    <th class="py-4 px-6">วันที่</th>
-                    <th class="py-4 px-6 w-20"></th>
-                </tr>
-            </thead>
-            <tbody id="goldBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
-          </table>
-        </div>
-        <div id="goldPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
-      </div>
-    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="text-xs text-gray-500 ml-1">ชื่อ Session / ภารกิจ</label>
+                        <input id="sessionName" placeholder="เช่น บุกถิ่นแมวเป้า..."
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 ml-1">ชื่อ DM</label>
+                        <input id="dmName" placeholder="Dungeon Master" class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 ml-1">วันที่เล่น</label>
+                        <input id="sessionDate" type="date" class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                </div>
 
-    <div id="favor" class="tab-content">
-      <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8">
-        <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
-            <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i class="fa-solid fa-star"></i></span> จัดการ Favor
-        </h2>
-        <div class="flex flex-col sm:flex-row gap-4 mb-4">
-          <div class="w-full sm:w-1/4">
-              <select id="favorType" class="w-full p-2.5 rounded-xl input-primary">
-                <option value="spend">✨ ใช้ไป (ลบ)</option>
-                <option value="receive">🌟 ได้รับ (บวก)</option>                 
-              </select>
-          </div>
-          <div class="w-full sm:w-1/4">
-              <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-          <div class="w-full sm:w-2/4">
-              <input id="favorDesc" placeholder="รายละเอียด..." class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-        </div>
-        <button onclick="addFavorEntry()" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-0.5">
-            <i class="fa-solid fa-check mr-1"></i> บันทึก
-        </button>
-      </div>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+                    <div class="md:col-span-2">
+                        <label class="text-xs text-gray-500 ml-1">ชั่วโมง (Hrs)</label>
+                        <input id="hours" type="number" min="0" step="0.5" placeholder="0"
+                            class="w-full p-2.5 rounded-xl input-primary text-center" onchange="calculateAutoGold()" />
+                    </div>
+                    <div class="md:col-span-10">
+                        <label class="text-xs text-gray-500 ml-1">ไอเทมที่ได้รับ / หมายเหตุ</label>
+                        <input id="gotItems" placeholder="เช่น ได้รับ Potion x2, ดาบยาว..."
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                </div>
 
-      <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm text-gray-300">
-            <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
-                <tr>
-                    <th class="py-4 px-6">รายการ</th>
-                    <th class="py-4 px-6">จำนวน</th>
-                    <th class="py-4 px-6">วันที่</th>
-                    <th class="py-4 px-6 w-20"></th>
-                </tr>
-            </thead>
-            <tbody id="favorBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
-          </table>
-        </div>
-        <div id="favorPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
-      </div>
-    </div>
-    
-    <div id="dm" class="tab-content">
-      <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8" id="dmFormCard">
-        <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
-            <span class="bg-red-500/20 text-red-400 p-1.5 rounded-lg text-sm"><i class="fa-solid fa-dungeon"></i></span> บันทึกการเป็น DM
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div class="md:col-span-1">
-             <label class="text-xs text-gray-500 ml-1">ชื่อ Session</label>
-             <input id="dmSessionName" placeholder="Session Name" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-          <div class="md:col-span-1">
-             <label class="text-xs text-gray-500 ml-1">วันที่</label>
-             <input id="dmSessionDate" type="date" class="w-full p-2.5 rounded-xl input-primary"/>
-          </div>
-          <div class="md:col-span-1">
-             <label class="text-xs text-gray-500 ml-1">ชั่วโมง (Hrs)</label>
-             <input id="dmHours" type="number" min="0" step="0.5" placeholder="0" class="w-full p-2.5 rounded-xl input-primary" onchange="calculateDmRewards()"/>
-          </div>
-        </div>
+                <textarea id="notes" placeholder="Notes (บันทึกย่อสำหรับ Session นี้)"
+                    class="w-full p-3 mb-4 rounded-xl input-primary h-20 resize-none"></textarea>
 
-        <div class="flex flex-wrap gap-4 mb-6 bg-gray-900/30 p-3 rounded-xl border border-gray-800">
-           <div class="flex items-center gap-2">
-                <input id="soloQuest" type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-red-500 focus:ring-red-500" onchange="calculateDmRewards()"/>
-                <label for="soloQuest" class="text-sm text-gray-300 cursor-pointer">ภารกิจเดี่ยว (Solo)</label>
-           </div>
-           <div class="h-6 w-[1px] bg-gray-700"></div>
-           <div class="flex items-center gap-2">
-                <input id="doubleReward" type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-red-500 focus:ring-red-500" onchange="calculateDmRewards()"/>
-                <label for="doubleReward" class="text-sm text-gray-300 cursor-pointer">รางวัล x2</label>
-           </div>
-        </div>
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-900/40 p-4 rounded-xl border border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <input id="noGold" type="checkbox"
+                            class="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-800"
+                            onchange="calculateAutoGold()" />
+                        <label class="text-sm text-gray-300 select-none cursor-pointer"
+                            for="noGold">ไม่ได้รับทอง</label>
+                    </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
-            <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-colors group">
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
-                    <i class="fa-solid fa-sack-dollar text-yellow-500 group-hover:scale-110 transition-transform"></i> Calculated Gold
-                </p>
-                <p class="text-yellow-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]">
-                    <span id="dmAutoGold">0</span> <span class="text-[10px] ml-0.5 text-yellow-600">GP</span>
-                </p>
+                    <div class="flex gap-6">
+                        <div class="flex flex-col items-end">
+                            <span
+                                class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1.5 mb-1">
+                                <i class="fa-solid fa-sack-dollar text-yellow-500 drop-shadow-sm"></i> Calculated Gold
+                            </span>
+                            <span
+                                class="font-mono text-yellow-400 font-bold text-lg drop-shadow-[0_0_10px_rgba(250,204,21,0.2)]">
+                                <span id="autoGoldAmount">0</span> <span class="text-xs text-yellow-600">GP</span>
+                            </span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span
+                                class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1.5 mb-1">
+                                <i class="fa-solid fa-star text-purple-500 drop-shadow-sm"></i> Calculated Favor
+                            </span>
+                            <span
+                                class="font-mono text-purple-400 font-bold text-lg drop-shadow-[0_0_10px_rgba(192,132,252,0.2)]">
+                                <span id="autoFavorAmount">0</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button id="btnSaveSession" onclick="saveSession()"
+                        class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5">
+                        <i class="fa-solid fa-save mr-2"></i> บันทึก Session
+                    </button>
+                    <button id="btnCancelSession" onclick="cancelEditSession()"
+                        class="hidden bg-gray-700 hover:bg-gray-600 text-white font-medium px-6 py-2.5 rounded-xl transition">
+                        ยกเลิก
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-colors group">
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
-                    <i class="fa-solid fa-star text-purple-500 group-hover:scale-110 transition-transform"></i> Calculated Favor
-                </p>
-                <p class="text-purple-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(192,132,252,0.3)]">
-                    <span id="dmAutoFavor">0</span>
-                </p>
-            </div>
-
-            <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-green-500/50 transition-colors group">
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
-                    <i class="fa-solid fa-stopwatch text-green-500 group-hover:scale-110 transition-transform"></i> Calculated Hours
-                </p>
-                <p class="text-green-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">
-                    <span id="dmAutoHours">0</span>
-                </p>
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
+                            <tr>
+                                <th class="py-4 px-6">ชื่อ Session</th>
+                                <th class="py-4 px-6">DM</th>
+                                <th class="py-4 px-6">วันที่</th>
+                                <th class="py-4 px-6">Hrs</th>
+                                <th class="py-4 px-6">Reward</th>
+                                <th class="py-4 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
+                    </table>
+                </div>
+                <div id="sessionPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
             </div>
         </div>
 
-        <div class="flex gap-3">
-            <button id="btnSaveDmLog" onclick="saveDmLog()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-red-600/20 transition-all hover:-translate-y-0.5">
-                <i class="fa-solid fa-save mr-1"></i> บันทึก DM Log
-            </button>
-            <button id="btnCancelDmLog" onclick="cancelEditDmLog()" class="hidden bg-gray-700 hover:bg-gray-600 text-white font-medium px-6 py-2.5 rounded-xl transition">
-                ยกเลิก
-            </button>
-        </div>
-      </div>
+        <div id="gold" class="tab-content">
+            <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8">
+                <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
+                    <span class="bg-yellow-500/20 text-yellow-400 p-1.5 rounded-lg text-sm"><i
+                            class="fa-solid fa-coins"></i></span> จัดการทอง (Gold Transaction)
+                </h2>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div class="w-full sm:w-1/4">
+                        <select id="goldType" class="w-full p-2.5 rounded-xl input-primary">
+                            <option value="spend">💸 ใช้จ่าย (ลบ)</option>
+                            <option value="receive">💰 ได้รับ (บวก)</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-1/4">
+                        <input id="goldAmount" type="number" min="0" step="0.1" placeholder="จำนวน (GP)"
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div class="w-full sm:w-2/4">
+                        <input id="goldDesc" placeholder="รายละเอียด (เช่น ซื้อ Potion, ขายขยะ...)"
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                </div>
+                <button onclick="addGoldEntry()"
+                    class="bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-green-600/20 transition-all hover:-translate-y-0.5">
+                    <i class="fa-solid fa-check mr-1"></i> บันทึก
+                </button>
+            </div>
 
-      <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm text-gray-300">
-            <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
-                <tr>
-                    <th class="py-4 px-6">Session</th>
-                    <th class="py-4 px-6">Date</th>
-                    <th class="py-4 px-6">Hrs</th>
-                    <th class="py-4 px-6">Gold</th>
-                    <th class="py-4 px-6">Favor</th>
-                    <th class="py-4 px-6 text-center">Mod</th>
-                    <th class="py-4 px-6 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="dmBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
-          </table>
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
+                            <tr>
+                                <th class="py-4 px-6">รายการ</th>
+                                <th class="py-4 px-6">จำนวน (GP)</th>
+                                <th class="py-4 px-6">วันที่</th>
+                                <th class="py-4 px-6 w-20"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="goldBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
+                    </table>
+                </div>
+                <div id="goldPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
+            </div>
         </div>
-        <div id="dmPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
-      </div>
+
+        <div id="favor" class="tab-content">
+            <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8">
+                <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
+                    <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
+                            class="fa-solid fa-star"></i></span> จัดการ Favor
+                </h2>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div class="w-full sm:w-1/4">
+                        <select id="favorType" class="w-full p-2.5 rounded-xl input-primary">
+                            <option value="spend">✨ ใช้ไป (ลบ)</option>
+                            <option value="receive">🌟 ได้รับ (บวก)</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-1/4">
+                        <input id="favorAmount" type="number" min="0" step="1" placeholder="จำนวน Favor"
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div class="w-full sm:w-2/4">
+                        <input id="favorDesc" placeholder="รายละเอียด..."
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                </div>
+                <button onclick="addFavorEntry()"
+                    class="bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-0.5">
+                    <i class="fa-solid fa-check mr-1"></i> บันทึก
+                </button>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
+                            <tr>
+                                <th class="py-4 px-6">รายการ</th>
+                                <th class="py-4 px-6">จำนวน</th>
+                                <th class="py-4 px-6">วันที่</th>
+                                <th class="py-4 px-6 w-20"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="favorBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
+                    </table>
+                </div>
+                <div id="favorPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
+            </div>
+        </div>
+
+        <div id="dm" class="tab-content">
+            <div class="glass-panel p-6 rounded-2xl shadow-lg mb-8" id="dmFormCard">
+                <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
+                    <span class="bg-red-500/20 text-red-400 p-1.5 rounded-lg text-sm"><i
+                            class="fa-solid fa-dungeon"></i></span> บันทึกการเป็น DM
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="md:col-span-1">
+                        <label class="text-xs text-gray-500 ml-1">ชื่อ Session</label>
+                        <input id="dmSessionName" placeholder="Session Name"
+                            class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="text-xs text-gray-500 ml-1">วันที่</label>
+                        <input id="dmSessionDate" type="date" class="w-full p-2.5 rounded-xl input-primary" />
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="text-xs text-gray-500 ml-1">ชั่วโมง (Hrs)</label>
+                        <input id="dmHours" type="number" min="0" step="0.5" placeholder="0"
+                            class="w-full p-2.5 rounded-xl input-primary" onchange="calculateDmRewards()" />
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 mb-6 bg-gray-900/30 p-3 rounded-xl border border-gray-800">
+                    <div class="flex items-center gap-2">
+                        <input id="soloQuest" type="checkbox"
+                            class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-red-500 focus:ring-red-500"
+                            onchange="calculateDmRewards()" />
+                        <label for="soloQuest" class="text-sm text-gray-300 cursor-pointer">ภารกิจเดี่ยว (Solo)</label>
+                    </div>
+                    <div class="h-6 w-[1px] bg-gray-700"></div>
+                    <div class="flex items-center gap-2">
+                        <input id="doubleReward" type="checkbox"
+                            class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-red-500 focus:ring-red-500"
+                            onchange="calculateDmRewards()" />
+                        <label for="doubleReward" class="text-sm text-gray-300 cursor-pointer">รางวัล x2</label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                    <div
+                        class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-colors group">
+                        <p
+                            class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
+                            <i
+                                class="fa-solid fa-sack-dollar text-yellow-500 group-hover:scale-110 transition-transform"></i>
+                            Calculated Gold
+                        </p>
+                        <p class="text-yellow-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]">
+                            <span id="dmAutoGold">0</span> <span class="text-[10px] ml-0.5 text-yellow-600">GP</span>
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-colors group">
+                        <p
+                            class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
+                            <i class="fa-solid fa-star text-purple-500 group-hover:scale-110 transition-transform"></i>
+                            Calculated Favor
+                        </p>
+                        <p class="text-purple-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(192,132,252,0.3)]">
+                            <span id="dmAutoFavor">0</span>
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-gray-800/50 p-3 rounded-xl border border-gray-700 hover:border-green-500/50 transition-colors group">
+                        <p
+                            class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 mb-1 group-hover:text-gray-400 transition-colors">
+                            <i
+                                class="fa-solid fa-stopwatch text-green-500 group-hover:scale-110 transition-transform"></i>
+                            Calculated Hours
+                        </p>
+                        <p class="text-green-400 font-bold text-lg drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">
+                            <span id="dmAutoHours">0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="btnSaveDmLog" onclick="saveDmLog()"
+                        class="flex-1 sm:flex-none bg-red-600 hover:bg-red-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-red-600/20 transition-all hover:-translate-y-0.5">
+                        <i class="fa-solid fa-save mr-1"></i> บันทึก DM Log
+                    </button>
+                    <button id="btnCancelDmLog" onclick="cancelEditDmLog()"
+                        class="hidden bg-gray-700 hover:bg-gray-600 text-white font-medium px-6 py-2.5 rounded-xl transition">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-800/80 text-gray-400 uppercase text-xs font-bold tracking-wider">
+                            <tr>
+                                <th class="py-4 px-6">Session</th>
+                                <th class="py-4 px-6">Date</th>
+                                <th class="py-4 px-6">Hrs</th>
+                                <th class="py-4 px-6">Gold</th>
+                                <th class="py-4 px-6">Favor</th>
+                                <th class="py-4 px-6 text-center">Mod</th>
+                                <th class="py-4 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dmBody" class="divide-y divide-gray-800 bg-gray-900/20"></tbody>
+                    </table>
+                </div>
+                <div id="dmPagination" class="p-4 flex justify-center space-x-2 border-t border-gray-800"></div>
+            </div>
+        </div>
+
+        <div id="char-notes" class="tab-content">
+            <div class="glass-panel p-6 rounded-2xl shadow-lg mb-6 relative border-t-4 border-t-blue-500/50">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-200 flex items-center gap-2">
+                        <i class="fa-solid fa-book text-blue-400"></i> สมุดบันทึก (Auto-Save)
+                    </h2>
+                    <span id="noteStatus"
+                        class="text-xs font-medium transition-opacity duration-300 opacity-0 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400">
+                        Ready
+                    </span>
+                </div>
+
+                <textarea id="charNotesInput"
+                    class="w-full h-[500px] p-5 rounded-xl bg-[#1e1e1e] border border-gray-700 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-mono text-sm shadow-inner resize-none"
+                    placeholder="// พื้นที่จดบันทึกอิสระ... ระบบจะบันทึกให้อัตโนมัติเมื่อหยุดพิมพ์"
+                    oninput="handleNoteInput()"></textarea>
+
+                <div class="flex justify-between mt-3 text-xs text-gray-500">
+                    <span>Supports Markdown-like plain text</span>
+                    <span class="flex items-center"><i class="fa-solid fa-cloud mr-1"></i> Synced with Database</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-16 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
+            <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
+        </footer>
     </div>
 
-    <div id="char-notes" class="tab-content">
-      <div class="glass-panel p-6 rounded-2xl shadow-lg mb-6 relative border-t-4 border-t-blue-500/50">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-gray-200 flex items-center gap-2">
-                <i class="fa-solid fa-book text-blue-400"></i> สมุดบันทึก (Auto-Save)
-            </h2>
-            <span id="noteStatus" class="text-xs font-medium transition-opacity duration-300 opacity-0 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400">
-                Ready
-            </span>
-        </div>
-        
-        <textarea id="charNotesInput" 
-                  class="w-full h-[500px] p-5 rounded-xl bg-[#1e1e1e] border border-gray-700 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-mono text-sm shadow-inner resize-none" 
-                  placeholder="// พื้นที่จดบันทึกอิสระ... ระบบจะบันทึกให้อัตโนมัติเมื่อหยุดพิมพ์"
-                  oninput="handleNoteInput()"></textarea>
-                  
-        <div class="flex justify-between mt-3 text-xs text-gray-500">
-            <span>Supports Markdown-like plain text</span>
-            <span class="flex items-center"><i class="fa-solid fa-cloud mr-1"></i> Synced with Database</span>
-        </div>
-      </div>
-    </div>
+    <script src="/js/utils.js"></script>
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+        let currentCharId = new URLSearchParams(window.location.search).get('charId');
+        let currentCharData = null;
+        let noteTimeout = null;
 
-    <footer class="mt-16 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
-      <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
-    </footer>
-  </div>
+        const ITEMS_PER_PAGE = 10;
+        let pageState = { session: 1, gold: 1, favor: 1, dm: 1 };
+        let sessionsData = [], goldData = [], favorData = [], dmData = [];
+        let editingSessionId = null;
+        let editingDmLogId = null;
 
-  <script src="/js/utils.js"></script>
-  <script>
-    let currentUser = null;
-    let isAdmin = false;
-    let currentCharId = new URLSearchParams(window.location.search).get('charId');
-    let currentCharData = null;
-    let noteTimeout = null;
-    
-    const ITEMS_PER_PAGE = 10;
-    let pageState = { session: 1, gold: 1, favor: 1, dm: 1 };
-    let sessionsData = [], goldData = [], favorData = [], dmData = [];
-    let editingSessionId = null;
-    let editingDmLogId = null;
+        async function init() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = 'index.html'; return; }
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
 
-    async function init() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { window.location.href = 'index.html'; return; }
-        currentUser = session.user;
-        document.getElementById('userEmail').textContent = currentUser.email;
+            const { data: adminStatus } = await supabase.rpc('is_admin');
+            isAdmin = adminStatus;
 
-        const { data: adminStatus } = await supabase.rpc('is_admin');
-        isAdmin = adminStatus;
-
-        if (!currentCharId) { window.location.href = 'characters.html'; return; }
-        refreshAllData();
-    }
-    init();
-
-    async function logout() {
-        await supabase.auth.signOut();
-        window.location.href = 'index.html';
-    }
-
-    // --- Load Data ---
-    async function refreshAllData() {
-        // Fetch raw char data for notes/pets/alignment which might not be in the view
-        const { data: charInfo } = await supabase.from('characters').select('user_id, pets, alignment, notes').eq('id', currentCharId).single();
-        
-        if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href='characters.html'; return; }
-        if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href='characters.html'; return; }
-
-        // Fetch Stats
-        const { data: stats } = await supabase.rpc('get_character_stats', { target_user_id: charInfo.user_id });
-        const c = stats?.find(x => x.id === currentCharId);
-        if(!c) return;
-
-        currentCharData = { ...c, pets: charInfo.pets, notes: charInfo.notes, alignment: charInfo.alignment };
-        
-        renderHeader();
-        
-        const noteInput = document.getElementById('charNotesInput');
-        if(noteInput) {
-            noteInput.value = currentCharData.notes || '';
-        }
-        
-        loadLists();
-    }
-
-    function renderHeader() {
-        const c = currentCharData;
-        document.getElementById('charName').textContent = c.name;
-        document.getElementById('charPets').textContent = c.pets || 'None'; 
-        
-        // Alignment Style
-        const alignEl = document.getElementById('charAlignment');
-        const alignVal = c.alignment || '-';
-        alignEl.textContent = alignVal;
-
-        alignEl.className = "px-3 py-1.5 rounded-lg bg-gray-800/50 border border-gray-700 text-xs font-medium tracking-wide transition-colors duration-200"; 
-        
-        const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.level, totalHours);
-        const displayTotalHours = totalHours;
-
-        document.getElementById('charCurrentLevel').textContent = currentLevel;
-        document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(2);
-        document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(2)}`;
-        document.getElementById('charTier').textContent = getTierFromLevel(currentLevel);
-        
-        document.getElementById('charClass').textContent = c.class || 'Unknown';
-        document.getElementById('charRace').textContent = c.race || 'Unknown';
-        document.getElementById('charGoldStart').textContent = c.gold_start;
-        
-        document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
-        document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
-        
-        const sheetBtn = document.getElementById('sheetLink');
-        if(c.sheet_link) { 
-            sheetBtn.href = c.sheet_link; 
-            sheetBtn.classList.remove('opacity-50', 'pointer-events-none');
-        } else {
-            sheetBtn.href = '#';
-            sheetBtn.classList.add('opacity-50', 'pointer-events-none');
-        }
-    }
-
-    function handleNoteInput() {
-        const status = document.getElementById('noteStatus');
-        status.innerHTML = '<i class="fa-solid fa-pen-nib animate-bounce"></i> Typing...';
-        status.className = 'text-xs font-medium transition-opacity duration-300 opacity-100 bg-yellow-900/50 text-yellow-300 px-3 py-1 rounded-full border border-yellow-700';
-
-        clearTimeout(noteTimeout);
-        noteTimeout = setTimeout(saveNotes, 1000);
-    }
-
-    async function saveNotes() {
-        const notes = document.getElementById('charNotesInput').value;
-        const status = document.getElementById('noteStatus');
-        
-        status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        status.className = 'text-xs font-medium transition-opacity duration-300 opacity-100 bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full border border-blue-700';
-        
-        const { error } = await supabase
-            .from('characters')
-            .update({ notes: notes })
-            .eq('id', currentCharId);
-
-        if (error) {
-            console.error('Save failed:', error);
-            status.innerHTML = 'Error';
-            status.className = 'text-xs font-medium bg-red-900/50 text-red-300 px-3 py-1 rounded-full border border-red-700 opacity-100';
-        } else {
-            status.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
-            status.className = 'text-xs font-medium bg-green-900/50 text-green-300 px-3 py-1 rounded-full border border-green-700 opacity-100';
-            setTimeout(() => { status.style.opacity = '0'; }, 2000);
-        }
-    }
-
-    async function loadLists() {
-        loadSessions(pageState.session);
-        loadGold(pageState.gold);
-        loadFavor(pageState.favor);
-        loadDmLogs(pageState.dm);
-    }
-
-    // --- Pagination Functions ---
-    async function loadSessions(page) {
-        pageState.session = page;
-        const from = (page - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-        const { data, count } = await supabase.from('sessions').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
-        sessionsData = data || [];
-        renderSessions(count || 0);
-    }
-    async function loadGold(page) {
-        pageState.gold = page;
-        const from = (page - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-        const { data, count } = await supabase.from('gold_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
-        goldData = data || [];
-        renderGold(count || 0);
-    }
-    async function loadFavor(page) {
-        pageState.favor = page;
-        const from = (page - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-        const { data, count } = await supabase.from('favor_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
-        favorData = data || [];
-        renderFavor(count || 0);
-    }
-    async function loadDmLogs(page) {
-        pageState.dm = page;
-        const from = (page - 1) * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-        const { data, count } = await supabase.from('dm_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
-        dmData = data || [];
-        renderDmLogs(count || 0);
-    }
-
-    // --- Logic Helpers ---
-    function getGoldMultiplier(level) {
-        if (level >= 23) return 1.5; if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; if (level >= 3) return 1.1; return 1.0;
-    }
-
-    function calculateCurrentLevel(startLevel, totalHours) {
-        const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
-        let currentLevel = startLevel;
-        const total = (LEVEL_HOURS[startLevel] || 0) + totalHours;
-        for(let i = startLevel + 1; i <= 30; i++) { if(total >= LEVEL_HOURS[i]) currentLevel = i; else break; }
-        const next = currentLevel >= 30 ? 0 : LEVEL_HOURS[currentLevel+1] - total;
-        return { level: currentLevel, hoursToNextLevel: Math.max(0, next) };
-    }
-
-    function getTierFromLevel(level) {
-        if (level >= 23) return "Tier 5"; if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
-    }
-
-    // --- Session CRUD ---
-    async function saveSession() {
-        const name = document.getElementById('sessionName').value.trim();
-        if (!name) return alert('ใส่ชื่อ Session');
-        
-        const btn = document.getElementById('btnSaveSession');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        btn.disabled = true;
-
-        const hours = parseFloat(document.getElementById('hours').value) || 0;
-        const noGold = document.getElementById('noGold').checked;
-        const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g,''));
-        const autoFavor = Math.floor(hours * 2);
-
-        const payload = {
-            name, dm: document.getElementById('dmName').value,
-            date: document.getElementById('sessionDate').value || null,
-            hours, notes: document.getElementById('notes').value,
-            no_gold: noGold, auto_gold: autoGold, auto_favor: autoFavor,
-            got_items: document.getElementById('gotItems').value
-        };
-
-        let error;
-        if (editingSessionId) {
-            const res = await supabase.from('sessions').update(payload).eq('id', editingSessionId);
-            error = res.error;
-        } else {
-            payload.character_id = currentCharId;
-            payload.user_id = currentUser.id;
-            const res = await supabase.from('sessions').insert(payload);
-            error = res.error;
-        }
-
-        if (error) {
-            alert('Error: ' + error.message);
-            btn.innerHTML = originalText;
-        } else {
+            if (!currentCharId) { window.location.href = 'characters.html'; return; }
             refreshAllData();
-            cancelEditSession();
         }
-        
-        btn.disabled = false;
-    }
+        init();
 
-    function editSession(id) {
-        const item = sessionsData.find(s => s.id === id);
-        if (!item) return;
-        document.getElementById('sessionName').value = item.name;
-        document.getElementById('dmName').value = item.dm || '';
-        document.getElementById('sessionDate').value = item.date || '';
-        document.getElementById('hours').value = item.hours;
-        document.getElementById('notes').value = item.notes || '';
-        document.getElementById('noGold').checked = item.no_gold;
-        document.getElementById('gotItems').value = item.got_items || '';
-        document.getElementById('autoGoldAmount').textContent = Number(item.auto_gold).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
-        document.getElementById('autoFavorAmount').textContent = item.auto_favor;
-        editingSessionId = id;
-        
-        const btn = document.getElementById('btnSaveSession');
-        btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต Session';
-        btn.classList.replace('bg-blue-600', 'bg-yellow-600');
-        btn.classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');    
-        document.getElementById('btnCancelSession').classList.remove('hidden');
-        document.getElementById('sessionFormCard').scrollIntoView({ behavior: 'smooth' });
-    }
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
 
-    function cancelEditSession() {
-        editingSessionId = null;
-        document.getElementById('sessionName').value = '';
-        document.getElementById('dmName').value = '';
-        document.getElementById('sessionDate').value = '';
-        document.getElementById('hours').value = '';
-        document.getElementById('notes').value = '';
-        document.getElementById('noGold').checked = false;
-        document.getElementById('gotItems').value = '';
-        document.getElementById('autoGoldAmount').textContent = '0';
-        document.getElementById('autoFavorAmount').textContent = '0';
-        
-        const btn = document.getElementById('btnSaveSession');
-        btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> บันทึก Session';
-        btn.classList.replace('bg-yellow-600', 'bg-blue-600');
-        btn.classList.replace('hover:bg-yellow-500', 'hover:bg-blue-500');
-        
-        document.getElementById('btnCancelSession').classList.add('hidden');
-    }
+        // --- Load Data ---
+        async function refreshAllData() {
+            // Fetch raw char data for notes/pets/alignment which might not be in the view
+            const { data: charInfo } = await supabase.from('characters').select('user_id, pets, alignment, notes').eq('id', currentCharId).single();
 
-    function calculateAutoGold() {
-        const hours = parseFloat(document.getElementById('hours').value) || 0;
-        const isNoGold = document.getElementById('noGold').checked;
+            if (!charInfo) { alert('ไม่พบตัวละคร'); window.location.href = 'characters.html'; return; }
+            if (charInfo.user_id !== currentUser.id && !isAdmin) { alert('ไม่มีสิทธิ์'); window.location.href = 'characters.html'; return; }
 
-        // 1. คำนวณ Favor เสมอ (Hrs x 2)
-        const favor = Math.floor(hours * 2);
-        document.getElementById('autoFavorAmount').textContent = favor;
+            // Fetch Stats
+            const { data: stats } = await supabase.rpc('get_character_stats', { target_user_id: charInfo.user_id });
+            const c = stats?.find(x => x.id === currentCharId);
+            if (!c) return;
 
-        if (isNoGold) {
+            currentCharData = { ...c, pets: charInfo.pets, notes: charInfo.notes, alignment: charInfo.alignment };
+
+            renderHeader();
+
+            const noteInput = document.getElementById('charNotesInput');
+            if (noteInput) {
+                noteInput.value = currentCharData.notes || '';
+            }
+
+            loadLists();
+        }
+
+        function getAlignmentStyle(alignment) {
+            const al = (alignment || '').toLowerCase();
+            // Good alignments - Green
+            if (al.includes('good')) {
+                return 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300';
+            }
+            // Evil alignments - Red
+            if (al.includes('evil')) {
+                return 'bg-red-500/20 border-red-500/50 text-red-300';
+            }
+            // Lawful (without good/evil) - Blue
+            if (al.includes('lawful')) {
+                return 'bg-blue-500/20 border-blue-500/50 text-blue-300';
+            }
+            // Chaotic (without good/evil) - Purple
+            if (al.includes('chaotic')) {
+                return 'bg-purple-500/20 border-purple-500/50 text-purple-300';
+            }
+            // Neutral - Gray
+            return 'bg-gray-700/50 border-gray-600 text-gray-300';
+        }
+
+        function getTierStyle(tier) {
+            switch (tier) {
+                case 'Tier 1': return 'bg-slate-600/80 text-slate-200 border-slate-500';
+                case 'Tier 2': return 'bg-emerald-600/80 text-emerald-100 border-emerald-500';
+                case 'Tier 3': return 'bg-blue-600/80 text-blue-100 border-blue-500';
+                case 'Tier 4': return 'bg-purple-600/80 text-purple-100 border-purple-500';
+                case 'Tier 5': return 'bg-amber-500/80 text-amber-100 border-amber-400';
+                default: return 'bg-gray-800/80 text-gray-300 border-gray-600';
+            }
+        }
+
+        function renderHeader() {
+            const c = currentCharData;
+            document.getElementById('charName').textContent = c.name;
+            document.getElementById('charPets').textContent = c.pets || 'None';
+
+            // Alignment Style with color coding
+            const alignEl = document.getElementById('charAlignment');
+            const alignVal = c.alignment || '-';
+            alignEl.textContent = alignVal;
+            const alignStyle = getAlignmentStyle(alignVal);
+            alignEl.className = `px-3 py-1.5 rounded-lg border text-xs font-medium tracking-wide transition-colors duration-200 ${alignStyle}`;
+
+            const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+            const { level: currentLevel, hoursToNextLevel } = calculateCurrentLevel(c.level, totalHours);
+            const displayTotalHours = totalHours;
+
+            document.getElementById('charCurrentLevel').textContent = currentLevel;
+            document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(2);
+            document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(2)}`;
+
+            // Tier Style with color coding
+            const tierText = getTierFromLevel(currentLevel);
+            const tierEl = document.getElementById('charTier');
+            tierEl.textContent = tierText;
+            const tierStyle = getTierStyle(tierText);
+            tierEl.className = `px-3 py-1 border rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm ${tierStyle}`;
+
+            document.getElementById('charClass').textContent = c.class || 'Unknown';
+            document.getElementById('charRace').textContent = c.race || 'Unknown';
+            document.getElementById('charGoldStart').textContent = c.gold_start;
+
+            document.getElementById('charTotalGold').textContent = Number(c.total_gold).toLocaleString();
+            document.getElementById('charTotalFavor').textContent = Number(c.total_favor).toLocaleString();
+
+            const sheetBtn = document.getElementById('sheetLink');
+            if (c.sheet_link) {
+                sheetBtn.href = c.sheet_link;
+                sheetBtn.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                sheetBtn.href = '#';
+                sheetBtn.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function handleNoteInput() {
+            const status = document.getElementById('noteStatus');
+            status.innerHTML = '<i class="fa-solid fa-pen-nib animate-bounce"></i> Typing...';
+            status.className = 'text-xs font-medium transition-opacity duration-300 opacity-100 bg-yellow-900/50 text-yellow-300 px-3 py-1 rounded-full border border-yellow-700';
+
+            clearTimeout(noteTimeout);
+            noteTimeout = setTimeout(saveNotes, 1000);
+        }
+
+        async function saveNotes() {
+            const notes = document.getElementById('charNotesInput').value;
+            const status = document.getElementById('noteStatus');
+
+            status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            status.className = 'text-xs font-medium transition-opacity duration-300 opacity-100 bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full border border-blue-700';
+
+            const { error } = await supabase
+                .from('characters')
+                .update({ notes: notes })
+                .eq('id', currentCharId);
+
+            if (error) {
+                console.error('Save failed:', error);
+                status.innerHTML = 'Error';
+                status.className = 'text-xs font-medium bg-red-900/50 text-red-300 px-3 py-1 rounded-full border border-red-700 opacity-100';
+            } else {
+                status.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
+                status.className = 'text-xs font-medium bg-green-900/50 text-green-300 px-3 py-1 rounded-full border border-green-700 opacity-100';
+                setTimeout(() => { status.style.opacity = '0'; }, 2000);
+            }
+        }
+
+        async function loadLists() {
+            loadSessions(pageState.session);
+            loadGold(pageState.gold);
+            loadFavor(pageState.favor);
+            loadDmLogs(pageState.dm);
+        }
+
+        // --- Pagination Functions ---
+        async function loadSessions(page) {
+            pageState.session = page;
+            const from = (page - 1) * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
+            const { data, count } = await supabase.from('sessions').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+            sessionsData = data || [];
+            renderSessions(count || 0);
+        }
+        async function loadGold(page) {
+            pageState.gold = page;
+            const from = (page - 1) * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
+            const { data, count } = await supabase.from('gold_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+            goldData = data || [];
+            renderGold(count || 0);
+        }
+        async function loadFavor(page) {
+            pageState.favor = page;
+            const from = (page - 1) * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
+            const { data, count } = await supabase.from('favor_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+            favorData = data || [];
+            renderFavor(count || 0);
+        }
+        async function loadDmLogs(page) {
+            pageState.dm = page;
+            const from = (page - 1) * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
+            const { data, count } = await supabase.from('dm_logs').select('*', { count: 'exact' }).eq('character_id', currentCharId).order('created_at', { ascending: false }).range(from, to);
+            dmData = data || [];
+            renderDmLogs(count || 0);
+        }
+
+        // --- Logic Helpers ---
+        function getGoldMultiplier(level) {
+            if (level >= 23) return 1.5; if (level >= 17) return 1.4; if (level >= 11) return 1.3; if (level >= 5) return 1.2; if (level >= 3) return 1.1; return 1.0;
+        }
+
+        function calculateCurrentLevel(startLevel, totalHours) {
+            const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
+            let currentLevel = startLevel;
+            const total = (LEVEL_HOURS[startLevel] || 0) + totalHours;
+            for (let i = startLevel + 1; i <= 30; i++) { if (total >= LEVEL_HOURS[i]) currentLevel = i; else break; }
+            const next = currentLevel >= 30 ? 0 : LEVEL_HOURS[currentLevel + 1] - total;
+            return { level: currentLevel, hoursToNextLevel: Math.max(0, next) };
+        }
+
+        function getTierFromLevel(level) {
+            if (level >= 23) return "Tier 5"; if (level >= 17) return "Tier 4"; if (level >= 11) return "Tier 3"; if (level >= 5) return "Tier 2"; return "Tier 1";
+        }
+
+        // --- Session CRUD ---
+        async function saveSession() {
+            const name = document.getElementById('sessionName').value.trim();
+            if (!name) return alert('ใส่ชื่อ Session');
+
+            const btn = document.getElementById('btnSaveSession');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            const hours = parseFloat(document.getElementById('hours').value) || 0;
+            const noGold = document.getElementById('noGold').checked;
+            const autoGold = noGold ? 0 : parseFloat(document.getElementById('autoGoldAmount').textContent.replace(/,/g, ''));
+            const autoFavor = Math.floor(hours * 2);
+
+            const payload = {
+                name, dm: document.getElementById('dmName').value,
+                date: document.getElementById('sessionDate').value || null,
+                hours, notes: document.getElementById('notes').value,
+                no_gold: noGold, auto_gold: autoGold, auto_favor: autoFavor,
+                got_items: document.getElementById('gotItems').value
+            };
+
+            let error;
+            if (editingSessionId) {
+                const res = await supabase.from('sessions').update(payload).eq('id', editingSessionId);
+                error = res.error;
+            } else {
+                payload.character_id = currentCharId;
+                payload.user_id = currentUser.id;
+                const res = await supabase.from('sessions').insert(payload);
+                error = res.error;
+            }
+
+            if (error) {
+                alert('Error: ' + error.message);
+                btn.innerHTML = originalText;
+            } else {
+                refreshAllData();
+                cancelEditSession();
+            }
+
+            btn.disabled = false;
+        }
+
+        function editSession(id) {
+            const item = sessionsData.find(s => s.id === id);
+            if (!item) return;
+            document.getElementById('sessionName').value = item.name;
+            document.getElementById('dmName').value = item.dm || '';
+            document.getElementById('sessionDate').value = item.date || '';
+            document.getElementById('hours').value = item.hours;
+            document.getElementById('notes').value = item.notes || '';
+            document.getElementById('noGold').checked = item.no_gold;
+            document.getElementById('gotItems').value = item.got_items || '';
+            document.getElementById('autoGoldAmount').textContent = Number(item.auto_gold).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            document.getElementById('autoFavorAmount').textContent = item.auto_favor;
+            editingSessionId = id;
+
+            const btn = document.getElementById('btnSaveSession');
+            btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต Session';
+            btn.classList.replace('bg-blue-600', 'bg-yellow-600');
+            btn.classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');
+            document.getElementById('btnCancelSession').classList.remove('hidden');
+            document.getElementById('sessionFormCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditSession() {
+            editingSessionId = null;
+            document.getElementById('sessionName').value = '';
+            document.getElementById('dmName').value = '';
+            document.getElementById('sessionDate').value = '';
+            document.getElementById('hours').value = '';
+            document.getElementById('notes').value = '';
+            document.getElementById('noGold').checked = false;
+            document.getElementById('gotItems').value = '';
             document.getElementById('autoGoldAmount').textContent = '0';
-        } else {
+            document.getElementById('autoFavorAmount').textContent = '0';
+
+            const btn = document.getElementById('btnSaveSession');
+            btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> บันทึก Session';
+            btn.classList.replace('bg-yellow-600', 'bg-blue-600');
+            btn.classList.replace('hover:bg-yellow-500', 'hover:bg-blue-500');
+
+            document.getElementById('btnCancelSession').classList.add('hidden');
+        }
+
+        function calculateAutoGold() {
+            const hours = parseFloat(document.getElementById('hours').value) || 0;
+            const isNoGold = document.getElementById('noGold').checked;
+
+            // 1. คำนวณ Favor เสมอ (Hrs x 2)
+            const favor = Math.floor(hours * 2);
+            document.getElementById('autoFavorAmount').textContent = favor;
+
+            if (isNoGold) {
+                document.getElementById('autoGoldAmount').textContent = '0';
+            } else {
+                const c = currentCharData || {};
+                const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+
+                const projectedTotalHours = currentTotalHours + hours;
+
+                const { level: projectedLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
+
+                const multiplier = getGoldMultiplier(projectedLevel);
+
+                const gold = Math.floor(hours * 100 * multiplier);
+
+                document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            }
+        }
+
+        // --- Other CRUD ---
+        async function addGoldEntry() {
+            const amount = parseFloat(document.getElementById('goldAmount').value);
+            if (!amount || amount <= 0) return alert('ระบุจำนวนทองที่ถูกต้อง (มากกว่า 0)');
+            const type = document.getElementById('goldType').value;
+            let finalAmount = amount;
+
+            if (type === 'spend') finalAmount = -Math.abs(amount);
+            else finalAmount = Math.abs(amount);
+
+            const { error } = await supabase.from('gold_logs').insert({
+                character_id: currentCharId,
+                user_id: currentUser.id,
+                description: document.getElementById('goldDesc').value,
+                amount: finalAmount
+            });
+
+            if (error) alert(error.message);
+            else {
+                document.getElementById('goldDesc').value = '';
+                document.getElementById('goldAmount').value = '';
+                refreshAllData();
+            }
+        }
+
+        async function addFavorEntry() {
+            const amount = parseFloat(document.getElementById('favorAmount').value);
+            const type = document.getElementById('favorType').value;
+            let finalAmount = amount;
+
+            if (type === 'spend') finalAmount = -Math.abs(amount);
+            else finalAmount = Math.abs(amount);
+
+            const { error } = await supabase.from('favor_logs').insert({
+                character_id: currentCharId, user_id: currentUser.id,
+                description: document.getElementById('favorDesc').value, amount: finalAmount
+            });
+            if (error) alert(error.message);
+            else {
+                document.getElementById('favorDesc').value = '';
+                document.getElementById('favorAmount').value = '';
+                refreshAllData();
+            }
+        }
+
+        async function saveDmLog() {
+            const btn = document.getElementById('btnSaveDmLog');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            const hours = parseFloat(document.getElementById('dmHours').value) || 0;
+            const solo = document.getElementById('soloQuest').checked;
+            const double = document.getElementById('doubleReward').checked;
+
             const c = currentCharData || {};
             const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-            
-            const projectedTotalHours = currentTotalHours + hours;
+            let finalHours = hours * 1.5; if (double) finalHours *= 2;
+            const projectedTotalHours = currentTotalHours + finalHours;
+            const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
+            const mult = getGoldMultiplier(currentLevel);
 
-            const { level: projectedLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
-            
-            const multiplier = getGoldMultiplier(projectedLevel);
+            let autoGold = 0, autoFavor = 0;
+            if (!solo) {
+                let rawGold = hours * 100 * mult * 1.5;
+                autoGold = rawGold;
+                autoFavor = Math.floor(hours * 4);
+                if (double) { autoGold *= 2; autoFavor *= 2; }
+                autoGold = Math.floor(autoGold);
+            }
 
-            const gold = Math.floor(hours * 100 * multiplier);
-            
-            document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2});
-        }
-    }
+            const payload = {
+                session_name: document.getElementById('dmSessionName').value,
+                date: document.getElementById('dmSessionDate').value || null,
+                hours: finalHours, solo_quest: solo, double_reward: double,
+                auto_gold: autoGold, auto_favor: autoFavor
+            };
 
-    // --- Other CRUD ---
-    async function addGoldEntry() {
-        const amount = parseFloat(document.getElementById('goldAmount').value);
-        if (!amount || amount <= 0) return alert('ระบุจำนวนทองที่ถูกต้อง (มากกว่า 0)');
-        const type = document.getElementById('goldType').value;
-        let finalAmount = amount;
-        
-        if(type === 'spend') finalAmount = -Math.abs(amount);
-        else finalAmount = Math.abs(amount);
+            let error;
+            if (editingDmLogId) {
+                const res = await supabase.from('dm_logs').update(payload).eq('id', editingDmLogId);
+                error = res.error;
+            } else {
+                payload.character_id = currentCharId;
+                payload.user_id = currentUser.id;
+                const res = await supabase.from('dm_logs').insert(payload);
+                error = res.error;
+            }
 
-        const { error } = await supabase.from('gold_logs').insert({
-            character_id: currentCharId, 
-            user_id: currentUser.id,
-            description: document.getElementById('goldDesc').value, 
-            amount: finalAmount
-        });
+            if (error) {
+                alert('Error: ' + error.message);
+                btn.innerHTML = originalText;
+            } else {
+                refreshAllData();
+                cancelEditDmLog();
+            }
 
-        if (error) alert(error.message); 
-        else { 
-            document.getElementById('goldDesc').value = '';
-            document.getElementById('goldAmount').value = '';
-            refreshAllData(); 
-        }
-    }
-
-    async function addFavorEntry() {
-        const amount = parseFloat(document.getElementById('favorAmount').value);
-        const type = document.getElementById('favorType').value;
-        let finalAmount = amount;
-        
-        if(type === 'spend') finalAmount = -Math.abs(amount);
-        else finalAmount = Math.abs(amount);
-
-        const { error } = await supabase.from('favor_logs').insert({
-            character_id: currentCharId, user_id: currentUser.id,
-            description: document.getElementById('favorDesc').value, amount: finalAmount
-        });
-        if (error) alert(error.message); 
-        else { 
-            document.getElementById('favorDesc').value = '';
-            document.getElementById('favorAmount').value = '';
-            refreshAllData(); 
-        }
-    }
-
-    async function saveDmLog() {
-        const btn = document.getElementById('btnSaveDmLog');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        btn.disabled = true;
-
-        const hours = parseFloat(document.getElementById('dmHours').value) || 0;
-        const solo = document.getElementById('soloQuest').checked;
-        const double = document.getElementById('doubleReward').checked;
-
-        const c = currentCharData || {};
-        const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        let finalHours = hours * 1.5; if(double) finalHours *= 2;
-        const projectedTotalHours = currentTotalHours + finalHours;
-        const { level: currentLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
-        const mult = getGoldMultiplier(currentLevel);
-
-        let autoGold = 0, autoFavor = 0;
-        if (!solo) {
-            let rawGold = hours * 100 * mult * 1.5;
-            autoGold = rawGold;
-            autoFavor = Math.floor(hours * 4);
-            if (double) { autoGold *= 2; autoFavor *= 2; }
-            autoGold = Math.floor(autoGold);
+            btn.disabled = false;
         }
 
-        const payload = {
-            session_name: document.getElementById('dmSessionName').value,
-            date: document.getElementById('dmSessionDate').value || null,
-            hours: finalHours, solo_quest: solo, double_reward: double,
-            auto_gold: autoGold, auto_favor: autoFavor
-        };
+        function editDmLog(id) {
+            const item = dmData.find(d => d.id === id);
+            if (!item) return;
+            let baseHours = item.hours;
+            if (item.double_reward) baseHours /= 2;
+            baseHours /= 1.5;
 
-        let error;
-        if (editingDmLogId) {
-            const res = await supabase.from('dm_logs').update(payload).eq('id', editingDmLogId);
-            error = res.error;
-        } else {
-            payload.character_id = currentCharId;
-            payload.user_id = currentUser.id;
-            const res = await supabase.from('dm_logs').insert(payload);
-            error = res.error;
+            document.getElementById('dmSessionName').value = item.session_name;
+            document.getElementById('dmSessionDate').value = item.date || '';
+            document.getElementById('dmHours').value = parseFloat(baseHours.toFixed(2));
+            document.getElementById('soloQuest').checked = item.solo_quest;
+            document.getElementById('doubleReward').checked = item.double_reward;
+            document.getElementById('dmAutoGold').textContent = Number(item.auto_gold).toLocaleString();
+            document.getElementById('dmAutoFavor').textContent = item.auto_favor;
+            document.getElementById('dmAutoHours').textContent = item.hours;
+            editingDmLogId = id;
+
+            const btn = document.getElementById('btnSaveDmLog');
+            btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต DM Session';
+            btn.classList.replace('bg-red-600', 'bg-yellow-600');
+            btn.classList.replace('hover:bg-red-500', 'hover:bg-yellow-500');
+            document.getElementById('btnCancelDmLog').classList.remove('hidden');
+            document.getElementById('dmFormCard').scrollIntoView({ behavior: 'smooth' });
         }
 
-        if (error) {
-            alert('Error: ' + error.message); 
-            btn.innerHTML = originalText;
-        } else { 
-            refreshAllData();
-            cancelEditDmLog();
-        }
-        
-        btn.disabled = false;
-    }
+        function cancelEditDmLog() {
+            editingDmLogId = null;
+            document.getElementById('dmSessionName').value = '';
+            document.getElementById('dmSessionDate').value = '';
+            document.getElementById('dmHours').value = '';
+            document.getElementById('soloQuest').checked = false;
+            document.getElementById('doubleReward').checked = false;
+            document.getElementById('dmAutoGold').textContent = '0';
+            document.getElementById('dmAutoFavor').textContent = '0';
+            document.getElementById('dmAutoHours').textContent = '0';
 
-    function editDmLog(id) {
-        const item = dmData.find(d => d.id === id);
-        if(!item) return;
-        let baseHours = item.hours;
-        if(item.double_reward) baseHours /= 2;
-        baseHours /= 1.5;
-        
-        document.getElementById('dmSessionName').value = item.session_name;
-        document.getElementById('dmSessionDate').value = item.date || '';
-        document.getElementById('dmHours').value = parseFloat(baseHours.toFixed(2));
-        document.getElementById('soloQuest').checked = item.solo_quest;
-        document.getElementById('doubleReward').checked = item.double_reward;
-        document.getElementById('dmAutoGold').textContent = Number(item.auto_gold).toLocaleString();
-        document.getElementById('dmAutoFavor').textContent = item.auto_favor;
-        document.getElementById('dmAutoHours').textContent = item.hours;
-        editingDmLogId = id;
-
-        const btn = document.getElementById('btnSaveDmLog');
-        btn.innerHTML = '<i class="fa-solid fa-pen"></i> อัปเดต DM Session';
-        btn.classList.replace('bg-red-600', 'bg-yellow-600');
-        btn.classList.replace('hover:bg-red-500', 'hover:bg-yellow-500');
-        document.getElementById('btnCancelDmLog').classList.remove('hidden');
-        document.getElementById('dmFormCard').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function cancelEditDmLog() {
-        editingDmLogId = null;
-        document.getElementById('dmSessionName').value = '';
-        document.getElementById('dmSessionDate').value = '';
-        document.getElementById('dmHours').value = '';
-        document.getElementById('soloQuest').checked = false;
-        document.getElementById('doubleReward').checked = false;
-        document.getElementById('dmAutoGold').textContent = '0';
-        document.getElementById('dmAutoFavor').textContent = '0';
-        document.getElementById('dmAutoHours').textContent = '0';
-        
-        const btn = document.getElementById('btnSaveDmLog');
-        btn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> บันทึก DM Log';
-        btn.classList.replace('bg-yellow-600', 'bg-red-600');
-        btn.classList.replace('hover:bg-yellow-500', 'hover:bg-red-500');
-        document.getElementById('btnCancelDmLog').classList.add('hidden');
-    }
-
-    function calculateDmRewards() {
-        const hours = parseFloat(document.getElementById('dmHours').value) || 0;
-        const solo = document.getElementById('soloQuest').checked;
-        const double = document.getElementById('doubleReward').checked;
-        const c = currentCharData || {};
-        const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        let finalHours = hours * 1.5; if(double) finalHours *= 2;
-        const projectedTotalHours = currentTotalHours + finalHours;
-        const { level } = calculateCurrentLevel(c.level, projectedTotalHours);
-        const mult = getGoldMultiplier(level);
-        let gold = 0, favor = 0;
-        if(!solo) {
-            let rawGold = hours * 100 * mult * 1.5;
-            gold = rawGold;
-            favor = Math.floor(hours * 4);
-            if(double) { gold *= 2; favor *= 2; }
-            gold = Math.floor(gold);
-        }
-        document.getElementById('dmAutoGold').textContent = gold.toLocaleString();
-        document.getElementById('dmAutoFavor').textContent = favor;
-        document.getElementById('dmAutoHours').textContent = finalHours;
-    }
-
-    async function editCharacter() {
-        const c = currentCharData;
-        const newName = prompt('ชื่อตัวละคร:', c.name);
-        if (newName === null) return;
-
-        let newLevel = c.level;
-        let newGold = c.gold_start;
-
-        if (isAdmin) {
-            newLevel = parseInt(prompt('เลเวลเริ่มต้น (Admin):', c.level)) || c.level;
-            newGold = parseInt(prompt('ทองเริ่มต้น (Admin):', c.gold_start)) || c.gold_start;
+            const btn = document.getElementById('btnSaveDmLog');
+            btn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> บันทึก DM Log';
+            btn.classList.replace('bg-yellow-600', 'bg-red-600');
+            btn.classList.replace('hover:bg-yellow-500', 'hover:bg-red-500');
+            document.getElementById('btnCancelDmLog').classList.add('hidden');
         }
 
-        const newClass = prompt('อาชีพ:', c.class) || c.class;
-        const newRace = prompt('เผ่า:', c.race) || c.race;
-        const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
-        const newAlignment = prompt('Alignment (เช่น Lawful Good):', c.alignment) || c.alignment;
-        const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
-
-        const { error } = await supabase.from('characters').update({
-            name: newName, 
-            level: newLevel, 
-            gold_start: newGold, 
-            class: newClass, 
-            race: newRace, 
-            sheet_link: newSheetLink, 
-            alignment: newAlignment, 
-            pets: newPets
-        }).eq('id', currentCharId);
-
-        if(error) alert(error.message); else { refreshAllData(); }
-    }
-
-    async function deleteSession(id) { if(!confirm('⚠️ ยืนยันการลบ Session นี้?')) return; const { error } = await supabase.from('sessions').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
-    async function deleteGold(id) { if(!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('gold_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
-    async function deleteFavor(id) { if(!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('favor_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
-    async function deleteDmLog(id) { if(!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('dm_logs').delete().eq('id', id); if(error) alert(error.message); else refreshAllData(); }
-
-    // --- Render Tables ---
-    function renderPaginationUI(elementId, totalItems, currentPage, loadFunction) {
-        const container = document.getElementById(elementId);
-        container.innerHTML = '';
-        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-        if (totalPages <= 1) return;
-        
-        // Prev
-        const prevBtn = document.createElement('button');
-        prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
-        prevBtn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
-        prevBtn.onclick = () => { if(currentPage > 1) loadFunction(currentPage - 1); };
-        container.appendChild(prevBtn);
-
-        for (let i = 1; i <= totalPages; i++) {
-            if (totalPages > 5 && Math.abs(currentPage - i) > 1 && i !== 1 && i !== totalPages) continue; // Compact logic
-            const btn = document.createElement('button');
-            btn.innerText = i;
-            btn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${i === currentPage ? 'bg-indigo-600 text-white shadow' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
-            btn.onclick = () => loadFunction(i);
-            container.appendChild(btn);
+        function calculateDmRewards() {
+            const hours = parseFloat(document.getElementById('dmHours').value) || 0;
+            const solo = document.getElementById('soloQuest').checked;
+            const double = document.getElementById('doubleReward').checked;
+            const c = currentCharData || {};
+            const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+            let finalHours = hours * 1.5; if (double) finalHours *= 2;
+            const projectedTotalHours = currentTotalHours + finalHours;
+            const { level } = calculateCurrentLevel(c.level, projectedTotalHours);
+            const mult = getGoldMultiplier(level);
+            let gold = 0, favor = 0;
+            if (!solo) {
+                let rawGold = hours * 100 * mult * 1.5;
+                gold = rawGold;
+                favor = Math.floor(hours * 4);
+                if (double) { gold *= 2; favor *= 2; }
+                gold = Math.floor(gold);
+            }
+            document.getElementById('dmAutoGold').textContent = gold.toLocaleString();
+            document.getElementById('dmAutoFavor').textContent = favor;
+            document.getElementById('dmAutoHours').textContent = finalHours;
         }
-        
-        // Next
-        const nextBtn = document.createElement('button');
-        nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
-        nextBtn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
-        nextBtn.onclick = () => { if(currentPage < totalPages) loadFunction(currentPage + 1); };
-        container.appendChild(nextBtn);
-    }
 
-    function renderSessions(count) {
-      const tbody = document.getElementById('sessionsBody'); tbody.innerHTML = '';
-      if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-gray-500">ยังไม่มีบันทึก Session</td></tr>'; return; }
-      
-      sessionsData.forEach(item => {
-        const tr = document.createElement('tr'); 
-        tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
-        tr.innerHTML = `
+        async function editCharacter() {
+            const c = currentCharData;
+            const newName = prompt('ชื่อตัวละคร:', c.name);
+            if (newName === null) return;
+
+            let newLevel = c.level;
+            let newGold = c.gold_start;
+
+            if (isAdmin) {
+                newLevel = parseInt(prompt('เลเวลเริ่มต้น (Admin):', c.level)) || c.level;
+                newGold = parseInt(prompt('ทองเริ่มต้น (Admin):', c.gold_start)) || c.gold_start;
+            }
+
+            const newClass = prompt('อาชีพ:', c.class) || c.class;
+            const newRace = prompt('เผ่า:', c.race) || c.race;
+            const newSheetLink = prompt('Sheet Link:', c.sheet_link) || c.sheet_link;
+            const newAlignment = prompt('Alignment (เช่น Lawful Good):', c.alignment) || c.alignment;
+            const newPets = prompt('สัตว์เลี้ยงที่ครอบครอง:', c.pets) || c.pets;
+
+            const { error } = await supabase.from('characters').update({
+                name: newName,
+                level: newLevel,
+                gold_start: newGold,
+                class: newClass,
+                race: newRace,
+                sheet_link: newSheetLink,
+                alignment: newAlignment,
+                pets: newPets
+            }).eq('id', currentCharId);
+
+            if (error) alert(error.message); else { refreshAllData(); }
+        }
+
+        async function deleteSession(id) { if (!confirm('⚠️ ยืนยันการลบ Session นี้?')) return; const { error } = await supabase.from('sessions').delete().eq('id', id); if (error) alert(error.message); else refreshAllData(); }
+        async function deleteGold(id) { if (!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('gold_logs').delete().eq('id', id); if (error) alert(error.message); else refreshAllData(); }
+        async function deleteFavor(id) { if (!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('favor_logs').delete().eq('id', id); if (error) alert(error.message); else refreshAllData(); }
+        async function deleteDmLog(id) { if (!confirm('⚠️ ยืนยันการลบรายการนี้?')) return; const { error } = await supabase.from('dm_logs').delete().eq('id', id); if (error) alert(error.message); else refreshAllData(); }
+
+        // --- Render Tables ---
+        function renderPaginationUI(elementId, totalItems, currentPage, loadFunction) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (totalPages <= 1) return;
+
+            // Prev
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+            prevBtn.onclick = () => { if (currentPage > 1) loadFunction(currentPage - 1); };
+            container.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (totalPages > 5 && Math.abs(currentPage - i) > 1 && i !== 1 && i !== totalPages) continue; // Compact logic
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${i === currentPage ? 'bg-indigo-600 text-white shadow' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+                btn.onclick = () => loadFunction(i);
+                container.appendChild(btn);
+            }
+
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.className = `w-8 h-8 rounded-lg text-xs font-medium transition ${currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+            nextBtn.onclick = () => { if (currentPage < totalPages) loadFunction(currentPage + 1); };
+            container.appendChild(nextBtn);
+        }
+
+        function renderSessions(count) {
+            const tbody = document.getElementById('sessionsBody'); tbody.innerHTML = '';
+            if (sessionsData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-gray-500">ยังไม่มีบันทึก Session</td></tr>'; return; }
+
+            sessionsData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
+                tr.innerHTML = `
             <td class="py-4 px-6 text-white font-medium">
                 ${item.name}
                 <div class="text-xs text-gray-500 truncate max-w-[200px] mt-0.5">${item.got_items || '-'}</div>
@@ -1039,13 +1199,13 @@
             <td class="py-4 px-6 text-gray-400 text-xs whitespace-nowrap">${item.date ? new Date(item.date).toLocaleDateString('th-TH') : '-'}</td>
             <td class="py-4 px-6 text-gray-300 font-mono">${item.hours}</td>
             <td class="py-4 px-6">
-                ${item.no_gold 
-                    ? '<span class="text-xs text-gray-500">No Reward</span>' 
-                    : `<div class="flex flex-col text-xs">
+                ${item.no_gold
+                        ? '<span class="text-xs text-gray-500">No Reward</span>'
+                        : `<div class="flex flex-col text-xs">
                          <span class="text-yellow-400">${item.auto_gold} GP</span>
                          <span class="text-purple-400">${item.auto_favor || 0} Favor</span>
                        </div>`
-                }
+                    }
             </td>
             <td class="py-4 px-6 text-center">
                 <div class="flex justify-center gap-2">
@@ -1054,28 +1214,28 @@
                 </div>
             </td>
         `;
-        tbody.appendChild(tr);
-      });
-      renderPaginationUI('sessionPagination', count, pageState.session, loadSessions);
-    }
+                tbody.appendChild(tr);
+            });
+            renderPaginationUI('sessionPagination', count, pageState.session, loadSessions);
+        }
 
-    function renderGold(count) {
-      const tbody = document.getElementById('goldBody'); tbody.innerHTML = '';
-      if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีประวัติการใช้ทอง</td></tr>'; return; }
-      
-      goldData.forEach(item => {
-          const isPositive = item.amount >= 0;
-          const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
-          const sign = isPositive ? '+' : '';
-          
-          const tr = document.createElement('tr'); 
-          tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
-          tr.innerHTML = `
+        function renderGold(count) {
+            const tbody = document.getElementById('goldBody'); tbody.innerHTML = '';
+            if (goldData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีประวัติการใช้ทอง</td></tr>'; return; }
+
+            goldData.forEach(item => {
+                const isPositive = item.amount >= 0;
+                const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+                const sign = isPositive ? '+' : '';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
+                tr.innerHTML = `
             <td class="py-4 px-6 text-white">
                 ${item.description}
             </td>
             <td class="py-4 px-6 font-mono font-medium ${colorClass}">
-                ${sign}${Number(item.amount).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+                ${sign}${Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </td>
             <td class="py-4 px-6 text-gray-500 text-xs">
                 ${item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH') : '-'}
@@ -1083,23 +1243,23 @@
             <td class="py-4 px-6 text-right">
                 <button onclick="deleteGold('${item.id}')" class="text-gray-600 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
             </td>`;
-          tbody.appendChild(tr);
-      });
-      renderPaginationUI('goldPagination', count, pageState.gold, loadGold);
-    }
+                tbody.appendChild(tr);
+            });
+            renderPaginationUI('goldPagination', count, pageState.gold, loadGold);
+        }
 
-    function renderFavor(count) {
-      const tbody = document.getElementById('favorBody'); tbody.innerHTML = '';
-      if (favorData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีประวัติ Favor</td></tr>'; return; }
-      
-      favorData.forEach(item => {
-          const isPositive = item.amount >= 0;
-          const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
-          const sign = isPositive ? '+' : '';
-          
-          const tr = document.createElement('tr'); 
-          tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
-          tr.innerHTML = `
+        function renderFavor(count) {
+            const tbody = document.getElementById('favorBody'); tbody.innerHTML = '';
+            if (favorData.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีประวัติ Favor</td></tr>'; return; }
+
+            favorData.forEach(item => {
+                const isPositive = item.amount >= 0;
+                const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+                const sign = isPositive ? '+' : '';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
+                tr.innerHTML = `
             <td class="py-4 px-6 text-white">
                 ${item.description}
             </td>
@@ -1112,19 +1272,19 @@
             <td class="py-4 px-6 text-right">
                 <button onclick="deleteFavor('${item.id}')" class="text-gray-600 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
             </td>`;
-          tbody.appendChild(tr);
-      });
-      renderPaginationUI('favorPagination', count, pageState.favor, loadFavor);
-    }
+                tbody.appendChild(tr);
+            });
+            renderPaginationUI('favorPagination', count, pageState.favor, loadFavor);
+        }
 
-    function renderDmLogs(count) {
-      const tbody = document.getElementById('dmBody'); tbody.innerHTML = '';
-      if (dmData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-gray-500">ยังไม่มีประวัติ DM</td></tr>'; return; }
-      
-      dmData.forEach(item => {
-          const tr = document.createElement('tr'); 
-          tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
-          tr.innerHTML = `
+        function renderDmLogs(count) {
+            const tbody = document.getElementById('dmBody'); tbody.innerHTML = '';
+            if (dmData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-gray-500">ยังไม่มีประวัติ DM</td></tr>'; return; }
+
+            dmData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/50 transition-colors border-b border-gray-800 last:border-0";
+                tr.innerHTML = `
             <td class="py-4 px-6 text-white font-medium">${item.session_name}</td>
             <td class="py-4 px-6 text-gray-500 text-xs whitespace-nowrap">${item.date ? new Date(item.date).toLocaleDateString('th-TH') : '-'}</td>
             <td class="py-4 px-6 text-gray-300 font-mono">${item.hours}</td>
@@ -1140,61 +1300,61 @@
                     <button onclick="deleteDmLog('${item.id}')" class="text-gray-500 hover:text-red-400 transition p-1"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </td>`;
-          tbody.appendChild(tr);
-      });
-      renderPaginationUI('dmPagination', count, pageState.dm, loadDmLogs);
-    }
-
-    function openTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => { 
-          el.classList.remove('active', 'text-white'); 
-      });
-      
-      const tabContent = document.getElementById(tabName);
-      if (tabContent) tabContent.classList.add('active');
-      
-      const btn = document.getElementById('tab-' + tabName);
-      if (btn) {
-          btn.classList.add('active', 'text-white');
-          btn.classList.remove('text-gray-400');
-          
-          // Color coding active tabs
-          if(tabName === 'gold') btn.classList.add('text-yellow-400');
-          else if(tabName === 'favor') btn.classList.add('text-purple-400');
-          else if(tabName === 'dm') btn.classList.add('text-red-400');
-          else if(tabName === 'char-notes') btn.classList.add('text-blue-400');
-      }
-    }
-
-    async function manualRefresh() {
-        const btn = document.getElementById('btnRefresh');
-        const icon = document.getElementById('refreshIcon'); // เรียกผ่าน ID แม่นยำกว่า
-        
-        // ใช้ class 'animate-spin' ของ Tailwind โดยตรง
-        icon.classList.add('animate-spin', 'text-white'); 
-        btn.classList.add('cursor-wait', 'opacity-70', 'bg-gray-800'); // ล็อคสีปุ่ม
-        btn.disabled = true;
-
-        try {
-            // บังคับให้หมุนอย่างน้อย 1 วินาที + โหลดข้อมูลจริง
-            await Promise.all([
-                refreshAllData(),
-                new Promise(resolve => setTimeout(resolve, 1000))
-            ]);
-            
-        } catch (error) {
-            console.error("Refresh failed:", error);
-            alert("ไม่สามารถโหลดข้อมูลได้");
-        } finally {
-            // หยุดหมุน
-            icon.classList.remove('animate-spin', 'text-white');
-            btn.classList.remove('cursor-wait', 'opacity-70', 'bg-gray-800');
-            btn.disabled = false;
+                tbody.appendChild(tr);
+            });
+            renderPaginationUI('dmPagination', count, pageState.dm, loadDmLogs);
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', () => { openTab('session'); });
-  </script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'text-white');
+            });
+
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) tabContent.classList.add('active');
+
+            const btn = document.getElementById('tab-' + tabName);
+            if (btn) {
+                btn.classList.add('active', 'text-white');
+                btn.classList.remove('text-gray-400');
+
+                // Color coding active tabs
+                if (tabName === 'gold') btn.classList.add('text-yellow-400');
+                else if (tabName === 'favor') btn.classList.add('text-purple-400');
+                else if (tabName === 'dm') btn.classList.add('text-red-400');
+                else if (tabName === 'char-notes') btn.classList.add('text-blue-400');
+            }
+        }
+
+        async function manualRefresh() {
+            const btn = document.getElementById('btnRefresh');
+            const icon = document.getElementById('refreshIcon'); // เรียกผ่าน ID แม่นยำกว่า
+
+            // ใช้ class 'animate-spin' ของ Tailwind โดยตรง
+            icon.classList.add('animate-spin', 'text-white');
+            btn.classList.add('cursor-wait', 'opacity-70', 'bg-gray-800'); // ล็อคสีปุ่ม
+            btn.disabled = true;
+
+            try {
+                // บังคับให้หมุนอย่างน้อย 1 วินาที + โหลดข้อมูลจริง
+                await Promise.all([
+                    refreshAllData(),
+                    new Promise(resolve => setTimeout(resolve, 1000))
+                ]);
+
+            } catch (error) {
+                console.error("Refresh failed:", error);
+                alert("ไม่สามารถโหลดข้อมูลได้");
+            } finally {
+                // หยุดหมุน
+                icon.classList.remove('animate-spin', 'text-white');
+                btn.classList.remove('cursor-wait', 'opacity-70', 'bg-gray-800');
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { openTab('session'); });
+    </script>
 </body>
 </html>

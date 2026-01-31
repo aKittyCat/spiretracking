@@ -1,282 +1,322 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="env.js"></script>
-  <script src="supabase-config.js"></script>
-  <title>The Spire Tracking - ตัวละครของฉัน</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-    
-    body { font-family: 'Sarabun', sans-serif; }
-    
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #111827; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <title>The Spire Tracking - ตัวละครของฉัน</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 
-    .glass-panel {
-      background: rgba(31, 41, 55, 0.7);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(75, 85, 99, 0.4);
-    }
-    
-    .gradient-text {
-      background: linear-gradient(to right, #c084fc, #818cf8);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
 
-    /* Input Autofill Fix for Dark Mode */
-    input:-webkit-autofill,
-    input:-webkit-autofill:hover, 
-    input:-webkit-autofill:focus, 
-    input:-webkit-autofill:active{
-        -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
-        -webkit-text-fill-color: white !important;
-        transition: background-color 5000s ease-in-out 0s;
-    }
-  </style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Input Autofill Fix for Dark Mode */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+    </style>
 </head>
+
 <body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white">
-  
-  <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
-    
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
-      <div class="flex items-center gap-4">
-        <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-            <span class="text-2xl">🧙‍♂️</span>
-        </div>
-        <div>
-            <h1 class="text-3xl font-bold text-white tracking-tight">
-                ตัวละครของ <span class="gradient-text">ฉัน</span>
-            </h1>
-            <p class="text-xs text-gray-500 mt-1">Manage your characters</p>
-        </div>
-      </div>
 
-      <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
-        <div class="px-3 flex flex-col items-end">
-             <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
-             <span id="userEmail" class="text-sm font-medium text-gray-300">Loading...</span>
-        </div>
-        <button onclick="logout()" class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20" title="ออกจากระบบ">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
+    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
 
-    <div class="flex flex-wrap gap-3 mb-8 justify-center sm:justify-start">
-        <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'" 
-            class="glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
-            <span>⚙️</span> Admin Dashboard
-        </button>
-        
-        <div class="h-10 w-[1px] bg-gray-800 hidden sm:block mx-1"></div>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                    <span class="text-2xl">🧙‍♂️</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">
+                        ตัวละครของ <span class="gradient-text">ฉัน</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 mt-1">Manage your characters</p>
+                </div>
+            </div>
 
-        <button onclick="window.open('https://spireform.vercel.app/', '_blank')" 
-            class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-            📝 ฟอร์มสร้างตัวละคร
-        </button>
-        <button onclick="window.open('https://spiremk.vercel.app/', '_blank')" 
-            class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-            🏪 ร้านค้า
-        </button>
-        <button onclick="window.location.href = 'glass_arboretum.html'" 
-            class="hidden glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-            🧪 Glass Arboretum
-        </button>
-        <button onclick="window.location.href = 'piety_deities.html'" 
-            class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-            ⛪ Piety
-        </button>
-        <button onclick="window.location.href = 'lore.html'" 
-            class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-            📰 Lore
-        </button>
-    </div>
+            <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
+                <div class="px-3 flex flex-col items-end">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300">Loading...</span>
+                </div>
+                <button onclick="logout()"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20"
+                    title="ออกจากระบบ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
 
-    <div class="glass-panel p-6 rounded-2xl shadow-xl mb-10 border-t-4 border-t-blue-500/50">
-      <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
-        <span class="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg text-sm">✚</span> เพิ่มตัวละครใหม่
-      </h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-        <div class="md:col-span-4">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">ชื่อตัวละคร</label>
-            <input id="charName" placeholder="Name" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600"/>
-        </div>
-        <div class="md:col-span-2">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">เลเวล</label>
-            <input id="charLevel" type="number" min="1" value="3" placeholder="Level" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600"/>
-        </div>
-        <div class="md:col-span-3">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">อาชีพ</label>
-            <input id="charClass" placeholder="Class" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600"/>
-        </div>
-        <div class="md:col-span-3">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">เผ่า</label>
-            <input id="charRace" placeholder="Race" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600"/>
-        </div>
-        
-        <div class="md:col-span-3">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">ทองเริ่มต้น (GP)</label>
-            <input id="charGold" type="number" placeholder="0" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition placeholder-gray-600 text-yellow-400"/>
-        </div>
-        <div class="md:col-span-7">
-            <label class="block text-xs text-gray-500 mb-1 ml-1">ลิงก์ Character Sheet</label>
-            <input id="sheetLink" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600"/>
-        </div>
-        <div class="md:col-span-2 flex items-end">
-            <button onclick="addCharacter()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95">
-                บันทึก
+        <div class="flex flex-wrap gap-3 mb-8 justify-center sm:justify-start">
+            <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'"
+                class="glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
+                <span>⚙️</span> Admin Dashboard
+            </button>
+
+            <div class="h-10 w-[1px] bg-gray-800 hidden sm:block mx-1"></div>
+
+            <button onclick="window.open('https://spireform.vercel.app/', '_blank')"
+                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                📝 ฟอร์มสร้างตัวละคร
+            </button>
+            <button onclick="window.open('https://spiremk.vercel.app/', '_blank')"
+                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                🏪 ร้านค้า
+            </button>
+            <button onclick="window.location.href = 'glass_arboretum.html'"
+                class="hidden glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                🧪 Glass Arboretum
+            </button>
+            <button onclick="window.location.href = 'piety_deities.html'"
+                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                ⛪ Piety
+            </button>
+            <button onclick="window.location.href = 'lore.html'"
+                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
+                📰 Lore
             </button>
         </div>
-      </div>
-    </div>
 
-    <div class="mb-6 flex justify-between items-center">
-        <h3 class="text-xl font-semibold text-gray-300">รายการตัวละคร</h3>
-        <button onclick="loadCharacters(currentPage)" class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1">
-            🔄 Refresh
-        </button>
-    </div>
+        <div class="glass-panel p-6 rounded-2xl shadow-xl mb-10 border-t-4 border-t-blue-500/50">
+            <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
+                <span class="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg text-sm">✚</span> เพิ่มตัวละครใหม่
+            </h2>
 
-    <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-        <div class="col-span-full py-12 text-center text-gray-500">
-            <div class="inline-block w-8 h-8 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin mb-2"></div>
-            <p>กำลังโหลดข้อมูล...</p>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+                <div class="md:col-span-4">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">ชื่อตัวละคร</label>
+                    <input id="charName" placeholder="Name"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">เลเวล</label>
+                    <input id="charLevel" type="number" min="1" value="3" placeholder="Level"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">อาชีพ</label>
+                    <input id="charClass" placeholder="Class"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">เผ่า</label>
+                    <input id="charRace" placeholder="Race"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">Alignment</label>
+                    <input id="charAlignment" placeholder="Alignment"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+
+                <div class="md:col-span-3">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">ทองเริ่มต้น (GP)</label>
+                    <input id="charGold" type="number" placeholder="0"
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition placeholder-gray-600 text-yellow-400" />
+                </div>
+                <div class="md:col-span-7">
+                    <label class="block text-xs text-gray-500 mb-1 ml-1">ลิงก์ Character Sheet</label>
+                    <input id="sheetLink" placeholder="https://..."
+                        class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition placeholder-gray-600" />
+                </div>
+                <div class="md:col-span-2 flex items-end">
+                    <button onclick="addCharacter()"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95">
+                        บันทึก
+                    </button>
+                </div>
+            </div>
         </div>
+
+        <div class="mb-6 flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-300">รายการตัวละคร</h3>
+            <button onclick="loadCharacters(currentPage)"
+                class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1">
+                🔄 Refresh
+            </button>
+        </div>
+
+        <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+            <div class="col-span-full py-12 text-center text-gray-500">
+                <div
+                    class="inline-block w-8 h-8 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin mb-2">
+                </div>
+                <p>กำลังโหลดข้อมูล...</p>
+            </div>
+        </div>
+
+        <div id="paginationControls" class="flex justify-center items-center space-x-2 py-4"></div>
+
+        <footer class="mt-16 text-center text-xs text-gray-600 mb-8 border-t border-gray-800 pt-8">
+            <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
+        </footer>
     </div>
-    
-    <div id="paginationControls" class="flex justify-center items-center space-x-2 py-4"></div>
 
-    <footer class="mt-16 text-center text-xs text-gray-600 mb-8 border-t border-gray-800 pt-8">
-      <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈</p>
-    </footer>
-  </div>
+    <script src="/js/utils.js"></script>
+    <script src="/js/fetch.js"></script>
+    <script>
+        let currentUser = null;
+        const ITEMS_PER_PAGE = 9;
+        let currentPage = 1;
 
-  <script src="/js/utils.js"></script>
-  <script src="/js/fetch.js"></script>
-  <script>
-    let currentUser = null;
-    const ITEMS_PER_PAGE = 9;
-    let currentPage = 1;
+        async function init() {
+            if (typeof supabase === 'undefined') {
+                alert('❌ ไม่พบ Supabase Client! กรุณาตรวจสอบไฟล์ supabase-config.js');
+                return;
+            }
 
-    async function init() {
-      if (typeof supabase === 'undefined') {
-          alert('❌ ไม่พบ Supabase Client! กรุณาตรวจสอบไฟล์ supabase-config.js');
-          return;
-      }
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = 'index.html'; return; }
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { window.location.href = 'index.html'; return; }
-      currentUser = session.user;
-      document.getElementById('userEmail').textContent = currentUser.email;
-      
-      checkAdmin();
-      loadCharacters(1);
-    }
-    init();
+            checkAdmin();
+            loadCharacters(1);
+        }
+        init();
 
-    async function checkAdmin() {
-        const { data } = await supabase.rpc('is_admin'); 
-        if (data) document.getElementById('adminBtn').style.display = 'inline-flex';
-    }
+        async function checkAdmin() {
+            const { data } = await supabase.rpc('is_admin');
+            if (data) document.getElementById('adminBtn').style.display = 'inline-flex';
+        }
 
-    async function addCharacter() {
-      const name = document.getElementById('charName').value.trim();
-      if (!name) return alert('กรุณาระบุชื่อตัวละคร');
+        async function addCharacter() {
+            const name = document.getElementById('charName').value.trim();
+            if (!name) return alert('กรุณาระบุชื่อตัวละคร');
 
-      const btn = document.querySelector('button[onclick="addCharacter()"]');
-      const originalText = btn.innerHTML;
-      btn.innerText = 'กำลังบันทึก...';
-      btn.disabled = true;
+            const btn = document.querySelector('button[onclick="addCharacter()"]');
+            const originalText = btn.innerHTML;
+            btn.innerText = 'กำลังบันทึก...';
+            btn.disabled = true;
 
-      const { error } = await supabase.from('characters').insert({
-        user_id: currentUser.id,
-        name: name,
-        level: document.getElementById('charLevel').value || 1,
-        class: document.getElementById('charClass').value || 'Unknown',
-        race: document.getElementById('charRace').value || 'Unknown',
-        gold_start: document.getElementById('charGold').value || 0,
-        sheet_link: document.getElementById('sheetLink').value
-      });
+            const { error } = await supabase.from('characters').insert({
+                user_id: currentUser.id,
+                name: name,
+                level: document.getElementById('charLevel').value || 1,
+                class: document.getElementById('charClass').value || 'Unknown',
+                race: document.getElementById('charRace').value || 'Unknown',
+                alignment: document.getElementById('charAlignment').value || '',
+                gold_start: document.getElementById('charGold').value || 0,
+                sheet_link: document.getElementById('sheetLink').value
+            });
 
-      if (error) {
-          alert('Error: ' + error.message);
-      } else {
-        // Clear inputs
-        document.querySelectorAll('input').forEach(i => i.value = '');
-        document.getElementById('charLevel').value = 1;
-        loadCharacters(1); // Reload
-      }
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                // Clear inputs
+                document.querySelectorAll('input').forEach(i => i.value = '');
+                document.getElementById('charLevel').value = 1;
+                loadCharacters(1); // Reload
+            }
 
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-    }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
 
-    async function loadCharacters(page) {
-      currentPage = page;
-      
-      // Loading State
-      const list = document.getElementById('charactersList');
-      list.innerHTML = `
+        async function loadCharacters(page) {
+            currentPage = page;
+
+            // Loading State
+            const list = document.getElementById('charactersList');
+            list.innerHTML = `
         <div class="col-span-full py-20 text-center flex flex-col items-center justify-center text-gray-500">
             <div class="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin mb-4"></div>
             <p class="animate-pulse">กำลังโหลดข้อมูลตัวละคร...</p>
         </div>
       `;
 
-      const from = (page - 1) * ITEMS_PER_PAGE;
-      const { data, error } = await supabase.rpc('get_character_stats', { 
-          target_user_id: currentUser.id 
-      });
+            const from = (page - 1) * ITEMS_PER_PAGE;
+            const { data, error } = await supabase.rpc('get_character_stats', {
+                target_user_id: currentUser.id
+            });
 
-      if (error) {
-          console.error('Load Error:', error);
-          list.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>`;
-          return;
-      }
-      
-      // Sort: Name A-Z
-      data.sort((a, b) => a.name.localeCompare(b.name));
-      
-      const totalItems = data.length;
-      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-      const paginatedData = data.slice(from, from + ITEMS_PER_PAGE);
-      
-      renderCharacters(paginatedData);
-      renderPagination(totalPages, page);
-    }
+            if (error) {
+                console.error('Load Error:', error);
+                list.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>`;
+                return;
+            }
 
-    function renderCharacters(characters) {
-      const list = document.getElementById('charactersList');
-      list.innerHTML = '';
-      
-      if (!characters || characters.length === 0) {
-          list.innerHTML = `
+            // Sort: Name A-Z
+            data.sort((a, b) => a.name.localeCompare(b.name));
+
+            const totalItems = data.length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            const paginatedData = data.slice(from, from + ITEMS_PER_PAGE);
+
+            renderCharacters(paginatedData);
+            renderPagination(totalPages, page);
+        }
+
+        function renderCharacters(characters) {
+            const list = document.getElementById('charactersList');
+            list.innerHTML = '';
+
+            if (!characters || characters.length === 0) {
+                list.innerHTML = `
             <div class="col-span-full py-16 text-center border-2 border-dashed border-gray-800 rounded-2xl">
                 <p class="text-4xl mb-2">📜</p>
                 <p class="text-gray-400 text-lg">ยังไม่มีตัวละคร</p>
                 <p class="text-gray-600 text-sm mt-1">เริ่มสร้างตัวละครของคุณโดยการเพิ่มตัวละครด้านบน</p>
             </div>
           `;
-          return;
-      }
-      
-      characters.forEach(c => {
-        const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
-        const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
-        const firstLetter = c.name.charAt(0).toUpperCase();
+                return;
+            }
 
-        // Card Template
-        list.innerHTML += `
+            characters.forEach(c => {
+                const totalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0);
+                const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
+                const firstLetter = c.name.charAt(0).toUpperCase();
+
+                // Card Template
+                list.innerHTML += `
           <div class="glass-panel rounded-2xl p-0 overflow-hidden group hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300 hover:-translate-y-1 border border-gray-800 hover:border-gray-600">
              
              <div class="p-5 flex items-start justify-between bg-gradient-to-br from-gray-800/50 to-transparent">
@@ -300,7 +340,7 @@
                 <div class="flex justify-between items-center bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">
                     <span class="text-xs text-gray-500 uppercase font-semibold tracking-wider">Gold</span>
                     <span class="text-yellow-400 font-mono font-medium tracking-wide">
-                        ${(Number(c.total_gold)||0).toLocaleString()} <span class="text-xs text-yellow-600">GP</span>
+                        ${(Number(c.total_gold) || 0).toLocaleString()} <span class="text-xs text-yellow-600">GP</span>
                     </span>
                 </div>
                 
@@ -310,9 +350,9 @@
              </div>
 
              <div class="bg-gray-900/80 p-3 flex justify-between items-center border-t border-gray-800 gap-2">
-                ${c.sheet_link ? 
-                    `<a href="${c.sheet_link}" target="_blank" class="flex-1 text-center py-1.5 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700 hover:text-white transition">📄 Sheet</a>` 
-                    : '<span class="flex-1"></span>'}
+                ${c.sheet_link ?
+                        `<a href="${c.sheet_link}" target="_blank" class="flex-1 text-center py-1.5 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700 hover:text-white transition">📄 Sheet</a>`
+                        : '<span class="flex-1"></span>'}
                 
                 <a href="character-detail.html?charId=${c.id}" class="flex-1 text-center py-1.5 rounded-lg bg-blue-600/10 text-blue-400 text-xs hover:bg-blue-600 hover:text-white transition font-medium border border-blue-600/20">
                     รายละเอียด
@@ -324,68 +364,68 @@
              </div>
           </div>
         `;
-      });
-    }
-
-    function renderPagination(totalPages, currentPage) {
-        const container = document.getElementById('paginationControls');
-        container.innerHTML = '';
-        if (totalPages <= 1) return;
-
-        // Previous
-        const prevBtn = document.createElement('button');
-        prevBtn.innerText = '«';
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
-        prevBtn.onclick = () => loadCharacters(currentPage - 1);
-        container.appendChild(prevBtn);
-
-        // Pages
-        for (let i = 1; i <= totalPages; i++) {
-            if (totalPages > 7 && Math.abs(currentPage - i) > 2 && i !== 1 && i !== totalPages) continue; // Logic ย่อหน้า
-
-            const btn = document.createElement('button');
-            btn.innerText = i;
-            btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${i === currentPage ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
-            btn.onclick = () => loadCharacters(i);
-            container.appendChild(btn);
+            });
         }
 
-        // Next
-        const nextBtn = document.createElement('button');
-        nextBtn.innerText = '»';
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
-        nextBtn.onclick = () => loadCharacters(currentPage + 1);
-        container.appendChild(nextBtn);
-    }
+        function renderPagination(totalPages, currentPage) {
+            const container = document.getElementById('paginationControls');
+            container.innerHTML = '';
+            if (totalPages <= 1) return;
 
-    async function deleteChar(id) {
-        if(!confirm('⚠️ คุณแน่ใจหรือไม่ที่จะลบตัวละครนี้?\nการกระทำนี้ไม่สามารถกู้คืนได้')) return;
-        
-        const { error } = await deleteCharacterAndData(id, true); 
-        
-        if(error) {
-            alert('❌ เกิดข้อผิดพลาด: ' + error.message);
-        } else {
-            // alert('ลบเรียบร้อย'); // ตัด Alert ทิ้งเพื่อให้ Smooth ขึ้น
-            loadCharacters(currentPage);
+            // Previous
+            const prevBtn = document.createElement('button');
+            prevBtn.innerText = '«';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
+            prevBtn.onclick = () => loadCharacters(currentPage - 1);
+            container.appendChild(prevBtn);
+
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                if (totalPages > 7 && Math.abs(currentPage - i) > 2 && i !== 1 && i !== totalPages) continue; // Logic ย่อหน้า
+
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${i === currentPage ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
+                btn.onclick = () => loadCharacters(i);
+                container.appendChild(btn);
+            }
+
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.innerText = '»';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.className = `w-8 h-8 rounded-lg text-sm font-medium transition flex items-center justify-center ${currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'}`;
+            nextBtn.onclick = () => loadCharacters(currentPage + 1);
+            container.appendChild(nextBtn);
         }
-    }
 
-    async function logout() {
-        await supabase.auth.signOut();
-        window.location.href = 'index.html';
-    }
+        async function deleteChar(id) {
+            if (!confirm('⚠️ คุณแน่ใจหรือไม่ที่จะลบตัวละครนี้?\nการกระทำนี้ไม่สามารถกู้คืนได้')) return;
 
-    // Helper
-    const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
-    function calculateCurrentLevel(start, hours) {
-        let lvl = start;
-        const total = (LEVEL_HOURS[start] || 0) + hours;
-        for(let i=start+1; i<=30; i++) { if(total >= LEVEL_HOURS[i]) lvl = i; else break; }
-        return { level: lvl };
-    }
-  </script>
+            const { error } = await deleteCharacterAndData(id, true);
+
+            if (error) {
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+            } else {
+                // alert('ลบเรียบร้อย'); // ตัด Alert ทิ้งเพื่อให้ Smooth ขึ้น
+                loadCharacters(currentPage);
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Helper
+        const LEVEL_HOURS = [0, 0, 3.5, 10.5, 21, 35, 52.5, 73.5, 98, 126, 157.5, 192.5, 231, 273, 318.5, 367.5, 420, 476, 535.5, 598.5, 665, 735, 808.5, 885.5, 966, 1050, 1137.5, 1228.5, 1323, 1421, 1522.5, 0];
+        function calculateCurrentLevel(start, hours) {
+            let lvl = start;
+            const total = (LEVEL_HOURS[start] || 0) + hours;
+            for (let i = start + 1; i <= 30; i++) { if (total >= LEVEL_HOURS[i]) lvl = i; else break; }
+            return { level: lvl };
+        }
+    </script>
 </body>
 </html>
