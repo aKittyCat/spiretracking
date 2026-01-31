@@ -409,7 +409,7 @@ function renderInventory() {
         div.className = 'bg-gray-800/50 p-3 rounded-xl border border-gray-700/50 flex justify-between items-center hover:bg-gray-800 transition';
         div.innerHTML = `
             <div>
-                <div class="font-bold text-sm text-green-300">${item.item_name}</div>
+                <div class="font-bold text-sm text-green-300"><i class="fas fa-leaf text-green-500 mr-1 text-xs"></i>${item.item_name}</div>
                 <div class="text-xs text-gray-400 mb-1">
                     <span class="mr-1 text-red-300">C:${stats.combat}</span>
                     <span class="mr-1 text-blue-300">U:${stats.utility}</span>
@@ -443,7 +443,7 @@ function renderPotions() {
         div.className = 'bg-gray-800/50 p-3 rounded-xl border border-gray-700/50 flex justify-between items-center hover:bg-gray-800 transition';
         div.innerHTML = `
             <div>
-                <div class="font-bold text-sm text-yellow-300">${item.item_name}</div>
+                <div class="font-bold text-sm text-yellow-300"><i class="fas fa-flask text-yellow-500 mr-1 text-xs"></i>${item.item_name}</div>
                 <div class="text-xs text-gray-400">จำนวน: ${item.quantity}</div>
             </div>
             <button onclick="deletePotion('${safeName}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs transition border border-red-600/30">
