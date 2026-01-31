@@ -336,10 +336,26 @@
                             class="fa-solid fa-user"></i></span>
                     เลือกตัวละครที่จะปรุงยา
                 </h2>
-                <div class="max-w-md">
-                    <select id="characterSelect" class="w-full p-3 rounded-xl input-primary pr-10">
-                        <option value="" disabled selected>รายการตัวละคร</option>
-                    </select>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <!-- User's Own Characters -->
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-500 mb-1 block">ตัวละครของคุณ</label>
+                        <select id="characterSelect" class="w-full p-3 rounded-xl input-primary pr-10">
+                            <option value="" disabled selected>รายการตัวละคร</option>
+                        </select>
+                    </div>
+
+                    <!-- Admin Only: Button to Open Modal -->
+                    <div id="adminCharSelectWrapper" class="flex-1 hidden">
+                        <label class="text-xs text-purple-400 mb-1 block flex items-center gap-1">
+                            <i class="fas fa-crown text-yellow-400"></i> ตัวละครทั้งหมด (Admin)
+                        </label>
+                        <button onclick="openAdminCharModal()"
+                            class="w-full p-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 hover:text-white transition flex items-center justify-center gap-2">
+                            <i class="fas fa-users"></i>
+                            <span id="adminSelectedCharName">เลือกตัวละครผู้เล่น...</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -933,6 +949,47 @@
         <div class="glass-panel p-8 rounded-2xl text-center">
             <div class="text-green-500 text-4xl animate-pulse mb-4"><i class="fas fa-spinner fa-spin"></i></div>
             <p class="text-gray-300">กำลังประมวลผล...</p>
+        </div>
+    </div>
+
+    <!-- Admin Character Modal -->
+    <div id="adminCharModal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-panel rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col m-4">
+            <!-- Header -->
+            <div class="p-5 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
+                            class="fas fa-users"></i></span>
+                    เลือกตัวละครผู้เล่น (Admin)
+                </h2>
+                <button onclick="closeAdminCharModal()" class="text-gray-400 hover:text-white text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="p-4 border-b border-gray-700">
+                <input type="text" id="adminCharModalSearch" placeholder="🔍 ค้นหาชื่อตัวละคร..."
+                    class="w-full p-3 rounded-xl input-primary" oninput="filterAdminCharModal()">
+            </div>
+
+            <!-- Character List -->
+            <div class="flex-1 overflow-y-auto p-4">
+                <div id="adminCharModalGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="p-4 border-t border-gray-700 flex justify-between items-center">
+                <div class="text-sm text-gray-400">
+                    <span id="adminCharModalCount">0</span> ตัวละคร
+                </div>
+                <div class="flex gap-2" id="adminCharModalPagination">
+                    <!-- Pagination buttons -->
+                </div>
+            </div>
         </div>
     </div>
 

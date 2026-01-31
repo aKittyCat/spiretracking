@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         charSelect.appendChild(opt);
     });
 
+    // Check if admin and load all characters
+    checkAdminAndLoadAllCharacters();
+
     // Initialize Searchable Dropdown for GM Item List
     initSearchableDropdown();
 
@@ -853,6 +856,132 @@ async function addManualItem() {
     hidden.value = '';
 
     loadData();
+}
+
+// --- Admin Character Modal ---
+let allCharactersAdmin = [];
+let adminCharModalPage = 1;
+const ADMIN_CHARS_PER_PAGE = 12;
+
+async function checkAdminAndLoadAllCharacters() {
+    const { data: isAdmin } = await supabase.rpc('is_admin');
+
+    if (isAdmin) {
+        // Show admin button
+        document.getElementById('adminCharSelectWrapper').classList.remove('hidden');
+
+        // Load all characters (simplified query)
+        const { data: chars, error } = await supabase.from('characters')
+            .select('id, name, user_id')
+            .order('name');
+
+        if (error) {
+            console.error('Error loading characters:', error);
+            return;
+        }
+
+        if (chars) {
+            allCharactersAdmin = chars;
+        }
+    }
+}
+
+function openAdminCharModal() {
+    adminCharModalPage = 1;
+    document.getElementById('adminCharModalSearch').value = '';
+    renderAdminCharModal();
+    document.getElementById('adminCharModal').classList.remove('hidden');
+}
+
+function closeAdminCharModal() {
+    document.getElementById('adminCharModal').classList.add('hidden');
+}
+
+function filterAdminCharModal() {
+    adminCharModalPage = 1;
+    renderAdminCharModal();
+}
+
+function renderAdminCharModal() {
+    const searchVal = document.getElementById('adminCharModalSearch').value.toLowerCase();
+    const grid = document.getElementById('adminCharModalGrid');
+    const pagination = document.getElementById('adminCharModalPagination');
+    const countEl = document.getElementById('adminCharModalCount');
+
+    // Filter
+    const filtered = allCharactersAdmin.filter(c =>
+        c.name.toLowerCase().includes(searchVal)
+    );
+
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / ADMIN_CHARS_PER_PAGE);
+    const start = (adminCharModalPage - 1) * ADMIN_CHARS_PER_PAGE;
+    const pageData = filtered.slice(start, start + ADMIN_CHARS_PER_PAGE);
+
+    // Update count
+    countEl.innerText = filtered.length;
+
+    // Render grid
+    grid.innerHTML = '';
+    if (pageData.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8"><i class="fas fa-search text-2xl mb-2"></i><p>ไม่พบตัวละคร</p></div>';
+    } else {
+        pageData.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'bg-gray-800/50 p-4 rounded-xl border border-gray-700/50 hover:bg-gray-700/50 hover:border-purple-500/50 cursor-pointer transition-all';
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-white text-sm truncate">${c.name}</div>
+                    </div>
+                </div>
+            `;
+            card.onclick = () => selectAdminChar(c);
+            grid.appendChild(card);
+        });
+    }
+
+    // Render pagination
+    pagination.innerHTML = '';
+    if (totalPages > 1) {
+        // Prev
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.className = `px-3 py-1 rounded-lg text-sm ${adminCharModalPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'}`;
+        prevBtn.disabled = adminCharModalPage === 1;
+        prevBtn.onclick = () => { if (adminCharModalPage > 1) { adminCharModalPage--; renderAdminCharModal(); } };
+        pagination.appendChild(prevBtn);
+
+        // Page info
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'px-3 py-1 text-sm text-gray-400';
+        pageInfo.innerText = `${adminCharModalPage} / ${totalPages}`;
+        pagination.appendChild(pageInfo);
+
+        // Next
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.className = `px-3 py-1 rounded-lg text-sm ${adminCharModalPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'}`;
+        nextBtn.disabled = adminCharModalPage === totalPages;
+        nextBtn.onclick = () => { if (adminCharModalPage < totalPages) { adminCharModalPage++; renderAdminCharModal(); } };
+        pagination.appendChild(nextBtn);
+    }
+}
+
+function selectAdminChar(char) {
+    selectedCharId = char.id;
+    selectedCharName = char.name;
+
+    // Update button text
+    document.getElementById('adminSelectedCharName').innerText = char.name;
+
+    closeAdminCharModal();
+    loadData();
+    resetSlots();
+    logArea.classList.add('hidden');
 }
 
 // Logout function
