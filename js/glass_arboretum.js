@@ -54,6 +54,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     charSelect.addEventListener('change', (e) => {
         selectedCharId = e.target.value;
         selectedCharName = e.target.options[e.target.selectedIndex].text;
+
+        // Reset admin selection when using normal dropdown
+        const adminWrapper = document.getElementById('adminCharSelectWrapper');
+        if (adminWrapper && !adminWrapper.classList.contains('hidden')) {
+            document.getElementById('adminSelectedCharName').innerText = 'เลือกตัวละครผู้เล่น...';
+        }
+
         loadData();
         resetSlots();
         // Hide log on char change
@@ -977,6 +984,9 @@ function selectAdminChar(char) {
 
     // Update button text
     document.getElementById('adminSelectedCharName').innerText = char.name;
+
+    // Reset normal dropdown when using admin selection
+    charSelect.selectedIndex = 0;
 
     closeAdminCharModal();
     loadData();
