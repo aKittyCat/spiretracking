@@ -1,91 +1,510 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="env.js"></script>
   <script src="supabase-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <title>The Spire Tracking - เข้าสู่ระบบ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(75, 85, 99, 0.3);
+    }
+
+    .gradient-text {
+      background: linear-gradient(to right, #c084fc, #818cf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gradient-text-gold {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Background with parallax effect */
+    .bg-spire {
+      background-image:
+        linear-gradient(to bottom, rgba(3, 7, 18, 0.4) 0%, rgba(3, 7, 18, 0.6) 50%, rgba(3, 7, 18, 0.95) 100%),
+        url('pic/bg/Spire_Tower.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+
+    /* Floating particles animation */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(192, 132, 252, 0.6);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+      box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+    }
+
+    .particle:nth-child(1) {
+      left: 10%;
+      animation-delay: 0s;
+      animation-duration: 12s;
+    }
+
+    .particle:nth-child(2) {
+      left: 20%;
+      animation-delay: 2s;
+      animation-duration: 14s;
+    }
+
+    .particle:nth-child(3) {
+      left: 30%;
+      animation-delay: 4s;
+      animation-duration: 16s;
+    }
+
+    .particle:nth-child(4) {
+      left: 40%;
+      animation-delay: 1s;
+      animation-duration: 13s;
+    }
+
+    .particle:nth-child(5) {
+      left: 50%;
+      animation-delay: 3s;
+      animation-duration: 15s;
+    }
+
+    .particle:nth-child(6) {
+      left: 60%;
+      animation-delay: 5s;
+      animation-duration: 11s;
+    }
+
+    .particle:nth-child(7) {
+      left: 70%;
+      animation-delay: 0.5s;
+      animation-duration: 14s;
+    }
+
+    .particle:nth-child(8) {
+      left: 80%;
+      animation-delay: 2.5s;
+      animation-duration: 16s;
+    }
+
+    .particle:nth-child(9) {
+      left: 90%;
+      animation-delay: 4.5s;
+      animation-duration: 12s;
+    }
+
+    .particle:nth-child(10) {
+      left: 15%;
+      animation-delay: 1.5s;
+      animation-duration: 15s;
+      width: 6px;
+      height: 6px;
+    }
+
+    .particle:nth-child(11) {
+      left: 45%;
+      animation-delay: 3.5s;
+      animation-duration: 13s;
+      width: 5px;
+      height: 5px;
+    }
+
+    .particle:nth-child(12) {
+      left: 75%;
+      animation-delay: 0.8s;
+      animation-duration: 17s;
+      width: 3px;
+      height: 3px;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-20vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Glow effect on focus */
+    .input-glow:focus {
+      box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.3), 0 0 20px rgba(192, 132, 252, 0.2);
+    }
+
+    /* Button hover glow */
+    .btn-glow:hover {
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-discord:hover {
+      box-shadow: 0 0 30px rgba(88, 101, 242, 0.5), 0 0 60px rgba(88, 101, 242, 0.3);
+    }
+
+    /* Shimmer animation for title */
+    .shimmer {
+      background: linear-gradient(120deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.1) 50%,
+          rgba(255, 255, 255, 0) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% center;
+      }
+
+      100% {
+        background-position: -200% center;
+      }
+    }
+
+    /* Pulse ring animation */
+    .pulse-ring {
+      animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 15px rgba(192, 132, 252, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(192, 132, 252, 0);
+      }
+    }
+
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .fade-in-delay-1 {
+      animation-delay: 0.2s;
+      opacity: 0;
+    }
+
+    .fade-in-delay-2 {
+      animation-delay: 0.4s;
+      opacity: 0;
+    }
+
+    .fade-in-delay-3 {
+      animation-delay: 0.6s;
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Tower silhouette decoration */
+    .tower-silhouette {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 300px;
+      background: linear-gradient(to top, rgba(17, 24, 39, 0.8) 0%, transparent 100%);
+      clip-path: polygon(40% 100%, 40% 60%, 35% 60%, 50% 0%, 65% 60%, 60% 60%, 60% 100%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* Input autofill fix */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+      -webkit-text-fill-color: white !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Icon hover bounce */
+    .icon-bounce:hover {
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center font-sans">
-  
-  <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md mx-4 border border-gray-700">
-    
-    <h2 class="text-3xl font-bold mb-6 text-center text-white">
-      <span class="text-yellow-500">The Spire</span> Tracking
-    </h2>
 
-    <div id="login-form">
-      <div class="space-y-4">
-        <div>
-           <label class="block text-sm font-medium text-gray-400 mb-1">อีเมล</label>
-           <input id="email" type="email" placeholder="name@spire.com" 
-                  class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"/>
-        </div>
-        <div>
-           <label class="block text-sm font-medium text-gray-400 mb-1">รหัสผ่าน</label>
-           <input id="password" type="password" placeholder="••••••••" 
-                  class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"/>
-        </div>
-        
-        <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold p-3 rounded transition shadow-lg mt-2">
-          เข้าสู่ระบบ
-        </button>
-        <button onclick="signInWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold p-3 rounded transition shadow-lg flex items-center justify-center gap-2">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-          เข้าใช้งานด้วย Discord
-        </button>
+<body class="bg-spire text-gray-200 selection:bg-purple-500 selection:text-white">
+
+  <!-- Floating particles -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
+
+    <div class="w-full max-w-md">
+
+      <!-- Logo/Header Section -->
+      <div class="text-center mb-8 fade-in">
+        <h1 class="text-4xl font-bold text-white tracking-tight mb-2">
+          <span class="gradient-text-gold">The Spire</span>
+          <span class="text-gray-300"> Tracking</span>
+        </h1>
+        <p class="text-gray-500 text-sm">ระบบติดตามตัวละคร</p>
       </div>
-    </div>
 
-    <div class="mt-8 border-t border-gray-700 pt-4">
-      <p class="text-xs text-gray-500 text-center leading-relaxed">
-        &copy;🏰 The Spire Tracking<br>
-        Created by aKittyCat🐈. All rights reserved.
-      </p>
+      <!-- Login Card -->
+      <div
+        class="glass-panel p-8 rounded-3xl shadow-2xl border border-gray-700/50 fade-in fade-in-delay-1 relative overflow-hidden">
+
+        <!-- Decorative gradient orbs -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-purple-600/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+
+        <div class="relative z-10">
+          <h2 class="text-xl font-semibold mb-6 text-center text-white flex items-center justify-center gap-2">
+            <span class="w-1.5 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></span>
+            เข้าสู่ระบบ
+            <span class="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span>
+          </h2>
+
+          <div id="login-form">
+            <div class="space-y-5">
+              <div class="group">
+                <label
+                  class="block text-xs font-medium text-gray-400 mb-2 ml-1 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="text-purple-400">📧</span> อีเมล
+                </label>
+                <input id="email" type="email" placeholder="name@spire.com"
+                  class="input-glow w-full p-4 rounded-xl bg-gray-800/80 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-all duration-300" />
+              </div>
+
+              <div class="group">
+                <label
+                  class="block text-xs font-medium text-gray-400 mb-2 ml-1 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="text-purple-400">🔐</span> รหัสผ่าน
+                </label>
+                <input id="password" type="password" placeholder="••••••••"
+                  class="input-glow w-full p-4 rounded-xl bg-gray-800/80 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-all duration-300" />
+              </div>
+
+              <div class="pt-2 space-y-3">
+                <button onclick="handleLogin()"
+                  class="btn-glow w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-500 text-white font-bold p-4 rounded-xl transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group">
+                  <svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  เข้าสู่ระบบ
+                </button>
+
+                <div class="relative flex items-center justify-center my-4">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-700"></div>
+                  </div>
+                  <span class="relative bg-gray-900 px-4 text-xs text-gray-500 uppercase tracking-wider">หรือ</span>
+                </div>
+
+                <button onclick="signInWithDiscord()"
+                  class="btn-discord w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold p-4 rounded-xl transition-all duration-300 shadow-lg flex items-center justify-center gap-3 group">
+                  <svg class="w-6 h-6 transition-transform group-hover:scale-110" fill="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                  </svg>
+                  เข้าใช้งานด้วย Discord
+                </button>
+              </div>
+
+              <!-- Footer inside card -->
+              <div class="mt-6 pt-5 border-t border-gray-700/50 text-center">
+                <p class="text-xs text-gray-500 leading-relaxed">
+                  &copy; 🏰 <span class="text-gray-400">The Spire Tracking</span><br>
+                  <span class="text-gray-600">Created by aKittyCat🐈. All rights reserved.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
     function toggleForm(form) {
-        document.getElementById('login-form').style.display = form === 'login' ? 'block' : 'none';
-        document.getElementById('register-form').style.display = form === 'register' ? 'block' : 'none';
+      document.getElementById('login-form').style.display = form === 'login' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = form === 'register' ? 'block' : 'none';
     }
 
     async function handleLogin() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            window.location.href = 'characters.html';
-        } catch (err) {
-            alert('❌ เข้าสู่ระบบไม่สำเร็จ: ' + err.message);
-        }
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Show loading state
+      const btn = document.querySelector('button[onclick="handleLogin()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `
+          <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          กำลังเข้าสู่ระบบ...
+        `;
+      btn.disabled = true;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        window.location.href = 'characters.html';
+      } catch (err) {
+        alert('❌ เข้าสู่ระบบไม่สำเร็จ: ' + err.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
 
     async function signInWithDiscord() {
-        try {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'discord',
-                options: {
-                    // กำหนด URL ที่จะให้กระโดดกลับมาหลังจากล็อคอินสำเร็จ
-                    redirectTo: window.location.origin + '/characters.html' 
-                }
-            });
-            if (error) throw error;
-        } catch (err) {
-            alert('❌ เชื่อมต่อกับ Discord ไม่สำเร็จ: ' + err.message);
-        }
+      // Show loading state
+      const btn = document.querySelector('button[onclick="signInWithDiscord()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `
+          <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          กำลังเชื่อมต่อ...
+        `;
+      btn.disabled = true;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'discord',
+          options: {
+            redirectTo: window.location.origin + '/characters.html'
+          }
+        });
+        if (error) throw error;
+      } catch (err) {
+        alert('❌ เชื่อมต่อกับ Discord ไม่สำเร็จ: ' + err.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
 
     // Check Auth
     window.onload = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) window.location.href = 'characters.html';
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) window.location.href = 'characters.html';
     }
+
+    // Add enter key support for login
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('#email, #password');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            handleLogin();
+          }
+        });
+      });
+    });
   </script>
 </body>
 </html>
