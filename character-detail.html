@@ -274,6 +274,12 @@
                 <h2 class="text-lg font-bold mb-5 text-white flex items-center gap-2">
                     <span class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg text-sm"><i
                             class="fa-solid fa-plus"></i></span> บันทึกการเล่น (Session)
+                    <button id="btnBulkImport" onclick="openBulkImportModal()"
+                        class="hidden ml-2 p-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-400 hover:text-indigo-300 transition-all duration-200 group/bulk"
+                        title="นำเข้า Session หลายรายการ (วางจาก Sheet)">
+                        <i
+                            class="fa-solid fa-clipboard-list text-sm group-hover/bulk:scale-110 transition-transform"></i>
+                    </button>
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -632,6 +638,7 @@
             isAdmin = adminStatus;
 
             if (!currentCharId) { window.location.href = 'characters.html'; return; }
+            if (isAdmin) document.getElementById('btnBulkImport').classList.remove('hidden');
             refreshAllData();
         }
         init();
@@ -941,7 +948,7 @@
 
                 const multiplier = getGoldMultiplier(projectedLevel);
 
-                const gold = Math.floor(hours * 100 * multiplier);
+                const gold = Math.round(hours * 100 * multiplier);
 
                 document.getElementById('autoGoldAmount').textContent = gold.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
             }
@@ -1012,7 +1019,7 @@
             let autoGold = 0, autoFavor = 0;
             if (!solo) {
                 let rawGold = hours * 100 * mult * 1.5;
-                autoGold = rawGold;
+                autoGold = Math.round(rawGold);
                 autoFavor = Math.floor(hours * 4);
                 if (double) { autoGold *= 2; autoFavor *= 2; }
                 autoGold = Math.floor(autoGold);
@@ -1103,7 +1110,7 @@
             let gold = 0, favor = 0;
             if (!solo) {
                 let rawGold = hours * 100 * mult * 1.5;
-                gold = rawGold;
+                gold = Math.round(rawGold);
                 favor = Math.floor(hours * 4);
                 if (double) { gold *= 2; favor *= 2; }
                 gold = Math.floor(gold);
@@ -1355,6 +1362,227 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => { openTab('session'); });
+
+        // --- Bulk Session Import ---
+        let bulkParsedSessions = [];
+
+        function openBulkImportModal() {
+            document.getElementById('bulkImportModal').classList.remove('hidden');
+            document.getElementById('bulkImportModal').classList.add('flex');
+            document.getElementById('bulkTextarea').value = '';
+            document.getElementById('bulkPreview').innerHTML = '';
+            document.getElementById('bulkStatus').textContent = '';
+            document.getElementById('btnBulkSaveWrap').classList.add('hidden');
+            document.getElementById('btnBulkSave').disabled = false;
+            document.getElementById('btnBulkSave').innerHTML = '<i class="fa-solid fa-save mr-1"></i> บันทึกทั้งหมด';
+            bulkParsedSessions = [];
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulkImportModal').classList.add('hidden');
+            document.getElementById('bulkImportModal').classList.remove('flex');
+            document.getElementById('btnBulkSaveWrap').classList.add('hidden');
+            document.getElementById('btnBulkSave').disabled = false;
+            document.getElementById('btnBulkSave').innerHTML = '<i class="fa-solid fa-save mr-1"></i> บันทึกทั้งหมด';
+            bulkParsedSessions = [];
+        }
+
+        function parseBulkSessions() {
+            const raw = document.getElementById('bulkTextarea').value.trim();
+            if (!raw) return alert('กรุณาวางข้อมูลก่อน');
+
+            const lines = raw.split('\n').filter(l => l.trim());
+            bulkParsedSessions = [];
+            const errors = [];
+
+            lines.forEach((line, idx) => {
+                const cols = line.split('\t');
+                if (cols.length < 4) {
+                    errors.push(`แถว ${idx + 1}: ข้อมูลไม่ครบ (ต้องมีอย่างน้อย 4 คอลัมน์)`);
+                    return;
+                }
+
+                const name = cols[0]?.trim();
+                const dm = cols[1]?.trim() || '';
+                const rawDate = cols[2]?.trim() || '';
+                const hours = parseFloat(cols[3]?.trim()) || 0;
+                const gotItems = cols[4]?.trim() || '';
+
+                if (!name) {
+                    errors.push(`แถว ${idx + 1}: ไม่มีชื่อ Session`);
+                    return;
+                }
+
+                // Parse date: DD/MM/YYYY or D/M/YYYY → YYYY-MM-DD
+                let dateFormatted = null;
+                if (rawDate) {
+                    const parts = rawDate.split('/');
+                    if (parts.length === 3) {
+                        const day = parts[0].padStart(2, '0');
+                        const month = parts[1].padStart(2, '0');
+                        let year = parts[2];
+                        // Handle Buddhist Era (พ.ศ.) → convert to CE
+                        if (parseInt(year) > 2500) year = String(parseInt(year) - 543);
+                        dateFormatted = `${year}-${month}-${day}`;
+                    }
+                }
+
+                bulkParsedSessions.push({ name, dm, date: dateFormatted, hours, gotItems, rawDate });
+            });
+
+            // Render preview
+            const previewEl = document.getElementById('bulkPreview');
+            if (errors.length > 0) {
+                previewEl.innerHTML = `<div class="text-red-400 text-sm mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${errors.join('<br>')}</div>`;
+            }
+
+            if (bulkParsedSessions.length === 0) {
+                previewEl.innerHTML += '<p class="text-gray-500 text-sm">ไม่พบข้อมูลที่ถูกต้อง</p>';
+                document.getElementById('btnBulkSaveWrap').classList.add('hidden');
+                return;
+            }
+
+            let tableHtml = `
+                <div class="overflow-x-auto rounded-xl border border-gray-700 mb-3">
+                    <table class="min-w-full text-sm text-gray-300">
+                        <thead class="bg-gray-800/80 text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                            <tr>
+                                <th class="py-2 px-3">#</th>
+                                <th class="py-2 px-3">ชื่อ Session</th>
+                                <th class="py-2 px-3">DM</th>
+                                <th class="py-2 px-3">วันที่</th>
+                                <th class="py-2 px-3">Hrs</th>
+                                <th class="py-2 px-3">ไอเทม/หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">`;
+
+            bulkParsedSessions.forEach((s, i) => {
+                tableHtml += `
+                    <tr class="hover:bg-gray-800/40">
+                        <td class="py-2 px-3 text-gray-500">${i + 1}</td>
+                        <td class="py-2 px-3 text-white font-medium">${s.name}</td>
+                        <td class="py-2 px-3 text-gray-400">${s.dm || '-'}</td>
+                        <td class="py-2 px-3 text-gray-400 whitespace-nowrap">${s.rawDate || '-'}</td>
+                        <td class="py-2 px-3 text-gray-300 font-mono">${s.hours}</td>
+                        <td class="py-2 px-3 text-gray-400 max-w-[200px] truncate">${s.gotItems || '-'}</td>
+                    </tr>`;
+            });
+
+            tableHtml += '</tbody></table></div>';
+
+            previewEl.innerHTML += tableHtml;
+            previewEl.innerHTML += `<p class="text-sm text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i> พบ ${bulkParsedSessions.length} รายการพร้อมบันทึก</p>`;
+            document.getElementById('btnBulkSaveWrap').classList.remove('hidden');
+        }
+
+        async function saveBulkSessions() {
+            if (bulkParsedSessions.length === 0) return;
+
+            const btn = document.getElementById('btnBulkSave');
+            if (btn.disabled) return; // prevent double-click
+
+            if (!confirm(`ยืนยันบันทึก ${bulkParsedSessions.length} รายการ?`)) return;
+
+            const statusEl = document.getElementById('bulkStatus');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังบันทึก...';
+
+            const c = currentCharData || {};
+            let cumulativeHours = 0;
+            const payloads = [];
+
+            for (const s of bulkParsedSessions) {
+                const currentTotalHours = (Number(c.total_sessions_hours) || 0) + (Number(c.total_dm_hours) || 0) + cumulativeHours;
+                const projectedTotalHours = currentTotalHours + s.hours;
+                const { level: projectedLevel } = calculateCurrentLevel(c.level, projectedTotalHours);
+                const multiplier = getGoldMultiplier(projectedLevel);
+                const autoGold = Math.floor(s.hours * 100 * multiplier);
+                const autoFavor = Math.floor(s.hours * 2);
+
+                payloads.push({
+                    character_id: currentCharId,
+                    user_id: currentUser.id,
+                    name: s.name,
+                    dm: s.dm,
+                    date: s.date,
+                    hours: s.hours,
+                    notes: '',
+                    no_gold: false,
+                    auto_gold: autoGold,
+                    auto_favor: autoFavor,
+                    got_items: s.gotItems
+                });
+
+                cumulativeHours += s.hours;
+            }
+
+            const { error } = await supabase.from('sessions').insert(payloads);
+
+            if (error) {
+                statusEl.innerHTML = `<span class="text-red-400"><i class="fa-solid fa-xmark mr-1"></i> Error: ${error.message}</span>`;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> บันทึกทั้งหมด';
+            } else {
+                statusEl.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i> บันทึกสำเร็จ ${payloads.length} รายการ!</span>`;
+                setTimeout(() => {
+                    closeBulkImportModal();
+                    refreshAllData();
+                }, 1200);
+            }
+        }
     </script>
+
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal"
+        class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+        onclick="if(event.target===this)closeBulkImportModal()">
+        <div
+            class="glass-panel rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 relative animate-fadeIn border border-indigo-500/20">
+            <button onclick="closeBulkImportModal()"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white transition p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-1">
+                <span class="bg-indigo-600/20 text-indigo-400 p-1.5 rounded-lg text-sm"><i
+                        class="fa-solid fa-clipboard-list"></i></span>
+                นำเข้า Session หลายรายการ
+            </h2>
+            <p class="text-xs text-gray-500 mb-5">วางข้อมูลจาก Google Sheets / Excel (คั่นด้วย Tab)</p>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 mb-4 border border-gray-800">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-2"><i
+                        class="fa-solid fa-info-circle mr-1"></i> รูปแบบข้อมูล (Tab-separated)</p>
+                <code
+                    class="text-xs text-indigo-300 block leading-relaxed">ชื่อ Session &nbsp; ↹ &nbsp; ชื่อ DM &nbsp; ↹ &nbsp; วันที่ (D/M/YYYY) &nbsp; ↹ &nbsp; ชั่วโมง &nbsp; ↹ &nbsp; ไอเทม/หมายเหตุ</code>
+                <p class="text-[10px] text-gray-600 mt-2">ตัวอย่าง: จดหมายปริศนาจากผู้ส่งที่ไร้นาม ↹ DM Jimmy ↹
+                    17/7/2025 ↹ 5 ↹ ได้รับ Memory Sigil</p>
+            </div>
+
+            <textarea id="bulkTextarea" rows="8"
+                class="w-full p-3 rounded-xl input-primary text-sm font-mono resize-none mb-4"
+                placeholder="วางข้อมูลจาก Sheet ที่นี่... (แต่ละ Session 1 บรรทัด)"></textarea>
+
+            <div class="mb-4">
+                <button type="button" onclick="parseBulkSessions()"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2 rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 text-sm">
+                    <i class="fa-solid fa-magnifying-glass mr-1"></i> ตรวจสอบข้อมูล
+                </button>
+            </div>
+
+            <div id="bulkPreview" class="mb-3"></div>
+            <div id="bulkStatus" class="text-sm mb-3"></div>
+
+            <div id="btnBulkSaveWrap" class="hidden">
+                <button type="button" id="btnBulkSave" onclick="saveBulkSessions()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all hover:-translate-y-0.5 text-sm w-full">
+                    <i class="fa-solid fa-save mr-1"></i> บันทึกทั้งหมด
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
+
 </html>
