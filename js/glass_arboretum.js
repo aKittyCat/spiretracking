@@ -712,6 +712,17 @@ function updateSlotsUI() {
             potionTypeEl.innerHTML = `${style.icon}${selectedAttribute}`;
             potionValueEl.innerText = `Attribute: ${maxVal}`;
 
+            // Set rarity badge
+            const potionRarityEl = document.getElementById('potionRarity');
+            const rarityStyles = {
+                'common': 'bg-gray-600/30 text-gray-300',
+                'uncommon': 'bg-green-600/30 text-green-300',
+                'rare': 'bg-blue-600/30 text-blue-300'
+            };
+            const rarityStyle = rarityStyles[result.rarity] || rarityStyles['common'];
+            potionRarityEl.className = `text-sm px-3 py-1 rounded-full ${rarityStyle} font-medium capitalize`;
+            potionRarityEl.innerHTML = `<i class="fas fa-gem mr-1"></i>${result.rarity}`;
+
             craftingSlots.resultPotion = result;
         }
 
