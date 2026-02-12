@@ -888,7 +888,7 @@ async function checkAdminAndLoadAllCharacters() {
         // Show admin button
         document.getElementById('adminCharSelectWrapper').classList.remove('hidden');
 
-        // Load all characters (simplified query)
+        // Load all characters
         const { data: chars, error } = await supabase.from('characters')
             .select('id, name, user_id')
             .order('name');
@@ -899,7 +899,29 @@ async function checkAdminAndLoadAllCharacters() {
         }
 
         if (chars) {
-            allCharactersAdmin = chars;
+            // Load inventory counts for each character
+            const { data: invData } = await supabase.from('character_inventories')
+                .select('character_id, item_name, quantity, category');
+
+            const countMap = {};
+            if (invData) {
+                invData.forEach(item => {
+                    if (!countMap[item.character_id]) {
+                        countMap[item.character_id] = { ingredients: 0, potions: 0 };
+                    }
+                    if (item.category === 'potion') {
+                        countMap[item.character_id].potions += item.quantity;
+                    } else {
+                        countMap[item.character_id].ingredients += item.quantity;
+                    }
+                });
+            }
+
+            allCharactersAdmin = chars.map(c => ({
+                ...c,
+                ingredientCount: countMap[c.id]?.ingredients || 0,
+                potionCount: countMap[c.id]?.potions || 0
+            }));
         }
     }
 }
@@ -954,6 +976,10 @@ function renderAdminCharModal() {
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="font-bold text-white text-sm truncate">${c.name}</div>
+                        <div class="flex gap-2 mt-1">
+                            <span class="text-[11px] text-green-400"><i class="fas fa-leaf mr-0.5"></i>${c.ingredientCount} วัตถุดิบ</span>
+                            <span class="text-[11px] text-cyan-400"><i class="fas fa-flask mr-0.5"></i>${c.potionCount} ขวด</span>
+                        </div>
                     </div>
                 </div>
             `;
