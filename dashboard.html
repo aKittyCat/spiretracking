@@ -365,6 +365,8 @@
               <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 เลเวล</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                อาชีพ</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Gold</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 เจ้าของ (Email)</th>
@@ -783,7 +785,7 @@
       tbody.innerHTML = '';
 
       if (filteredCharacters.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">ไม่พบข้อมูลตัวละคร</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">ไม่พบข้อมูลตัวละคร</td></tr>`;
         return;
       }
 
@@ -811,6 +813,9 @@
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600">
                         Lv. ${char.calculated_level}
                     </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 max-w-[120px] truncate" title="${char.class || 'Unknown'}">
+                    ${char.class || 'Unknown'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-yellow-500 font-medium">${char.total_gold_num.toLocaleString()} <span class="text-xs text-yellow-700">GP</span></span>
