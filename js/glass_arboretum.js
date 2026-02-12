@@ -999,3 +999,235 @@ async function logout() {
     await supabase.auth.signOut();
     window.location.href = 'index.html';
 }
+
+// --- Potion Calculator ---
+let calcResults = []; // Store all calculated results
+
+function openPotionCalculator() {
+    if (!selectedCharId || currentInventory.length === 0) {
+        alert('กรุณาเลือกตัวละครที่มีวัตถุดิบก่อน');
+        return;
+    }
+
+    const modal = document.getElementById('potionCalcModal');
+    modal.classList.remove('hidden');
+    document.getElementById('calcSearchInput').value = '';
+    document.getElementById('calcTypeFilter').value = '';
+
+    // Calculate all possible potions
+    calcResults = calculatePossiblePotions();
+
+    renderCalcResults(calcResults);
+}
+
+function closePotionCalculator() {
+    document.getElementById('potionCalcModal').classList.add('hidden');
+}
+
+function calculatePossiblePotions() {
+    // Build an expanded list of ingredients with one entry per available unit
+    const expandedItems = [];
+    currentInventory.forEach(item => {
+        const ingData = INGREDIENTS_DB.find(i => i.name === item.item_name);
+        if (ingData) {
+            for (let i = 0; i < item.quantity; i++) {
+                expandedItems.push(ingData);
+            }
+        }
+    });
+
+    if (expandedItems.length < 3) return [];
+
+    // Performance safeguard: limit expanded items to avoid very slow computation
+    const MAX_ITEMS = 50;
+    let capped = false;
+    if (expandedItems.length > MAX_ITEMS) {
+        expandedItems.length = MAX_ITEMS;
+        capped = true;
+    }
+
+    // Generate unique 3-combinations (by index to handle duplicates correctly)
+    const results = new Map(); // key: potionName+type -> { potion, ingredients, type, maxVal }
+
+    const n = expandedItems.length;
+    for (let i = 0; i < n - 2; i++) {
+        for (let j = i + 1; j < n - 1; j++) {
+            for (let k = j + 1; k < n; k++) {
+                const a = expandedItems[i];
+                const b = expandedItems[j];
+                const c = expandedItems[k];
+
+                const totalC = a.combat + b.combat + c.combat;
+                const totalU = a.utility + b.utility + c.utility;
+                const totalW = a.whimsy + b.whimsy + c.whimsy;
+
+                const maxVal = Math.max(totalC, totalU, totalW);
+                if (maxVal === 0) continue;
+
+                // Determine which types tie for the highest
+                const candidates = [];
+                if (totalC === maxVal) candidates.push('Combat');
+                if (totalU === maxVal) candidates.push('Utility');
+                if (totalW === maxVal) candidates.push('Whimsical');
+
+                const ings = [a, b, c];
+                const ingNames = [a.name, b.name, c.name].sort().join('|');
+
+                // For each candidate type, find the potion
+                candidates.forEach(type => {
+                    const potion = findPotion(type, maxVal);
+                    if (potion) {
+                        const key = `${potion.name}__${type}`;
+                        if (!results.has(key)) {
+                            results.set(key, {
+                                potion,
+                                type,
+                                maxVal,
+                                ingredients: ings,
+                                ingNames: ingNames,
+                                totalC, totalU, totalW,
+                                allCombos: [{ ings, ingNames, totalC, totalU, totalW }]
+                            });
+                        } else {
+                            // Add alternative combo if it uses different ingredients
+                            const existing = results.get(key);
+                            const alreadyExists = existing.allCombos.some(c => c.ingNames === ingNames);
+                            if (!alreadyExists) {
+                                existing.allCombos.push({ ings, ingNames, totalC, totalU, totalW });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    // Convert map to array and sort by maxVal descending, then by name
+    return Array.from(results.values()).sort((a, b) => {
+        if (b.maxVal !== a.maxVal) return b.maxVal - a.maxVal;
+        return a.potion.name.localeCompare(b.potion.name);
+    });
+}
+
+function renderCalcResults(data) {
+    const grid = document.getElementById('calcResultsGrid');
+    const info = document.getElementById('calcResultInfo');
+
+    if (data.length === 0) {
+        grid.innerHTML = `
+            <div class="text-center text-gray-500 py-10 flex flex-col items-center gap-3">
+                <i class="fas fa-flask-vial text-4xl text-gray-600"></i>
+                <p>ไม่พบยาที่สามารถปรุงได้จากวัตถุดิบที่มี</p>
+            </div>
+        `;
+        info.textContent = 'ไม่พบผลลัพธ์';
+        return;
+    }
+
+    const uniquePotions = data.length;
+    const totalCombos = data.reduce((sum, d) => sum + d.allCombos.length, 0);
+    info.textContent = `พบ ${uniquePotions} ยาที่ปรุงได้ (${totalCombos} สูตรผสม)`;
+
+    grid.innerHTML = '';
+
+    const typeColors = {
+        'Combat': { border: 'border-red-500/30', badge: 'bg-red-600/30 text-red-300', icon: 'fa-fist-raised' },
+        'Utility': { border: 'border-blue-500/30', badge: 'bg-blue-600/30 text-blue-300', icon: 'fa-tools' },
+        'Whimsical': { border: 'border-purple-500/30', badge: 'bg-purple-600/30 text-purple-300', icon: 'fa-hat-wizard' }
+    };
+
+    const rarityBadge = {
+        'common': 'bg-gray-600/30 text-gray-300',
+        'uncommon': 'bg-green-600/30 text-green-300',
+        'rare': 'bg-blue-600/30 text-blue-300'
+    };
+
+    data.forEach(item => {
+        const colors = typeColors[item.type] || typeColors['Combat'];
+
+        const card = document.createElement('div');
+        card.className = `bg-gray-900/50 p-4 rounded-xl border ${colors.border} hover:bg-gray-800/70 transition-all`;
+
+        // Build combo options HTML
+        let combosHtml = '';
+        item.allCombos.slice(0, 5).forEach((combo, idx) => {
+            const names = combo.ings.map(i => i.name);
+            combosHtml += `
+                <button onclick="selectCalcCombo(${JSON.stringify(names).replace(/"/g, '&quot;')}, '${item.type}')"
+                    class="w-full text-left p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:border-cyan-500/50 hover:bg-gray-800 transition group flex items-center justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-300 flex flex-wrap gap-1.5">
+                            ${names.map(n => `<span class="bg-gray-700/50 px-2 py-0.5 rounded text-green-300">${n}</span>`).join('')}
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-1">
+                            <span class="text-red-400">C:${combo.totalC}</span>
+                            <span class="text-blue-400 ml-1">U:${combo.totalU}</span>
+                            <span class="text-purple-400 ml-1">W:${combo.totalW}</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-600 group-hover:text-cyan-400 transition text-sm"></i>
+                </button>
+            `;
+        });
+
+        if (item.allCombos.length > 5) {
+            combosHtml += `<div class="text-xs text-gray-500 text-center">...และอีก ${item.allCombos.length - 5} สูตรผสม</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+                <div>
+                    <h3 class="font-bold text-white text-base">${item.potion.name}</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs px-2 py-0.5 rounded ${colors.badge} font-medium">
+                            <i class="fas ${colors.icon} mr-1"></i>${item.type}
+                        </span>
+                        <span class="text-xs px-2 py-0.5 rounded ${rarityBadge[item.potion.rarity] || ''} font-medium capitalize">${item.potion.rarity}</span>
+                        <span class="text-xs text-gray-500">Attribute: ${item.maxVal}</span>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-500">${item.allCombos.length} สูตร</span>
+            </div>
+            <p class="text-xs text-gray-400 mb-3 line-clamp-2">${item.potion.desc}</p>
+            <div class="space-y-2">
+                ${combosHtml}
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+function filterCalcResults() {
+    const search = document.getElementById('calcSearchInput').value.toLowerCase();
+    const typeFilter = document.getElementById('calcTypeFilter').value;
+
+    const filtered = calcResults.filter(item => {
+        const matchesSearch = !search || item.potion.name.toLowerCase().includes(search);
+        const matchesType = !typeFilter || item.type === typeFilter;
+        return matchesSearch && matchesType;
+    });
+
+    renderCalcResults(filtered);
+}
+
+function selectCalcCombo(ingredientNames, type) {
+    // Reset crafting slots
+    craftingSlots = [null, null, null];
+    selectedAttribute = null;
+
+    // Fill slots with selected ingredients
+    ingredientNames.forEach((name, index) => {
+        const ingData = INGREDIENTS_DB.find(i => i.name === name);
+        if (ingData && index < 3) {
+            craftingSlots[index] = ingData;
+        }
+    });
+
+    // If there's a tie situation, pre-select the type
+    selectedAttribute = type;
+
+    // Close modal and update UI
+    closePotionCalculator();
+    updateSlotsUI();
+}

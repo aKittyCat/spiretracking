@@ -431,11 +431,17 @@
                 <div class="lg:col-span-2 flex flex-col gap-6">
 
                     <div class="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
-                        <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                            <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
-                                    class="fa-solid fa-flask"></i></span>
-                            โต๊ะปรุงยา (Alchemy Table)
-                        </h2>
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
+                                        class="fa-solid fa-flask"></i></span>
+                                โต๊ะปรุงยา (Alchemy Table)
+                            </h2>
+                            <button onclick="openPotionCalculator()"
+                                class="bg-cyan-600/20 hover:bg-cyan-600 text-cyan-400 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border border-cyan-500/30 flex items-center gap-2 shadow-lg shadow-cyan-600/10 hover:shadow-cyan-600/30 hover:-translate-y-0.5">
+                                <i class="fas fa-calculator"></i> คำนวณยาที่ปรุงได้
+                            </button>
+                        </div>
 
                         <!-- Progression Graph -->
                         <div class="mb-6 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
@@ -1014,8 +1020,52 @@
         </div>
     </div>
 
+    <!-- Potion Calculator Modal -->
+    <div id="potionCalcModal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden"
+        onclick="if(event.target===this)closePotionCalculator()">
+        <div class="glass-panel rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col mx-4 shadow-2xl">
+            <!-- Header -->
+            <div class="p-5 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="bg-cyan-500/20 text-cyan-400 p-1.5 rounded-lg text-sm"><i
+                            class="fas fa-calculator"></i></span>
+                    ยาที่สามารถปรุงได้จากวัตถุดิบที่มี
+                </h2>
+                <button onclick="closePotionCalculator()" class="text-gray-400 hover:text-white text-xl transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Search/Filter -->
+            <div class="p-4 border-b border-gray-700 flex flex-col sm:flex-row gap-3">
+                <input type="text" id="calcSearchInput" placeholder="🔍 ค้นหาชื่อยา..."
+                    class="flex-1 p-2.5 rounded-xl input-primary text-sm" oninput="filterCalcResults()">
+                <select id="calcTypeFilter" class="p-2.5 rounded-xl input-primary text-sm pr-10"
+                    onchange="filterCalcResults()">
+                    <option value="">ทุกประเภท</option>
+                    <option value="Combat">Combat</option>
+                    <option value="Utility">Utility</option>
+                    <option value="Whimsical">Whimsical</option>
+                </select>
+            </div>
+
+            <!-- Results info -->
+            <div class="px-5 py-3 text-xs text-gray-400 flex items-center justify-between border-b border-gray-700/50">
+                <span id="calcResultInfo">กำลังคำนวณ...</span>
+                <span class="text-gray-500">คลิกเพื่อใส่วัตถุดิบในช่อง</span>
+            </div>
+
+            <!-- Results List -->
+            <div class="flex-1 overflow-y-auto p-4">
+                <div id="calcResultsGrid" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
 </body>
-
 </html>
