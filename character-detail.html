@@ -240,6 +240,7 @@
                             <span class="text-[10px] text-green-600 font-bold">Hrs</span>
                         </div>
                         <span class="text-[10px] text-gray-500">Total Hours</span>
+                        <span class="text-[10px] text-green-300/60">(<span id="charTotalHoursPlus">0</span>)</span>
                     </div>
 
                 </div>
@@ -724,6 +725,7 @@
 
             document.getElementById('charCurrentLevel').textContent = currentLevel;
             document.getElementById('charTotalHours').textContent = displayTotalHours.toFixed(2);
+            document.getElementById('charTotalHoursPlus').textContent = (displayTotalHours + 10.5).toFixed(2);
             document.getElementById('charHoursToLevelUp').textContent = currentLevel >= 30 ? 'Max' : `${hoursToNextLevel.toFixed(2)}`;
 
             // Tier Style with color coding
