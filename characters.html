@@ -131,12 +131,12 @@
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <span class="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg text-sm">✚</span> เพิ่มตัวละครใหม่
                 </h2>
-                <i id="addFormChevron"
-                    class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                <i id="addFormChevron" class="fa-solid fa-chevron-down text-gray-400"
+                    style="transform: rotate(-90deg);"></i>
             </button>
 
-            <div id="addFormContent" class="px-6 pb-6 transition-all duration-300 ease-in-out"
-                style="max-height: 500px; opacity: 1;">
+            <div id="addFormContent" class="px-6"
+                style="max-height: 0px; opacity: 0; overflow: hidden; padding-top: 0; padding-bottom: 0;">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
                     <div class="md:col-span-4">
                         <label class="block text-xs text-gray-500 mb-1 ml-1">ชื่อตัวละคร</label>
@@ -316,20 +316,19 @@
             // Auto-collapse/expand add form based on character count
             const content = document.getElementById('addFormContent');
             const chevron = document.getElementById('addFormChevron');
-            if (data.length > 0) {
-                content.style.maxHeight = '0px';
-                content.style.opacity = '0';
-                content.style.overflow = 'hidden';
-                content.style.paddingTop = '0';
-                content.style.paddingBottom = '0';
-                chevron.style.transform = 'rotate(-90deg)';
-            } else {
+            if (data.length === 0) {
+                // Expand without animation on first load
                 content.style.maxHeight = '500px';
                 content.style.opacity = '1';
                 content.style.overflow = 'visible';
                 content.style.paddingBottom = '1.5rem';
                 chevron.style.transform = 'rotate(0deg)';
             }
+            // Enable transitions after initial state is set
+            requestAnimationFrame(() => {
+                content.classList.add('transition-all', 'duration-300', 'ease-in-out');
+                chevron.classList.add('transition-transform', 'duration-300');
+            });
         }
 
         function toggleAddForm() {
