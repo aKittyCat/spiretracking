@@ -160,8 +160,8 @@ function renderStatusEffects(categories, allEffects) {
                     <span class="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">${catEffects.length}</span>
                 </div>
                 ${isDM ? `<div class="flex gap-1">
-                    <button onclick="openCategoryModal('${cat.id}')" class="p-1.5 text-gray-500 hover:text-amber-400 transition" title="แก้ไขหมวด">✏️</button>
-                    <button onclick="deleteCategory('${cat.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition" title="ลบหมวด">🗑️</button>
+                    <button onclick="openCategoryModal('${cat.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200" title="แก้ไขหมวด">✏️</button>
+                    <button onclick="deleteCategory('${cat.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 transition-all duration-200" title="ลบหมวด">🗑️</button>
                 </div>` : ''}
             </div>
             <div class="glass-panel rounded-xl overflow-hidden">
@@ -204,8 +204,8 @@ function renderStatusRow(e) {
             </div>
         </div>
         ${isDM ? `<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition shrink-0 ml-2">
-            <button onclick="openFormModal('${e.id}')" class="p-1.5 text-gray-500 hover:text-amber-400 transition text-sm">✏️</button>
-            <button onclick="deleteItem('${e.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition text-sm">🗑️</button>
+            <button onclick="openFormModal('${e.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200 text-sm">✏️</button>
+            <button onclick="deleteItem('${e.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 transition-all duration-200 text-sm">🗑️</button>
         </div>` : ''}
     </div>`;
 }
@@ -247,8 +247,8 @@ function renderLootTables(tables, allItems) {
                     <p class="text-xs text-gray-500">${t.description || ''}</p>
                 </div>
                 ${isDM ? `<div class="flex gap-1 shrink-0 ml-2">
-                    <button onclick="openLootDetail('${t.id}')" class="p-1.5 text-gray-500 hover:text-amber-400 transition">✏️</button>
-                    <button onclick="deleteItem('${t.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition">🗑️</button>
+                    <button onclick="openLootDetail('${t.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200">✏️</button>
+                    <button onclick="deleteItem('${t.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 transition-all duration-200">🗑️</button>
                 </div>` : ''}
             </div>
             <div class="overflow-x-auto">
@@ -308,8 +308,8 @@ function renderWiki() {
                 <div class="flex items-center gap-2 shrink-0">
                     <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-1 rounded">${date}</span>
                     ${isDM ? `<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="event.stopPropagation(); openFormModal('${w.id}')" class="p-1 text-gray-500 hover:text-amber-400 transition">✏️</button>
-                        <button onclick="event.stopPropagation(); deleteItem('${w.id}')" class="p-1 text-gray-500 hover:text-red-400 transition">🗑️</button>
+                        <button onclick="event.stopPropagation(); openFormModal('${w.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200">✏️</button>
+                        <button onclick="event.stopPropagation(); deleteItem('${w.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 transition-all duration-200">🗑️</button>
                     </div>` : ''}
                 </div>
             </div>
@@ -376,20 +376,35 @@ function renderCards() {
 function renderCard(item) {
     const hasImage = item.image_url && item.image_url.trim();
     const badges = getBadges(item);
+    const cfg = TAB_CONFIG[activeTab];
+
+    // Gradient colors per tab for imageless cards
+    const gradientMap = {
+        races: 'from-emerald-900/40 via-emerald-800/20 to-transparent',
+        classes: 'from-rose-900/40 via-rose-800/20 to-transparent',
+        items: 'from-indigo-900/40 via-indigo-800/20 to-transparent',
+        skills: 'from-cyan-900/40 via-cyan-800/20 to-transparent',
+        recipes: 'from-amber-900/40 via-amber-800/20 to-transparent',
+        bestiary: 'from-red-900/40 via-red-800/20 to-transparent',
+    };
+    const gradient = gradientMap[activeTab] || 'from-purple-900/40 via-purple-800/20 to-transparent';
 
     return `
     <div onclick="openDetailModal('${item.id}')" class="glass-panel rounded-xl overflow-hidden cursor-pointer group hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300 hover:-translate-y-1 flex flex-col">
         ${hasImage ? `<div class="aspect-[16/9] bg-gray-800 overflow-hidden">
-            <img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-600 text-3xl\\'>${TAB_CONFIG[activeTab].icon}</div>'">
-        </div>` : ''}
+            <img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-600 text-3xl\\'>${cfg.icon}</div>'">
+        </div>` : `<div class="h-24 bg-gradient-to-br ${gradient} flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 16px 16px;"></div>
+            <span class="text-4xl opacity-50 group-hover:scale-110 group-hover:opacity-70 transition-all duration-300">${cfg.icon}</span>
+        </div>`}
         <div class="p-4 flex-1 flex flex-col">
             <h3 class="font-bold text-white group-hover:text-purple-200 transition truncate">${item.name}</h3>
             <p class="text-xs text-gray-500 mt-1 line-clamp-2 flex-1">${item.description || ''}</p>
             ${badges ? `<div class="flex flex-wrap gap-1.5 mt-3">${badges}</div>` : ''}
         </div>
         ${isDM ? `<div class="px-4 pb-3 flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition">
-            <button onclick="event.stopPropagation(); openFormModal('${item.id}')" class="p-1.5 text-gray-500 hover:text-amber-400 transition text-sm" title="แก้ไข">✏️</button>
-            <button onclick="event.stopPropagation(); deleteItem('${item.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition text-sm" title="ลบ">🗑️</button>
+            <button onclick="event.stopPropagation(); openFormModal('${item.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200 text-sm" title="แก้ไข">✏️</button>
+            <button onclick="event.stopPropagation(); deleteItem('${item.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 transition-all duration-200 text-sm" title="ลบ">🗑️</button>
         </div>` : ''}
     </div>`;
 }
@@ -426,8 +441,8 @@ function openDetailModal(id) {
 
     // Image at top
     if (item.image_url && item.image_url.trim()) {
-        body += `<div class="aspect-[16/9] bg-gray-800 rounded-xl overflow-hidden mb-4">
-            <img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover">
+        body += `<div class="bg-gray-800 rounded-xl overflow-hidden mb-4 flex items-center justify-center" style="max-height: 400px;">
+            <img src="${item.image_url}" alt="${item.name}" class="max-w-full max-h-[400px] object-contain">
         </div>`;
     }
 
