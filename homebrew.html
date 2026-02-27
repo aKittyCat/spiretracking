@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <title>The Spire Tracking - Homebrew</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(75, 85, 99, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-area {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* Sidebar item */
+        .sidebar-item {
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(139, 92, 246, 0.08);
+            color: #e9d5ff;
+        }
+
+        /* Mobile sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+            }
+
+            .sidebar-brand {
+                display: none;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                padding: 0.5rem;
+                gap: 0.25rem;
+            }
+
+            .sidebar-item {
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                white-space: nowrap;
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.75rem;
+            }
+
+            .sidebar-footer {
+                display: none;
+            }
+
+            .main-area {
+                margin-left: 0;
+            }
+        }
+
+        /* Prose styling for wiki */
+        .prose h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f3f4f6;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .prose h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #e5e7eb;
+            margin: 1rem 0 0.5rem;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 0.25rem;
+        }
+
+        .prose h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #d1d5db;
+            margin: 0.75rem 0 0.25rem;
+        }
+
+        .prose p {
+            margin: 0.5rem 0;
+            color: #d1d5db;
+            line-height: 1.7;
+        }
+
+        .prose ul,
+        .prose ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+            color: #d1d5db;
+        }
+
+        .prose li {
+            margin: 0.25rem 0;
+        }
+
+        .prose code {
+            background: #1f2937;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+            color: #c084fc;
+        }
+
+        .prose pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+        }
+
+        .prose pre code {
+            background: none;
+            padding: 0;
+            color: #e2e8f0;
+        }
+
+        .prose blockquote {
+            border-left: 3px solid #6366f1;
+            padding-left: 1rem;
+            color: #9ca3af;
+            font-style: italic;
+            margin: 0.75rem 0;
+        }
+
+        .prose strong {
+            color: #f9fafb;
+        }
+
+        .prose a {
+            color: #818cf8;
+            text-decoration: underline;
+        }
+
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+        }
+
+        .prose th,
+        .prose td {
+            border: 1px solid #374151;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .prose th {
+            background: #1f2937;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .prose hr {
+            border-color: #374151;
+            margin: 1rem 0;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white">
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand p-5 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                    <span class="text-xl">📘</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white leading-tight">
+                        <span class="gradient-text">Homebrew</span>
+                    </h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider">DM Content</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav flex-1 flex flex-col py-3 px-2 gap-0.5 overflow-y-auto">
+            <p class="text-[10px] text-gray-600 uppercase font-bold tracking-wider px-3 pt-2 pb-1 hidden md:block">Game
+                System</p>
+
+            <button id="tab-status_effects" onclick="switchTab('status_effects')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">⚡</span> Status Effects
+            </button>
+            <button id="tab-races" onclick="switchTab('races')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">🧝</span> Races
+            </button>
+            <button id="tab-classes" onclick="switchTab('classes')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">⚔️</span> Classes
+            </button>
+            <button id="tab-items" onclick="switchTab('items')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">🎒</span> Items
+            </button>
+            <button id="tab-skills" onclick="switchTab('skills')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">✨</span> Skills
+            </button>
+            <button id="tab-recipes" onclick="switchTab('recipes')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">🧪</span> Recipes
+            </button>
+            <button id="tab-bestiary" onclick="switchTab('bestiary')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">🐉</span> Bestiary
+            </button>
+            <button id="tab-loot_tables" onclick="switchTab('loot_tables')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">🎲</span> Loot Tables
+            </button>
+
+            <div class="h-px bg-gray-800 my-2 mx-3 hidden md:block"></div>
+            <p class="text-[10px] text-gray-600 uppercase font-bold tracking-wider px-3 pt-1 pb-1 hidden md:block">
+                Knowledge Base</p>
+
+            <button id="tab-wiki" onclick="switchTab('wiki')"
+                class="sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 border-transparent w-full text-left">
+                <span class="text-base">📖</span> Wiki
+            </button>
+        </nav>
+
+        <div class="sidebar-footer p-4 border-t border-gray-800">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span id="userEmail" class="text-xs text-gray-400 truncate">Loading...</span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="location.href='characters.html'"
+                    class="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs border border-gray-700 transition text-center">
+                    🏠 กลับหลัก
+                </button>
+                <button onclick="logout()"
+                    class="px-3 py-2 bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg text-xs border border-rose-600/20 transition">
+                    🚪
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-area">
+        <div class="max-w-[1280px] mx-auto p-5 sm:p-6 lg:p-8">
+
+            <!-- Header Bar -->
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-gray-800">
+                <h2 id="pageTitle" class="text-2xl font-bold text-white flex items-center gap-2">
+                    <span>⚡</span> Status Effects
+                </h2>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <!-- Search -->
+                    <div class="relative flex-1 sm:flex-initial">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="text-gray-500 text-sm">🔍</span>
+                        </div>
+                        <input id="searchInput" type="text" onkeyup="handleSearch()" placeholder="ค้นหา..."
+                            class="w-full sm:w-56 pl-9 pr-4 py-2.5 rounded-xl bg-gray-800/80 border border-gray-700 text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition placeholder-gray-600">
+                    </div>
+                    <!-- Create Button (DM only) -->
+                    <button id="createBtn" onclick="openFormModal(null)" style="display:none"
+                        class="dm-only px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 whitespace-nowrap">
+                        <span>✚</span> สร้างใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Content Area -->
+            <div id="mainContent">
+                <div class="flex items-center justify-center py-20">
+                    <div class="w-10 h-10 border-4 border-gray-700 border-t-purple-500 rounded-full animate-spin">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-16 text-center text-xs text-gray-600 mb-8 border-t border-gray-800 pt-8">
+                <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
+            </footer>
+        </div>
+    </main>
+
+    <!-- ==================== DETAIL MODAL ==================== -->
+    <div id="detailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4"
+        onclick="if(event.target===this) closeDetailModal()">
+        <div
+            class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div
+                class="sticky top-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 p-5 flex items-center justify-between z-10">
+                <h3 id="detailTitle" class="text-xl font-bold text-white truncate flex-1 mr-4"></h3>
+                <div class="flex items-center gap-2">
+                    <span id="detailActions" class="flex gap-2"></span>
+                    <button onclick="closeDetailModal()"
+                        class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition">✕</button>
+                </div>
+            </div>
+            <div id="detailBody" class="p-5"></div>
+        </div>
+    </div>
+
+    <!-- ==================== FORM MODAL (Create / Edit) ==================== -->
+    <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4"
+        onclick="if(event.target===this) closeFormModal()">
+        <div
+            class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div
+                class="sticky top-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 p-5 flex items-center justify-between z-10">
+                <h3 id="formTitle" class="text-xl font-bold text-white"></h3>
+                <button onclick="closeFormModal()"
+                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition">✕</button>
+            </div>
+            <div id="formBody" class="p-5"></div>
+            <div class="border-t border-gray-800 p-5 flex justify-end gap-3">
+                <button onclick="closeFormModal()"
+                    class="px-5 py-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition text-sm">
+                    ยกเลิก
+                </button>
+                <button id="formSaveBtn"
+                    class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-lg shadow-purple-500/20 transition text-sm font-medium">
+                    บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="js/homebrew.js"></script>
+    <script>
+        init();
+    </script>
+</body>
+
+</html>

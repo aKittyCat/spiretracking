@@ -100,6 +100,10 @@
                 class="glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
                 <span>⚙️</span> Admin Dashboard
             </button>
+            <button id="homebrewBtn" style="display:none" onclick="location.href='homebrew.html'"
+                class="glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
+                <span>📘</span> Homebrew (DM)
+            </button>
 
             <div class="h-10 w-[1px] bg-gray-800 hidden sm:block mx-1"></div>
 
@@ -238,13 +242,23 @@
             document.getElementById('userEmail').textContent = currentUser.email;
 
             checkAdmin();
+            checkDM();
             loadCharacters(1);
         }
         init();
 
         async function checkAdmin() {
             const { data } = await supabase.rpc('is_admin');
-            if (data) document.getElementById('adminBtn').style.display = 'inline-flex';
+            if (data) {
+                document.getElementById('adminBtn').style.display = 'inline-flex';
+            }
+        }
+
+        async function checkDM() {
+            const { data } = await supabase.rpc('is_dm');
+            if (data) {
+                document.getElementById('homebrewBtn').style.display = 'inline-flex';
+            }
         }
 
         async function addCharacter() {
