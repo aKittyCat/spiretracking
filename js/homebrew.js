@@ -571,8 +571,22 @@ async function openFormModal(editId) {
                 </div>
                 <div><label class="block text-xs text-gray-500 mb-1">คำอธิบาย</label>
                     <textarea id="f_description" rows="2" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-none" placeholder="คำอธิบายสั้นๆ">${item ? item.description || '' : ''}</textarea></div>
-                <div><label class="block text-xs text-gray-500 mb-1">Stats (JSON: {"STR": 15, "DEX": 10, ...})</label>
-                    <textarea id="f_stats" rows="2" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-none font-mono text-sm" placeholder='{"STR": 10, "DEX": 10}'>${JSON.stringify(stats, null, 2)}</textarea></div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2">Ability Scores</label>
+                    <div class="grid grid-cols-6 gap-2">
+                        ${['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'].map(stat => `
+                        <div class="text-center">
+                            <div class="text-[10px] font-bold uppercase tracking-wider mb-1 ${stat === 'STR' ? 'text-red-400' :
+                stat === 'DEX' ? 'text-green-400' :
+                    stat === 'CON' ? 'text-amber-400' :
+                        stat === 'INT' ? 'text-blue-400' :
+                            stat === 'WIS' ? 'text-purple-400' : 'text-pink-400'
+            }">${stat}</div>
+                            <input id="f_stat_${stat}" type="number" min="1" max="30" value="${stats[stat] || 10}"
+                                class="w-full text-center px-1 py-2 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition font-bold text-lg">
+                        </div>`).join('')}
+                    </div>
+                </div>
                 <div><label class="block text-xs text-gray-500 mb-1">เนื้อหา (รองรับ Markdown)</label>
                     <textarea id="f_content" rows="6" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-y font-mono text-sm" placeholder="รายละเอียดเพิ่มเติม...">${item ? item.content || '' : ''}</textarea></div>
             </div>`;
@@ -657,8 +671,11 @@ async function saveForm(editId) {
         };
         if (!payload.name) return alert('กรุณาระบุชื่อ');
     } else if (activeTab === 'bestiary') {
-        let stats = {};
-        try { stats = JSON.parse(document.getElementById('f_stats').value || '{}'); } catch (e) { return alert('Stats JSON ไม่ถูกต้อง'); }
+        const stats = {};
+        ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'].forEach(s => {
+            const val = parseInt(document.getElementById('f_stat_' + s).value);
+            if (!isNaN(val)) stats[s] = val;
+        });
         payload = {
             name: document.getElementById('f_name').value.trim(),
             description: document.getElementById('f_description').value.trim(),
