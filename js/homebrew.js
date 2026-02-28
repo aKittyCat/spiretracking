@@ -15,7 +15,7 @@ const TAB_CONFIG = {
     classes: { table: 'hb_classes', title: 'Classes', icon: '⚔️' },
     items: { table: 'hb_items', title: 'Items', icon: '🎒', hasCategory: true },
     skills: { table: 'hb_skills', title: 'Skills', icon: '✨', hasCategory: true },
-    recipes: { table: 'hb_recipes', title: 'Recipes', icon: '🧪', hasCategory: true },
+    recipes: { table: 'hb_recipes', title: 'Recipes', icon: '⚒️', hasCategory: true },
     bestiary: { table: 'hb_bestiary', title: 'Bestiary', icon: '🐉' },
     loot_tables: { table: 'hb_loot_tables', title: 'Loot Tables', icon: '🎲' },
     wiki: { table: 'hb_wiki', title: 'Wiki', icon: '📖' },
@@ -255,7 +255,7 @@ function renderLootTables(tables, allItems) {
             <div class="flex items-center justify-between p-4 border-b border-gray-800">
                 <div>
                     <h3 class="font-bold text-white">${t.name}</h3>
-                    <p class="text-xs text-gray-500">${t.description || ''}</p>
+                    ${t.description ? `<div class="text-xs text-gray-400 mt-1 prose prose-invert prose-sm max-w-none">${typeof marked !== 'undefined' ? marked.parse(t.description) : t.description}</div>` : ''}
                 </div>
                 ${isDM ? `<div class="flex gap-1 shrink-0 ml-2">
                     <button onclick="openLootDetail('${t.id}')" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 hover:scale-110 transition-all duration-200">✏️</button>
@@ -617,8 +617,8 @@ async function openFormModal(editId) {
             <div class="space-y-4">
                 <div><label class="block text-xs text-gray-500 mb-1">ชื่อตาราง</label>
                     <input id="f_name" value="${item ? item.name : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="ชื่อ Loot Table"></div>
-                <div><label class="block text-xs text-gray-500 mb-1">คำอธิบาย</label>
-                    <textarea id="f_description" rows="2" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-none" placeholder="คำอธิบาย">${item ? item.description || '' : ''}</textarea></div>
+                <div><label class="block text-xs text-gray-500 mb-1">คำอธิบาย (รองรับ Markdown)</label>
+                    <textarea id="f_description" rows="6" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-y font-mono text-sm" placeholder="คำอธิบาย...">${item ? item.description || '' : ''}</textarea></div>
             </div>`;
     } else if (activeTab === 'bestiary') {
         const stats = item && item.stats ? item.stats : {};
@@ -701,7 +701,43 @@ async function openFormModal(editId) {
             </div>`;
     }
 
-    body.innerHTML = formHtml;
+    // For non-wiki tabs, wrap form in split layout with preview
+    if (activeTab !== 'wiki') {
+        // Widen modal
+        document.querySelector('#formModal > div').classList.remove('max-w-xl');
+        document.querySelector('#formModal > div').classList.add('max-w-5xl');
+
+        body.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div id="formFieldsPane">${formHtml}</div>
+                <div id="formPreviewPane">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">👁️ Preview</span>
+                        <div class="flex-1 h-px bg-gray-800"></div>
+                    </div>
+                    <div id="formPreview" class="glass-panel rounded-xl overflow-hidden min-h-[200px]">
+                        <div class="flex items-center justify-center py-16 text-gray-600">
+                            <p class="text-sm">กรอกข้อมูลเพื่อดู Preview</p>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        // Attach input listeners for live preview
+        setTimeout(() => {
+            const pane = document.getElementById('formFieldsPane');
+            if (pane) {
+                pane.querySelectorAll('input, textarea, select').forEach(el => {
+                    el.addEventListener('input', updateFormPreview);
+                    el.addEventListener('change', updateFormPreview);
+                });
+            }
+            updateFormPreview();
+        }, 50);
+    } else {
+        body.innerHTML = formHtml;
+    }
+
     document.getElementById('formSaveBtn').onclick = () => saveForm(editId);
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -1017,6 +1053,149 @@ function handleSearch() {
 async function logout() {
     await supabase.auth.signOut();
     window.location.href = 'index.html';
+}
+
+// =====================================================
+// Form Preview (non-wiki)
+// =====================================================
+function updateFormPreview() {
+    const preview = document.getElementById('formPreview');
+    if (!preview) return;
+
+    const val = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const cfg = TAB_CONFIG[activeTab];
+
+    if (activeTab === 'status_effects') {
+        const name = val('f_name') || 'ชื่อสถานะ';
+        const desc = val('f_description') || 'คำอธิบาย...';
+        const type = val('f_type') || 'Debuff';
+        const typeBadge = type === 'Buff'
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">BUFF</span>`
+            : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">DEBUFF</span>`;
+        preview.innerHTML = `
+            <div class="p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    ${typeBadge}
+                    <div>
+                        <p class="font-semibold text-white">${name}</p>
+                        <p class="text-xs text-gray-500">${desc}</p>
+                    </div>
+                </div>
+            </div>`;
+        return;
+    }
+
+    if (activeTab === 'loot_tables') {
+        const name = val('f_name') || 'ชื่อตาราง';
+        const desc = val('f_description') || '';
+        preview.innerHTML = `
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl">🎲</span>
+                    <h3 class="font-bold text-white text-lg">${name}</h3>
+                </div>
+                ${desc ? `<div class="text-sm text-gray-400 prose prose-invert prose-sm max-w-none">${typeof marked !== 'undefined' ? marked.parse(desc) : desc}</div>` : ''}
+                <div class="mt-3 border-t border-gray-700 pt-3">
+                    <p class="text-xs text-gray-600 italic">ไอเทมในตารางจะแสดงหลังบันทึก</p>
+                </div>
+            </div>`;
+        return;
+    }
+
+    // Generic preview for: races, classes, items, skills, recipes, bestiary
+    const name = val('f_name') || `${cfg.title} ใหม่`;
+    const desc = val('f_description') || '';
+    const imageUrl = val('f_image_url') || '';
+    const content = val('f_content') || '';
+
+    let html = '';
+
+    // Image
+    if (imageUrl.trim()) {
+        html += `<div class="bg-gray-800 flex items-center justify-center" style="max-height: 200px; overflow: hidden;">
+            <img src="${imageUrl}" alt="Preview" class="max-w-full max-h-[200px] object-contain" onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-20 text-gray-600 text-2xl\'>${cfg.icon}</div>'">
+        </div>`;
+    } else {
+        // Gradient header
+        const gradientMap = {
+            races: 'from-emerald-900/40 via-emerald-800/20 to-transparent',
+            classes: 'from-rose-900/40 via-rose-800/20 to-transparent',
+            items: 'from-indigo-900/40 via-indigo-800/20 to-transparent',
+            skills: 'from-cyan-900/40 via-cyan-800/20 to-transparent',
+            recipes: 'from-amber-900/40 via-amber-800/20 to-transparent',
+            bestiary: 'from-red-900/40 via-red-800/20 to-transparent',
+        };
+        const g = gradientMap[activeTab] || 'from-purple-900/40 via-purple-800/20 to-transparent';
+        html += `<div class="h-16 bg-gradient-to-br ${g} flex items-center justify-center"><span class="text-3xl opacity-50">${cfg.icon}</span></div>`;
+    }
+
+    html += `<div class="p-4">`;
+    html += `<h3 class="font-bold text-white text-lg">${name}</h3>`;
+    if (desc) html += `<p class="text-xs text-gray-500 mt-1">${desc}</p>`;
+
+    // Badges
+    let badges = '';
+    if (activeTab === 'items') {
+        const cat = val('f_category');
+        if (cat) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${cat}</span>`;
+    }
+    if (activeTab === 'skills') {
+        const cat = val('f_category');
+        if (cat) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${cat}</span>`;
+    }
+    if (activeTab === 'recipes') {
+        const cat = val('f_category');
+        if (cat) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${cat}</span>`;
+    }
+    if (activeTab === 'bestiary') {
+        const mt = val('f_monster_type');
+        const cr = val('f_challenge_rating');
+        if (mt) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">${mt}</span>`;
+        if (cr) {
+            const xp = CR_XP_MAP[cr];
+            badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">CR ${cr}</span>`;
+            if (xp !== undefined) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">${xp.toLocaleString()} XP</span>`;
+        }
+    }
+    if (badges) html += `<div class="flex flex-wrap gap-1.5 mt-2">${badges}</div>`;
+
+    // Bestiary stats
+    if (activeTab === 'bestiary') {
+        const statColors = { STR: 'text-red-400', DEX: 'text-green-400', CON: 'text-amber-400', INT: 'text-blue-400', WIS: 'text-purple-400', CHA: 'text-pink-400' };
+        html += `<div class="grid grid-cols-6 gap-1.5 mt-3">`;
+        ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'].forEach(s => {
+            const v = val('f_stat_' + s) || '10';
+            const mod = Math.floor((parseInt(v) - 10) / 2);
+            const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+            html += `<div class="text-center bg-gray-800/60 rounded-lg py-1.5">
+                <div class="text-[9px] font-bold ${statColors[s]} uppercase">${s}</div>
+                <div class="text-white font-bold text-sm">${v}</div>
+                <div class="text-[10px] text-gray-500">${modStr}</div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // Recipe data
+    if (activeTab === 'recipes') {
+        const recipe = val('f_recipe_data');
+        if (recipe) html += `<div class="mt-3"><div class="text-[10px] text-gray-500 uppercase font-bold mb-1">สูตรคราฟต์</div>
+            <div class="bg-gray-800/50 rounded-lg p-3 text-xs text-gray-300 whitespace-pre-wrap">${recipe}</div></div>`;
+    }
+
+    // Markdown content
+    if (content.trim()) {
+        let rendered = content;
+        if (typeof marked !== 'undefined') {
+            rendered = marked.parse(content);
+        } else {
+            rendered = `<pre class="whitespace-pre-wrap text-sm">${content}</pre>`;
+        }
+        html += `<div class="mt-3 pt-3 border-t border-gray-700/50 prose prose-invert prose-sm max-w-none">${rendered}</div>`;
+    }
+
+    html += `</div>`;
+    preview.innerHTML = html;
 }
 
 // =====================================================
