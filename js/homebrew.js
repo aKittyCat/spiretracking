@@ -21,6 +21,17 @@ const TAB_CONFIG = {
     wiki: { table: 'hb_wiki', title: 'Wiki', icon: '📖' },
 };
 
+// CR to XP mapping (D&D 5e)
+const CR_XP_MAP = {
+    '0': 10, '1/8': 25, '1/4': 50, '1/2': 100,
+    '1': 200, '2': 450, '3': 700, '4': 1100, '5': 1800,
+    '6': 2300, '7': 2900, '8': 3900, '9': 5000, '10': 5900,
+    '11': 7200, '12': 8400, '13': 10000, '14': 11500, '15': 13000,
+    '16': 15000, '17': 18000, '18': 20000, '19': 22000, '20': 25000,
+    '21': 33000, '22': 41000, '23': 50000, '24': 62000, '25': 75000,
+    '26': 90000, '27': 105000, '28': 120000, '29': 135000, '30': 155000
+};
+
 // =====================================================
 // Init
 // =====================================================
@@ -422,7 +433,11 @@ function getBadges(item) {
     }
     if (activeTab === 'bestiary') {
         if (item.monster_type) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">${item.monster_type}</span>`;
-        if (item.challenge_rating) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${item.challenge_rating} XP</span>`;
+        if (item.challenge_rating) {
+            const xp = CR_XP_MAP[item.challenge_rating];
+            badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">CR ${item.challenge_rating}</span>`;
+            if (xp !== undefined) badges += `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">${xp.toLocaleString()} XP</span>`;
+        }
     }
     return badges;
 }
@@ -538,13 +553,65 @@ async function openFormModal(editId) {
                 </div>
             </div>`;
     } else if (activeTab === 'wiki') {
+        // Widen modal for wiki editor
+        document.querySelector('#formModal > div').classList.remove('max-w-xl');
+        document.querySelector('#formModal > div').classList.add('max-w-5xl');
+
         formHtml = `
             <div class="space-y-4">
                 <div><label class="block text-xs text-gray-500 mb-1">หัวข้อ</label>
                     <input id="f_title" value="${item ? item.title : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="ชื่อหัวข้อ Wiki"></div>
-                <div><label class="block text-xs text-gray-500 mb-1">เนื้อหา (รองรับ Markdown)</label>
-                    <textarea id="f_content" rows="12" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-y font-mono text-sm" placeholder="# หัวข้อ\n\nเนื้อหา...">${item ? item.content || '' : ''}</textarea></div>
+
+                <!-- Markdown Toolbar -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex gap-1">
+                            <button type="button" id="wikiTabWrite" onclick="wikiSwitchTab('write')" class="px-3 py-1 rounded-lg text-xs font-medium bg-purple-600 text-white transition">✏️ เขียน</button>
+                            <button type="button" id="wikiTabPreview" onclick="wikiSwitchTab('preview')" class="px-3 py-1 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:text-white transition">👁️ Preview</button>
+                        </div>
+                        <span class="text-[10px] text-gray-600">รองรับ Markdown</span>
+                    </div>
+
+                    <!-- Toolbar -->
+                    <div id="wikiToolbar" class="flex flex-wrap gap-1 mb-2 p-2 bg-gray-800/60 rounded-xl border border-gray-700/50">
+                        <button type="button" onclick="wikiInsert('heading1')" class="wiki-tb-btn" title="Heading 1"><b>H1</b></button>
+                        <button type="button" onclick="wikiInsert('heading2')" class="wiki-tb-btn" title="Heading 2"><b>H2</b></button>
+                        <button type="button" onclick="wikiInsert('heading3')" class="wiki-tb-btn" title="Heading 3"><b>H3</b></button>
+                        <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                        <button type="button" onclick="wikiInsert('bold')" class="wiki-tb-btn" title="Bold"><b>B</b></button>
+                        <button type="button" onclick="wikiInsert('italic')" class="wiki-tb-btn" title="Italic"><i>I</i></button>
+                        <button type="button" onclick="wikiInsert('strikethrough')" class="wiki-tb-btn" title="Strikethrough"><s>S</s></button>
+                        <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                        <button type="button" onclick="wikiInsert('link')" class="wiki-tb-btn" title="Link">🔗</button>
+                        <button type="button" onclick="wikiInsert('image')" class="wiki-tb-btn" title="Image">🖼️</button>
+                        <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                        <button type="button" onclick="wikiInsert('ul')" class="wiki-tb-btn" title="Bulleted List">• List</button>
+                        <button type="button" onclick="wikiInsert('ol')" class="wiki-tb-btn" title="Numbered List">1. List</button>
+                        <button type="button" onclick="wikiInsert('quote')" class="wiki-tb-btn" title="Quote">❝ Quote</button>
+                        <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                        <button type="button" onclick="wikiInsert('code')" class="wiki-tb-btn" title="Code Block">⌨️ Code</button>
+                        <button type="button" onclick="wikiInsert('table')" class="wiki-tb-btn" title="Table">📊 Table</button>
+                        <button type="button" onclick="wikiInsert('hr')" class="wiki-tb-btn" title="Horizontal Rule">— HR</button>
+                    </div>
+
+                    <!-- Split Pane -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="wikiEditorContainer">
+                        <!-- Write Pane -->
+                        <div id="wikiWritePane">
+                            <textarea id="f_content" oninput="wikiUpdatePreview()" class="w-full h-[450px] px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-none font-mono text-sm leading-relaxed" placeholder="# หัวข้อ\n\nเขียนเนื้อหาด้วย Markdown...">${item ? item.content || '' : ''}</textarea>
+                        </div>
+                        <!-- Preview Pane -->
+                        <div id="wikiPreviewPane">
+                            <div id="wikiPreview" class="h-[450px] overflow-y-auto px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700/50 prose prose-invert prose-sm max-w-none">
+                                <p class="text-gray-500 italic">เริ่มพิมพ์เพื่อดู Preview...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>`;
+
+        // Need to set up preview after render
+        setTimeout(() => wikiUpdatePreview(), 50);
     } else if (activeTab === 'loot_tables') {
         formHtml = `
             <div class="space-y-4">
@@ -564,8 +631,13 @@ async function openFormModal(editId) {
                         <input id="f_monster_type" value="${item ? item.monster_type || '' : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="Beast, Dragon, Undead..."></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs text-gray-500 mb-1">Challenge Rating / XP</label>
-                        <input id="f_challenge_rating" value="${item ? item.challenge_rating || '' : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="เช่น 1/4, 5, 20"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1">Challenge Rating</label>
+                        <select id="f_challenge_rating" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition">
+                            <option value="">-- เลือก CR --</option>
+                            ${Object.entries(CR_XP_MAP).map(([cr, xp]) =>
+            `<option value="${cr}" ${item && item.challenge_rating === cr ? 'selected' : ''}>CR ${cr} (${xp.toLocaleString()} XP)</option>`
+        ).join('')}
+                        </select></div>
                     <div><label class="block text-xs text-gray-500 mb-1">URL รูปภาพ</label>
                         <input id="f_image_url" value="${item ? item.image_url || '' : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="https://..."></div>
                 </div>
@@ -639,6 +711,10 @@ function closeFormModal() {
     const modal = document.getElementById('formModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    // Reset modal width (wiki makes it wider)
+    const inner = document.querySelector('#formModal > div');
+    inner.classList.remove('max-w-5xl');
+    inner.classList.add('max-w-xl');
 }
 
 // =====================================================
@@ -941,4 +1017,87 @@ function handleSearch() {
 async function logout() {
     await supabase.auth.signOut();
     window.location.href = 'index.html';
+}
+
+// =====================================================
+// Wiki Editor Helpers
+// =====================================================
+function wikiUpdatePreview() {
+    const textarea = document.getElementById('f_content');
+    const preview = document.getElementById('wikiPreview');
+    if (!textarea || !preview) return;
+
+    const content = textarea.value;
+    if (!content.trim()) {
+        preview.innerHTML = '<p class="text-gray-500 italic">เริ่มพิมพ์เพื่อดู Preview...</p>';
+        return;
+    }
+
+    if (typeof marked !== 'undefined') {
+        preview.innerHTML = marked.parse(content);
+    } else {
+        preview.innerHTML = `<pre class="whitespace-pre-wrap">${content}</pre>`;
+    }
+}
+
+function wikiSwitchTab(tab) {
+    const writeBtn = document.getElementById('wikiTabWrite');
+    const previewBtn = document.getElementById('wikiTabPreview');
+    const writePane = document.getElementById('wikiWritePane');
+    const previewPane = document.getElementById('wikiPreviewPane');
+    const toolbar = document.getElementById('wikiToolbar');
+    const container = document.getElementById('wikiEditorContainer');
+    if (!writeBtn || !previewBtn) return;
+
+    if (tab === 'write') {
+        writeBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-purple-600 text-white transition';
+        previewBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:text-white transition';
+        writePane.style.display = '';
+        toolbar.style.display = '';
+        container.classList.add('lg:grid-cols-2');
+        container.classList.remove('grid-cols-1-only');
+    } else {
+        previewBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-purple-600 text-white transition';
+        writeBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:text-white transition';
+        writePane.style.display = 'none';
+        toolbar.style.display = 'none';
+        container.classList.remove('lg:grid-cols-2');
+        wikiUpdatePreview();
+    }
+}
+
+function wikiInsert(type) {
+    const textarea = document.getElementById('f_content');
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    let insert = '';
+    let cursorOffset = 0;
+
+    switch (type) {
+        case 'heading1': insert = `# ${selected || 'หัวข้อ'}\n`; cursorOffset = 2; break;
+        case 'heading2': insert = `## ${selected || 'หัวข้อ'}\n`; cursorOffset = 3; break;
+        case 'heading3': insert = `### ${selected || 'หัวข้อ'}\n`; cursorOffset = 4; break;
+        case 'bold': insert = `**${selected || 'ข้อความหนา'}**`; cursorOffset = 2; break;
+        case 'italic': insert = `*${selected || 'ข้อความเอียง'}*`; cursorOffset = 1; break;
+        case 'strikethrough': insert = `~~${selected || 'ข้อความขีดฆ่า'}~~`; cursorOffset = 2; break;
+        case 'link': insert = `[${selected || 'ข้อความ'}](url)`; cursorOffset = 1; break;
+        case 'image': insert = `![${selected || 'คำอธิบาย'}](url)`; cursorOffset = 2; break;
+        case 'ul': insert = `\n- ${selected || 'รายการ'}\n- รายการ\n- รายการ\n`; cursorOffset = 3; break;
+        case 'ol': insert = `\n1. ${selected || 'รายการ'}\n2. รายการ\n3. รายการ\n`; cursorOffset = 4; break;
+        case 'quote': insert = `\n> ${selected || 'ข้อความอ้างอิง'}\n`; cursorOffset = 3; break;
+        case 'code': insert = `\n\`\`\`\n${selected || 'code here'}\n\`\`\`\n`; cursorOffset = 4; break;
+        case 'table': insert = `\n| หัวข้อ 1 | หัวข้อ 2 | หัวข้อ 3 |\n|----------|----------|----------|\n| ข้อมูล 1 | ข้อมูล 2 | ข้อมูล 3 |\n`; cursorOffset = 0; break;
+        case 'hr': insert = `\n---\n`; cursorOffset = 0; break;
+    }
+
+    textarea.value = textarea.value.substring(0, start) + insert + textarea.value.substring(end);
+    textarea.focus();
+
+    const newPos = start + (selected ? insert.length : cursorOffset);
+    textarea.selectionStart = textarea.selectionEnd = newPos;
+
+    wikiUpdatePreview();
 }
