@@ -1,6 +1,8 @@
 // Database of Ingredients
 const INGREDIENTS_DB = [
     { name: "Boon Shard", combat: 0, utility: 0, whimsy: 0, rarity: "VR" },
+    { name: "ชั่วโมงเล่นสำหรับตัวละครตามระดับ Tier (4, 6, 8, 10, 12)", combat: 0, utility: 0, whimsy: 0, rarity: "VR" },
+    { name: "Tier x 25 Favor สำหรับตัวละคร", combat: 0, utility: 0, whimsy: 0, rarity: "VR" },
     { name: "Amber", combat: 9, utility: 5, whimsy: 4, rarity: "C" },
     { name: "Apper Carrot", combat: 0, utility: 3, whimsy: 1, rarity: "C" },
     { name: "Bamboo", combat: 3, utility: 3, whimsy: 3, rarity: "C" },
