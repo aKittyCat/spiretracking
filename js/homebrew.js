@@ -478,8 +478,9 @@ function openDetailModal(id) {
 
     // Recipe data
     if (activeTab === 'recipes' && item.recipe_data) {
+        const recipeRendered = typeof marked !== 'undefined' ? marked.parse(item.recipe_data) : item.recipe_data;
         body += `<div class="mb-4"><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">สูตรคราฟต์</h4>
-            <div class="bg-gray-800/50 rounded-xl p-4 text-sm text-gray-300 whitespace-pre-wrap">${item.recipe_data}</div></div>`;
+            <div class="bg-gray-800/50 rounded-xl p-4 prose prose-invert prose-sm max-w-none">${recipeRendered}</div></div>`;
     }
 
     // Content (markdown)
@@ -673,8 +674,8 @@ async function openFormModal(editId) {
                 </div>
                 <div><label class="block text-xs text-gray-500 mb-1">คำอธิบาย</label>
                     <textarea id="f_description" rows="2" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-none" placeholder="คำอธิบาย">${item ? item.description || '' : ''}</textarea></div>
-                <div><label class="block text-xs text-gray-500 mb-1">สูตรคราฟต์</label>
-                    <textarea id="f_recipe_data" rows="4" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-y font-mono text-sm" placeholder="วัสดุ: ...">${item ? item.recipe_data || '' : ''}</textarea></div>
+                <div><label class="block text-xs text-gray-500 mb-1">สูตรคราฟต์ (รองรับ Markdown)</label>
+                    <textarea id="f_recipe_data" rows="4" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition resize-y font-mono text-sm" placeholder="สูตรคราฟต์ (รองรับ Markdown)">${item ? item.recipe_data || '' : ''}</textarea></div>
                 <div><label class="block text-xs text-gray-500 mb-1">URL รูปภาพ</label>
                     <input id="f_image_url" value="${item ? item.image_url || '' : ''}" class="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-purple-500 outline-none transition" placeholder="https://..."></div>
                 <div><label class="block text-xs text-gray-500 mb-1">เนื้อหา (รองรับ Markdown)</label>
@@ -683,7 +684,7 @@ async function openFormModal(editId) {
     } else {
         // Generic: Races, Classes, Items, Skills
         const hasCategory = activeTab === 'items' || activeTab === 'skills';
-        const hasImage = activeTab !== 'skills';
+        const hasImage = true;
         formHtml = `
             <div class="space-y-4">
                 <div class="${hasCategory ? 'grid grid-cols-2 gap-4' : ''}">
@@ -1181,8 +1182,11 @@ function updateFormPreview() {
     // Recipe data
     if (activeTab === 'recipes') {
         const recipe = val('f_recipe_data');
-        if (recipe) html += `<div class="mt-3"><div class="text-[10px] text-gray-500 uppercase font-bold mb-1">สูตรคราฟต์</div>
-            <div class="bg-gray-800/50 rounded-lg p-3 text-xs text-gray-300 whitespace-pre-wrap">${recipe}</div></div>`;
+        if (recipe) {
+            const recipeHtml = typeof marked !== 'undefined' ? marked.parse(recipe) : `<pre class="whitespace-pre-wrap">${recipe}</pre>`;
+            html += `<div class="mt-3"><div class="text-[10px] text-gray-500 uppercase font-bold mb-1">สูตรคราฟต์</div>
+            <div class="bg-gray-800/50 rounded-lg p-3 prose prose-invert prose-sm max-w-none">${recipeHtml}</div></div>`;
+        }
     }
 
     // Markdown content
@@ -1301,6 +1305,7 @@ function mdApplyFormat(textarea, type) {
         case 'code': before = '`'; after = '`'; placeholder = 'code'; break;
         case 'quote': before = '\n> '; after = '\n'; placeholder = 'ข้อความอ้างอิง'; break;
         case 'heading2': before = '\n## '; after = '\n'; placeholder = 'หัวข้อ'; break;
+        case 'table': before = '\n| หัวข้อ 1 | หัวข้อ 2 | หัวข้อ 3 |\n|----------|----------|----------|\n| '; after = ' | ข้อมูล 2 | ข้อมูล 3 |\n'; placeholder = 'ข้อมูล 1'; break;
         default: return;
     }
 
@@ -1349,6 +1354,7 @@ function injectMdToolbars() {
             <button type="button" class="md-tb-btn" title="Link (Ctrl+K)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'link')">🔗</button>
             <button type="button" class="md-tb-btn" title="Code" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'code')">⌨️</button>
             <button type="button" class="md-tb-btn" title="Quote" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'quote')">❝</button>
+            <button type="button" class="md-tb-btn" title="Table" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'table')">📊</button>
             <div class="md-tb-sep"></div>
             <button type="button" class="md-tb-btn" title="Heading" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'heading2')"><b>H</b></button>
         `;
