@@ -573,7 +573,7 @@ async function openFormModal(editId) {
                     </div>
 
                     <!-- Toolbar -->
-                    <div id="wikiToolbar" class="flex flex-wrap gap-1 mb-2 p-2 bg-gray-800/60 rounded-xl border border-gray-700/50">
+                    <div id="wikiToolbar" class="flex flex-wrap gap-1 mb-2 p-2 bg-gray-800/60 rounded-xl border border-gray-700/50" onmousedown="event.preventDefault()">
                         <button type="button" onclick="wikiInsert('heading1')" class="wiki-tb-btn" title="Heading 1"><b>H1</b></button>
                         <button type="button" onclick="wikiInsert('heading2')" class="wiki-tb-btn" title="Heading 2"><b>H2</b></button>
                         <button type="button" onclick="wikiInsert('heading3')" class="wiki-tb-btn" title="Heading 3"><b>H3</b></button>
@@ -1339,6 +1339,7 @@ function injectMdToolbars() {
 
         const toolbar = document.createElement('div');
         toolbar.className = 'md-inline-toolbar';
+        toolbar.onmousedown = (e) => e.preventDefault();
         toolbar.innerHTML = `
             <button type="button" class="md-tb-btn" title="Bold (Ctrl+B)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'bold')"><b>B</b></button>
             <button type="button" class="md-tb-btn" title="Italic (Ctrl+I)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'italic')"><i>I</i></button>
