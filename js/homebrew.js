@@ -1332,6 +1332,7 @@ function isMarkdownTextarea(el) {
 function injectMdToolbars() {
     const formBody = document.getElementById('formBody');
     if (!formBody) return;
+    if (activeTab === 'wiki') return; // Wiki has its own toolbar
 
     formBody.querySelectorAll('textarea').forEach(ta => {
         if (!isMarkdownTextarea(ta)) return;
