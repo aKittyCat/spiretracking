@@ -1322,7 +1322,7 @@ function mdApplyFormat(textarea, type) {
 }
 
 function isMarkdownTextarea(el) {
-    const mdIds = ['f_content', 'f_description', 'f_recipe_data'];
+    const mdIds = ['f_content', 'f_recipe_data'];
     if (mdIds.includes(el.id)) return true;
     if (el.placeholder && el.placeholder.includes('Markdown')) return true;
     return false;
