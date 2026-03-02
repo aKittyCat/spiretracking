@@ -257,6 +257,51 @@
             transform: scale(0.93);
             background: rgba(139, 92, 246, 0.25);
         }
+
+        /* Inline markdown toolbar */
+        .md-inline-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 0.25rem 0.35rem;
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-bottom: none;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+
+        .md-inline-toolbar+textarea {
+            border-radius: 0 0 0.75rem 0.75rem !important;
+        }
+
+        .md-tb-btn {
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.12s;
+            min-width: 22px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .md-tb-btn:hover {
+            color: #e5e7eb;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .md-tb-btn:active {
+            transform: scale(0.9);
+        }
+
+        .md-tb-sep {
+            width: 1px;
+            margin: 0.15rem 0.1rem;
+            background: rgba(75, 85, 99, 0.4);
+        }
     </style>
 </head>
 
@@ -426,6 +471,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- ==================== SCRIPTS ==================== -->
     <script src="js/homebrew.js"></script>

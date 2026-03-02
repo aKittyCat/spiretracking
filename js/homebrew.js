@@ -733,9 +733,11 @@ async function openFormModal(editId) {
                 });
             }
             updateFormPreview();
+            injectMdToolbars();
         }, 50);
     } else {
         body.innerHTML = formHtml;
+        setTimeout(() => injectMdToolbars(), 50);
     }
 
     document.getElementById('formSaveBtn').onclick = () => saveForm(editId);
@@ -1280,3 +1282,94 @@ function wikiInsert(type) {
 
     wikiUpdatePreview();
 }
+
+// =====================================================
+// Inline Markdown Toolbar & Keyboard Shortcuts
+// =====================================================
+function mdApplyFormat(textarea, type) {
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    let before = '', after = '', placeholder = '';
+
+    switch (type) {
+        case 'bold': before = '**'; after = '**'; placeholder = 'ข้อความหนา'; break;
+        case 'italic': before = '*'; after = '*'; placeholder = 'ข้อความเอียง'; break;
+        case 'strikethrough': before = '~~'; after = '~~'; placeholder = 'ข้อความขีดฆ่า'; break;
+        case 'link': before = '['; after = '](url)'; placeholder = 'ข้อความ'; break;
+        case 'code': before = '`'; after = '`'; placeholder = 'code'; break;
+        case 'quote': before = '\n> '; after = '\n'; placeholder = 'ข้อความอ้างอิง'; break;
+        case 'heading2': before = '\n## '; after = '\n'; placeholder = 'หัวข้อ'; break;
+        default: return;
+    }
+
+    const content = selected || placeholder;
+    const newText = before + content + after;
+    textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+    textarea.focus();
+
+    if (selected) {
+        textarea.selectionStart = start;
+        textarea.selectionEnd = start + newText.length;
+    } else {
+        textarea.selectionStart = start + before.length;
+        textarea.selectionEnd = start + before.length + placeholder.length;
+    }
+
+    // Trigger preview updates
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function isMarkdownTextarea(el) {
+    const mdIds = ['f_content', 'f_description', 'f_recipe_data'];
+    if (mdIds.includes(el.id)) return true;
+    if (el.placeholder && el.placeholder.includes('Markdown')) return true;
+    return false;
+}
+
+// Inject inline toolbars above all markdown textareas in the form
+function injectMdToolbars() {
+    const formBody = document.getElementById('formBody');
+    if (!formBody) return;
+
+    formBody.querySelectorAll('textarea').forEach(ta => {
+        if (!isMarkdownTextarea(ta)) return;
+        if (ta.previousElementSibling && ta.previousElementSibling.classList.contains('md-inline-toolbar')) return;
+
+        const toolbar = document.createElement('div');
+        toolbar.className = 'md-inline-toolbar';
+        toolbar.innerHTML = `
+            <button type="button" class="md-tb-btn" title="Bold (Ctrl+B)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'bold')"><b>B</b></button>
+            <button type="button" class="md-tb-btn" title="Italic (Ctrl+I)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'italic')"><i>I</i></button>
+            <button type="button" class="md-tb-btn" title="Strikethrough (Ctrl+D)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'strikethrough')"><s>S</s></button>
+            <div class="md-tb-sep"></div>
+            <button type="button" class="md-tb-btn" title="Link (Ctrl+K)" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'link')">🔗</button>
+            <button type="button" class="md-tb-btn" title="Code" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'code')">⌨️</button>
+            <button type="button" class="md-tb-btn" title="Quote" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'quote')">❝</button>
+            <div class="md-tb-sep"></div>
+            <button type="button" class="md-tb-btn" title="Heading" onclick="mdApplyFormat(this.closest('.md-inline-toolbar').nextElementSibling, 'heading2')"><b>H</b></button>
+        `;
+        ta.parentNode.insertBefore(toolbar, ta);
+    });
+}
+
+// Keyboard shortcuts for markdown textareas
+document.addEventListener('keydown', (e) => {
+    const active = document.activeElement;
+    if (!active || active.tagName !== 'TEXTAREA' || !isMarkdownTextarea(active)) return;
+
+    if (e.ctrlKey || e.metaKey) {
+        let type = null;
+        switch (e.key.toLowerCase()) {
+            case 'b': type = 'bold'; break;
+            case 'i': type = 'italic'; break;
+            case 'd': type = 'strikethrough'; break;
+            case 'k': type = 'link'; break;
+        }
+        if (type) {
+            e.preventDefault();
+            mdApplyFormat(active, type);
+        }
+    }
+});
