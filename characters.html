@@ -399,7 +399,9 @@
                     'Tier 5': 'from-amber-400 to-amber-600'
                 }[tier] || 'from-gray-500 to-gray-700';
 
-                // Card Template - Enhanced Design
+                const avatarId = `avatar-${c.id}`;
+
+                // Card Template - Enhanced Design with Avatar
                 list.innerHTML += `
           <div class="glass-panel rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1.5 border border-gray-700/50 hover:border-indigo-500/30 relative">
              
@@ -409,12 +411,12 @@
              <!-- Header Section -->
              <div class="p-5 pb-4 relative">
                 <div class="flex items-start gap-4">
-                    <!-- Avatar with tier-colored gradient -->
-                    <div class="relative">
-                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-xl font-bold text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
+                    <!-- Avatar -->
+                    <div class="relative" id="${avatarId}">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-xl font-bold text-white shadow-lg group-hover:scale-105 transition-transform duration-300 overflow-hidden char-avatar">
                             ${firstLetter}
                         </div>
-                        <div class="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border shadow-sm ${tierStyle}">
+                        <div class="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border shadow-sm ${tierStyle}" style="z-index:2;">
                             ${tier.replace('Tier ', 'T')}
                         </div>
                     </div>
@@ -491,6 +493,29 @@
              </div>
           </div>
         `;
+            });
+
+            // โหลด Avatar จาก SheetLink แบบ async
+            characters.forEach(c => {
+                if (!c.sheet_link) return;
+                const avatarId = `avatar-${c.id}`;
+                fetchAvatarUrl(c.sheet_link).then(url => {
+                    if (!url) return;
+                    const container = document.getElementById(avatarId);
+                    if (!container) return;
+                    const avatarDiv = container.querySelector('.char-avatar');
+                    if (!avatarDiv) return;
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = c.name;
+                    img.className = 'w-full h-full object-cover';
+                    img.style.cssText = 'opacity:0; transition: opacity 0.4s ease;';
+                    img.onload = () => {
+                        avatarDiv.textContent = '';
+                        avatarDiv.appendChild(img);
+                        requestAnimationFrame(() => img.style.opacity = '1');
+                    };
+                });
             });
         }
 
