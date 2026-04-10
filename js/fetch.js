@@ -12,15 +12,19 @@ function extractCharacterId(url) {
 }
 
 /**
- * ดึงข้อมูลตัวละครจาก D&D Beyond API ผ่าน CORS proxy
+ * ดึงข้อมูลตัวละครจาก D&D Beyond API
+ * - Production (Vercel): ใช้ /api/ddb-proxy (serverless function ของเราเอง)
+ * - Localhost: ใช้ corsproxy.io เป็น fallback
  * @param {string} characterId - ID ของตัวละคร
  * @returns {Promise<object|null>} - ข้อมูลตัวละคร หรือ null ถ้าล้มเหลว
  */
 async function fetchCharacterData(characterId) {
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(
-    `https://character-service.dndbeyond.com/character/v5/character/${characterId}`
-  )}`;
-  const res = await fetch(proxyUrl);
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const url = isLocal
+    ? `https://corsproxy.io/?${encodeURIComponent(`https://character-service.dndbeyond.com/character/v5/character/${characterId}`)}`
+    : `/api/ddb-proxy?id=${characterId}`;
+
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch');
   const json = await res.json();
   if (!json.success || !json.data) return null;
