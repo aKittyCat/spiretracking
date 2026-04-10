@@ -160,13 +160,21 @@
                             </button>
                         </div>
 
-                        <div class="mb-5">
-                            <h2 class="text-4xl font-bold text-white tracking-tight mb-2 leading-none" id="charName">...
-                            </h2>
-                            <div class="flex items-center gap-2 text-sm text-gray-400">
-                                <span id="charRace" class="text-indigo-300 font-medium">...</span>
-                                <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
-                                <span id="charClass">...</span>
+                        <!-- Name + Avatar Row -->
+                        <div class="flex items-center gap-4 mb-5">
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-4xl font-bold text-white tracking-tight mb-2 leading-none"
+                                    id="charName">...
+                                </h2>
+                                <div class="flex items-center gap-2 text-sm text-gray-400">
+                                    <span id="charRace" class="text-indigo-300 font-medium">...</span>
+                                    <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                    <span id="charClass">...</span>
+                                </div>
+                            </div>
+                            <div id="charAvatar"
+                                class="w-20 h-20 flex-shrink-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center text-3xl font-bold text-white shadow-xl overflow-hidden ring-2 ring-indigo-500/30 ring-offset-2 ring-offset-gray-900 transition-all duration-300 hover:ring-indigo-400/50 hover:scale-[1.03]">
+                                ...
                             </div>
                         </div>
 
@@ -616,6 +624,7 @@
     </div>
 
     <script src="/js/utils.js"></script>
+    <script src="/js/fetch.js"></script>
     <script>
         let currentUser = null;
         let isAdmin = false;
@@ -711,6 +720,26 @@
             const c = currentCharData;
             document.getElementById('charName').textContent = c.name;
             document.getElementById('charPets').textContent = c.pets || 'None';
+
+            // Avatar — ใส่ตัวอักษรก่อน แล้วโหลดรูปจาก SheetLink (async)
+            const avatarEl = document.getElementById('charAvatar');
+            const firstLetter = c.name.charAt(0).toUpperCase();
+            avatarEl.textContent = firstLetter;
+            if (c.sheet_link) {
+                fetchAvatarUrl(c.sheet_link).then(url => {
+                    if (!url) return;
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = c.name;
+                    img.className = 'w-full h-full object-cover';
+                    img.style.cssText = 'opacity:0; transition: opacity 0.5s ease;';
+                    img.onload = () => {
+                        avatarEl.textContent = '';
+                        avatarEl.appendChild(img);
+                        requestAnimationFrame(() => img.style.opacity = '1');
+                    };
+                });
+            }
 
             // Alignment Style with color coding
             const alignEl = document.getElementById('charAlignment');
