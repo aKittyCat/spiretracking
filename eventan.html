@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@300;400;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <title>The Spire Tower Anniversary Event</title>
+    <style>
+        :root {
+            --gold: #c5a059;
+            --gold-light: #e8d5a3;
+            --bg-dark: #0a0a0c;
+            --bg-card: rgba(31, 41, 55, 0.7);
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--bg-dark);
+            color: #e0e0e0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+
+        .hero-bg {
+            background-image: linear-gradient(to bottom, rgba(10, 10, 12, 0.5), rgba(10, 10, 12, 0.95)),
+                url('https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/bg/Spire_Tower.png');
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gold-glow {
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.5), 0 0 40px rgba(197, 160, 89, 0.2);
+        }
+
+        .tab-btn {
+            position: relative;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            right: 15%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: #ccc;
+        }
+
+        .hidden-page {
+            display: none;
+        }
+
+        .reward-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .reward-table th {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.3), rgba(197, 160, 89, 0.1));
+            color: var(--gold-light);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(197, 160, 89, 0.3);
+        }
+
+        .reward-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .reward-table tr:hover td {
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        .reward-table .pts {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .stat-block {
+            font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+        }
+
+        .stat-block .stat-header {
+            background: linear-gradient(135deg, #1a3a5c, #0d2440);
+            border: 2px solid #4a90c4;
+        }
+
+        .stat-block .stat-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .stat-block .stat-cell {
+            background: rgba(74, 144, 196, 0.1);
+            border: 1px solid rgba(74, 144, 196, 0.3);
+            border-radius: 8px;
+            padding: 6px 4px;
+        }
+
+        .condition-card {
+            background: rgba(197, 160, 89, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(to bottom, rgba(10, 10, 12, 0.95), transparent);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .float-anim {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, var(--gold), #fff, var(--gold));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+
+        .tracker-card {
+            transition: all 0.3s ease;
+        }
+
+        .tracker-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.15);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav-container flex justify-between items-center">
+        <div class="flex space-x-2 sm:space-x-4">
+            <button onclick="switchPage('info')" id="btn-info" class="tab-btn active text-sm">
+                <i class="fa-solid fa-scroll mr-1"></i> กิจกรรม
+            </button>
+            <button onclick="switchPage('tracker')" id="btn-tracker" class="tab-btn text-sm text-gray-400">
+                <i class="fa-solid fa-chart-line mr-1"></i> ติดตามคะแนน
+            </button>
+        </div>
+        <button onclick="window.location.href='characters.html'"
+            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-yellow-600">
+            <i class="fa-solid fa-home mr-1"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+        </button>
+    </nav>
+
+    <div class="hero-bg px-4 sm:px-6 pb-20">
+
+        <!-- Header -->
+        <header class="text-center mt-28 mb-10">
+            <p class="text-sm uppercase tracking-[6px] text-gray-400 mb-3">🏰 The Spire Tower</p>
+            <h1 class="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 shimmer-text gold-glow">Anniversary Event</h1>
+            <div class="flex items-center justify-center gap-3 mt-4">
+                <div class="h-[1px] w-16 bg-gradient-to-r from-transparent to-yellow-600"></div>
+                <span class="text-yellow-500 text-sm font-semibold tracking-wider">🎉 ครบรอบ 1 ปี</span>
+                <div class="h-[1px] w-16 bg-gradient-to-l from-transparent to-yellow-600"></div>
+            </div>
+            <p class="text-gray-400 mt-3 text-sm">11 กรกฎาคม 2026 — 26 กรกฎาคม 2026</p>
+        </header>
+
+        <!-- ==================== PAGE 1: EVENT INFO ==================== -->
+        <div id="page-info" class="w-full max-w-5xl space-y-8">
+
+            <!-- Event Period Banner -->
+            <div class="glass-panel rounded-2xl p-6 border-t-4 border-t-yellow-500/60 text-center">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div class="text-4xl float-anim">🎊</div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-bold text-white" style="font-family:'Cinzel',serif;">
+                            กิจกรรมสะสมแต้ม</h2>
+                        <p class="text-gray-300 mt-1 text-sm leading-relaxed max-w-2xl">
+                            ผู้เล่นสามารถสะสมแต้มเพื่อนำไปใช้แลกรางวัลต่างๆ ภายในระยะเวลาของกิจกรรมได้</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Points System -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Player Points -->
+                <div class="glass-panel rounded-2xl p-6 hover:border-emerald-500/30 transition-colors">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-2xl">🎮
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white" style="font-family:'Cinzel',serif;">Player</h3>
+                            <p class="text-xs text-gray-400">ผู้เล่นทั่วไป</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div
+                            class="flex items-center gap-3 bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+                            <span class="text-emerald-400 text-2xl font-bold">1</span>
+                            <span class="text-gray-300 text-sm">แต้ม / เซสชั่นที่ลงเล่น</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-3 bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+                            <span class="text-emerald-400 text-2xl font-bold">+7</span>
+                            <span class="text-gray-300 text-sm">แต้มโบนัส ทุกๆ 10 เซสชั่น</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- DM Points -->
+                <div class="glass-panel rounded-2xl p-6 hover:border-purple-500/30 transition-colors">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-2xl">📖
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white" style="font-family:'Cinzel',serif;">Dungeon Master
+                            </h3>
+                            <p class="text-xs text-gray-400">ผู้จัดเซสชั่น (DM)</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div
+                            class="flex items-center gap-3 bg-purple-500/10 rounded-xl p-3 border border-purple-500/20">
+                            <span class="text-purple-400 text-2xl font-bold">3</span>
+                            <span class="text-gray-300 text-sm">แต้ม / เซสชั่นที่จัด</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-3 bg-purple-500/10 rounded-xl p-3 border border-purple-500/20">
+                            <span class="text-purple-400 text-2xl font-bold">+10</span>
+                            <span class="text-gray-300 text-sm">แต้มโบนัส ทุกๆ 10 เซสชั่น</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conditions -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-yellow-400 mb-5 flex items-center gap-2"
+                    style="font-family:'Cinzel',serif;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> เงื่อนไขในการสะสมแต้ม
+                </h2>
+                <div class="space-y-3">
+                    <div class="condition-card"><span class="text-yellow-400 font-bold mr-2">1.</span>
+                        จำนวนชั่วโมงในเซสชั่นจะต้องไม่ต่ำกว่า <span class="text-white font-bold">3 ชั่วโมง</span></div>
+                    <div class="condition-card"><span class="text-yellow-400 font-bold mr-2">2.</span>
+                        การสะสมแต้มจะนับตาม<span class="text-white font-bold">ตัวผู้เล่น</span> ไม่นับแยกตามตัวละคร
+                    </div>
+                    <div class="condition-card"><span class="text-yellow-400 font-bold mr-2">3.</span>
+                        การลงเล่นหรือจัดเซสชั่นที่ระยะเวลา <span class="text-white font-bold">6
+                            ชั่วโมงหรือมากกว่า</span> จะถูกนับเป็น 2 เซสชั่นสำหรับกิจกรรม</div>
+                    <div class="condition-card"><span class="text-yellow-400 font-bold mr-2">4.</span> กิจกรรม <span
+                            class="text-white font-bold">Reward Action Surge</span> สำหรับ DM
+                        จะไม่สามารถนำมาเพิ่มแต้มให้กับกิจกรรมได้</div>
+                    <div class="condition-card"><span class="text-yellow-400 font-bold mr-2">5.</span>
+                        ในการแลกรางวัลแต่ละครั้ง ผู้เล่นจะต้องทำการลงบันทึกในช่อง <span
+                            class="text-white font-bold">#กิจกรรมครบรอบ1ปี</span></div>
+                </div>
+            </div>
+
+            <!-- Rewards Table -->
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <div
+                    class="p-6 border-b border-gray-700 bg-gradient-to-r from-yellow-900/20 via-transparent to-yellow-900/20">
+                    <h2 class="text-xl font-bold text-yellow-400 flex items-center gap-2"
+                        style="font-family:'Cinzel',serif;">
+                        <i class="fa-solid fa-gift"></i> รางวัลกิจกรรม
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="reward-table">
+                        <thead>
+                            <tr>
+                                <th class="rounded-tl-lg">รางวัลกิจกรรม</th>
+                                <th class="text-center">แต้มที่ต้องใช้</th>
+                                <th class="rounded-tr-lg">รายละเอียด</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-white font-medium">25 Favor x Tier ของตัวละคร</td>
+                                <td class="pts">5</td>
+                                <td class="text-gray-300">สำหรับตัวละคร 1 ตัว ผู้เล่นสามารถแลกได้สูงสุด 4 ครั้ง</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">สิทธิ์ลงชื่อ Reward Action Surge</td>
+                                <td class="pts">5</td>
+                                <td class="text-gray-300">สำหรับ DM เท่านั้น</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">ทอง 1,000 gp x Tier ของตัวละคร</td>
+                                <td class="pts">5</td>
+                                <td class="text-gray-300">สำหรับตัวละคร 1 ตัว ผู้เล่นสามารถแลกได้สูงสุด 4 ครั้ง</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">สิทธิ์เพิ่มรางวัลคูณ 2 สำหรับเซสชั่นที่เล่น</td>
+                                <td class="pts">6</td>
+                                <td class="text-gray-300">สำหรับผู้เล่นไว้ใช้เมื่อรับรางวัลหลังจบเซสชั่น เท่านั้น</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">ทำให้ไอเทม 1 ชิ้นเป็น Sentience</td>
+                                <td class="pts">10</td>
+                                <td class="text-gray-300">ทอย 2d6 เพื่อสุ่ม Alignment ของไอเทม โดย<br>ลูกที่1 1-2 Lawful
+                                    3-4 Neutral 5-6 Chaotic<br>ลูกที่2 1-2 Good 3-4 Neutral 5-6 Evil<br>(สามารถใช้ 15
+                                    แต้มเพื่อเลือก Alignment ได้)</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">Boon Shard</td>
+                                <td class="pts">10</td>
+                                <td class="text-gray-300">สามารถแลกได้ 1 ครั้งเท่านั้น</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">Anniversary Familiar</td>
+                                <td class="pts">15</td>
+                                <td class="text-gray-300">ผู้เล่นสามารถเรียก Familiar ตัวนี้ได้เมื่อใช้เวทย์ Find
+                                    Familiar (รายละเอียดด้านล่าง)</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">Statuette of Saint Markovia</td>
+                                <td class="pts">15</td>
+                                <td class="text-gray-300">สำหรับตัวละครที่เป็น Neutral หรือ Evil สามารถแลกได้ 1
+                                    ครั้งเท่านั้นและไม่สามารถขายหรือแลกเปลี่ยนได้</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium">สิทธิ์ในการรีสเปค</td>
+                                <td class="pts">20</td>
+                                <td class="text-gray-300">สิทธิ์หมดอายุวันที่ 31 ธันวาคม</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white font-medium bg-gradient-to-r from-yellow-900/30 to-transparent">
+                                    เพิ่ม Deity ใหม่ในเทอดอย</td>
+                                <td class="pts text-2xl">100</td>
+                                <td class="text-gray-300">ผู้เล่นและ DM สามารถรวมคะแนนกันเพื่อแลกรางวัลนี้ได้ โดย Deity
+                                    ที่ถูกเพิ่มมาจะมีผลพาวเวอร์ตามระดับให้ทันที โดยไม่ต้องรอให้เงื่อนไขครบ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Evorian Section -->
+            <div class="glass-panel rounded-2xl overflow-hidden border-t-4 border-t-blue-400/50">
+                <div
+                    class="p-6 border-b border-gray-700 bg-gradient-to-r from-blue-900/30 via-transparent to-blue-900/30">
+                    <h2 class="text-xl font-bold text-blue-300 flex items-center gap-2"
+                        style="font-family:'Cinzel',serif;">
+                        <i class="fa-solid fa-star"></i> Anniversary Familiar — Evorian, The Spire Starguide
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <!-- Evorian Image -->
+                        <div class="lg:w-1/3 flex flex-col items-center">
+                            <div class="relative group">
+                                <div
+                                    class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500">
+                                </div>
+                                <img src="pic/event/Evorian.png" alt="Evorian, The Spire Starguide"
+                                    class="relative w-full max-w-[300px] rounded-2xl border-2 border-blue-500/30 shadow-2xl">
+                            </div>
+                            <p class="text-center text-blue-300 font-bold mt-4 text-lg"
+                                style="font-family:'Cinzel',serif;">Evorian</p>
+                            <p class="text-center text-gray-400 text-xs">The Spire Starguide</p>
+                        </div>
+                        <!-- Stat Block -->
+                        <div class="lg:w-2/3 stat-block">
+                            <div class="stat-header rounded-xl p-5 space-y-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-blue-200">Evorian, The Spire Starguide</h3>
+                                    <p class="text-sm text-blue-300 italic">Tiny Celestial, Lawful Neutral</p>
+                                </div>
+                                <div class="h-[1px] bg-blue-500/30"></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                    <p><span class="text-blue-400 font-bold">Armor Class:</span> <span
+                                            class="text-white">13 (Natural Armor)</span></p>
+                                    <p><span class="text-blue-400 font-bold">Hit Points:</span> <span
+                                            class="text-white">7 (3d4)</span></p>
+                                    <p class="sm:col-span-2"><span class="text-blue-400 font-bold">Speed:</span> <span
+                                            class="text-white">10 ft., fly 30 ft. (hover)</span></p>
+                                </div>
+                                <div class="h-[1px] bg-blue-500/30"></div>
+                                <!-- Stats -->
+                                <div class="stat-row text-xs">
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">STR</div>
+                                        <div class="text-white font-bold">3 (-4)</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">DEX</div>
+                                        <div class="text-white font-bold">16 (+3)</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">CON</div>
+                                        <div class="text-white font-bold">11 (+0)</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">INT</div>
+                                        <div class="text-white font-bold">10 (+0)</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">WIS</div>
+                                        <div class="text-white font-bold">14 (+2)</div>
+                                    </div>
+                                    <div class="stat-cell">
+                                        <div class="text-blue-400 font-bold">CHA</div>
+                                        <div class="text-white font-bold">13 (+1)</div>
+                                    </div>
+                                </div>
+                                <div class="h-[1px] bg-blue-500/30"></div>
+                                <div class="space-y-1 text-sm">
+                                    <p><span class="text-blue-400 font-bold">Skills:</span> Perception +4, Stealth +5
+                                    </p>
+                                    <p><span class="text-blue-400 font-bold">Damage Resistances:</span> Radiant</p>
+                                    <p><span class="text-blue-400 font-bold">Condition Immunities:</span> Poisoned</p>
+                                    <p><span class="text-blue-400 font-bold">Senses:</span> Darkvision 60 ft., passive
+                                        Perception 14</p>
+                                    <p><span class="text-blue-400 font-bold">Languages:</span> Understands Common and
+                                        Celestial but can only communicate in a chime sound.</p>
+                                    <p><span class="text-blue-400 font-bold">Challenge:</span> 1/8</p>
+                                </div>
+                            </div>
+                            <!-- Traits -->
+                            <div class="mt-4 space-y-4">
+                                <h4
+                                    class="text-blue-400 font-bold text-sm uppercase tracking-wider border-b border-blue-500/30 pb-2">
+                                    Traits</h4>
+                                <div class="space-y-3 text-sm">
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Celestial Glow:</p>
+                                        <p class="text-gray-300">Evorian can shed Bright Light for 5 feet and Dim Light
+                                            for another 5 feet. (No action require)</p>
+                                    </div>
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Magic Resistance:</p>
+                                        <p class="text-gray-300">Evorian has Advantage for Saving Throws against spell
+                                            and magical effect.</p>
+                                    </div>
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Dimensional Sense:</p>
+                                        <p class="text-gray-300">Evorian can detect a hidden Portal or similar magical
+                                            effect in 30 feet radius.</p>
+                                    </div>
+                                </div>
+                                <h4
+                                    class="text-blue-400 font-bold text-sm uppercase tracking-wider border-b border-blue-500/30 pb-2 mt-6">
+                                    Actions</h4>
+                                <div class="space-y-3 text-sm">
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Star Spark:</p>
+                                        <p class="text-gray-300">Ranged Spell Attack: +5 to hit, range 20 ft., one
+                                            target. Hit: 2 (1d4) Radiant damage.</p>
+                                    </div>
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Spire's Guidance (3/Day):</p>
+                                        <p class="text-gray-300">Evorian grant an allies within 30 feet radius 1d4 for
+                                            their next ability check.</p>
+                                    </div>
+                                    <div class="bg-blue-900/20 rounded-lg p-3 border border-blue-500/20">
+                                        <p class="text-blue-300 font-bold">Spire Intervention (1/Day):</p>
+                                        <p class="text-gray-300">In a moment of grave danger, there is a <span
+                                                class="text-yellow-400 font-bold">1%</span> chance that Evorian will
+                                            intervene. Describe the assistance you seek; the DM chooses the nature of
+                                            the intervention (any spell effect is appropriate). If the Evorian
+                                            intervene, this feature is unavailable for 7 days. Otherwise, it resets in
+                                            24 hours.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PAGE 2: POINT TRACKER ==================== -->
+        <div id="page-tracker" class="hidden-page w-full max-w-5xl space-y-6">
+
+            <!-- Auth Notice -->
+            <div id="tracker-auth-notice" class="glass-panel rounded-2xl p-8 text-center">
+                <div class="text-4xl mb-3">🔐</div>
+                <p class="text-gray-300">กำลังตรวจสอบข้อมูลผู้ใช้...</p>
+                <div
+                    class="w-8 h-8 border-4 border-gray-600 border-t-yellow-500 rounded-full animate-spin mx-auto mt-4">
+                </div>
+            </div>
+
+            <!-- Tracker Content (hidden until auth) -->
+            <div id="tracker-content" style="display:none;" class="space-y-6">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass-panel rounded-2xl p-5 text-center tracker-card">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">เซสชั่นทั้งหมด (Player)</p>
+                        <p id="total-player-sessions" class="text-3xl font-bold text-emerald-400">0</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 text-center tracker-card">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">เซสชั่นทั้งหมด (DM)</p>
+                        <p id="total-dm-sessions" class="text-3xl font-bold text-purple-400">0</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 text-center tracker-card border-t-4 border-t-yellow-500/60">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">คะแนนรวม</p>
+                        <p id="total-points" class="text-3xl font-bold text-yellow-400">0</p>
+                    </div>
+                </div>
+
+                <!-- Admin: All Characters View -->
+                <div id="admin-section" style="display:none;">
+                    <div class="glass-panel rounded-2xl overflow-hidden">
+                        <div
+                            class="p-5 border-b border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gradient-to-r from-purple-900/20 to-transparent">
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2"
+                                style="font-family:'Cinzel',serif;">
+                                <i class="fa-solid fa-users-viewfinder text-purple-400"></i> ตัวละครทั้งหมด (Admin)
+                            </h2>
+                            <div class="relative">
+                                <input type="text" id="admin-search" placeholder="ค้นหาชื่อตัวละคร..."
+                                    oninput="filterAdminTable()"
+                                    class="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-xl focus:ring-2 focus:ring-purple-500 pl-9 pr-4 py-2 w-56">
+                                <i
+                                    class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-800/80">
+                                    <tr>
+                                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">
+                                            ชื่อตัวละคร</th>
+                                        <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">
+                                            Player Sessions</th>
+                                        <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">
+                                            DM Sessions</th>
+                                        <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">
+                                            Player Points</th>
+                                        <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">
+                                            DM Points</th>
+                                        <th
+                                            class="px-5 py-3 text-center text-xs font-semibold text-yellow-500 uppercase font-bold">
+                                            รวม</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-table-body" class="divide-y divide-gray-800"></tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div id="admin-pagination"
+                            class="flex items-center justify-between px-5 py-3 border-t border-gray-700 bg-gray-900/40">
+                            <span id="admin-page-info" class="text-xs text-gray-400"></span>
+                            <div class="flex gap-2">
+                                <button onclick="adminChangePage(-1)" id="admin-prev-btn"
+                                    class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-800 border border-gray-700 text-gray-300 hover:border-purple-500 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-chevron-left mr-1"></i>ก่อนหน้า
+                                </button>
+                                <button onclick="adminChangePage(1)" id="admin-next-btn"
+                                    class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-800 border border-gray-700 text-gray-300 hover:border-purple-500 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                                    ถัดไป<i class="fa-solid fa-chevron-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player: Character Breakdown -->
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <div class="p-5 border-b border-gray-700 bg-gradient-to-r from-emerald-900/20 to-transparent">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2"
+                            style="font-family:'Cinzel',serif;">
+                            <i class="fa-solid fa-list-check text-emerald-400"></i> <span
+                                id="char-breakdown-title">รายละเอียดเซสชั่นของฉัน</span>
+                        </h2>
+                    </div>
+                    <div id="char-breakdown" class="p-5 space-y-4">
+                        <p class="text-gray-500 text-center py-4 animate-pulse">กำลังโหลด...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-24 text-center text-xs text-gray-400 py-6 border-t border-gray-800 w-full max-w-4xl">
+            <p>&copy; 🏰 The Spire Tracking<br>Created by aKittyCat🐈. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // ======== TAB SWITCHING ========
+        function switchPage(page) {
+            const infoPage = document.getElementById('page-info');
+            const trackerPage = document.getElementById('page-tracker');
+            const btnInfo = document.getElementById('btn-info');
+            const btnTracker = document.getElementById('btn-tracker');
+
+            if (page === 'info') {
+                infoPage.style.display = 'block';
+                trackerPage.style.display = 'none';
+                btnInfo.classList.add('active'); btnInfo.classList.remove('text-gray-400');
+                btnTracker.classList.remove('active'); btnTracker.classList.add('text-gray-400');
+            } else {
+                infoPage.style.display = 'none';
+                trackerPage.style.display = 'block';
+                btnTracker.classList.add('active'); btnTracker.classList.remove('text-gray-400');
+                btnInfo.classList.remove('active'); btnInfo.classList.add('text-gray-400');
+                if (!trackerLoaded) loadTracker();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ======== POINT TRACKER LOGIC ========
+        const EVENT_START = '2026-07-11T00:00:00+07:00';
+        const EVENT_END = '2026-07-27T00:00:00+07:00'; // exclusive end
+        let trackerLoaded = false;
+        let currentUser = null;
+        let isAdmin = false;
+        let allPlayersData = [];
+
+        function countEventSessions(hours) {
+            if (hours < 3) return 0;
+            return hours >= 6 ? 2 : 1;
+        }
+
+        function calcPlayerPoints(sessions) {
+            return sessions + 7 * Math.floor(sessions / 10);
+        }
+        function calcDMPoints(sessions) {
+            return sessions * 3 + 10 * Math.floor(sessions / 10);
+        }
+
+        async function loadTracker() {
+            trackerLoaded = true;
+            const notice = document.getElementById('tracker-auth-notice');
+            const content = document.getElementById('tracker-content');
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    notice.innerHTML = `<div class="text-4xl mb-3">🔒</div><p class="text-gray-300">กรุณา<a href="index.html" class="text-yellow-400 underline ml-1">เข้าสู่ระบบ</a> เพื่อดูคะแนนของคุณ</p>`;
+                    return;
+                }
+                currentUser = session.user;
+
+                // Check admin
+                const { data: adminCheck } = await supabase.rpc('is_admin');
+                isAdmin = !!adminCheck;
+
+                // Fetch data
+                const [sessionsRes, dmLogsRes, charsRes, usersRes] = await Promise.all([
+                    supabase.from('sessions').select('*').gte('date', EVENT_START).lt('date', EVENT_END),
+                    supabase.from('dm_logs').select('*').gte('date', EVENT_START).lt('date', EVENT_END),
+                    supabase.from('characters').select('id, name, user_id, class, race'),
+                    isAdmin ? supabase.rpc('get_all_user_emails') : Promise.resolve({ data: [] })
+                ]);
+
+                const sessions = sessionsRes.data || [];
+                const dmLogs = dmLogsRes.data || [];
+                const chars = charsRes.data || [];
+                const userMap = {};
+                if (usersRes.data) usersRes.data.forEach(u => userMap[u.id] = u.email);
+
+                // Build per-user data
+                const usersMap = {};
+
+                // Player sessions: group by user_id through characters
+                sessions.forEach(s => {
+                    const char = chars.find(c => c.id === s.character_id);
+                    if (!char) return;
+                    const uid = char.user_id;
+                    if (!usersMap[uid]) usersMap[uid] = { playerSessions: 0, dmSessions: 0, chars: {} };
+                    const evtSess = countEventSessions(Number(s.hours) || 0);
+                    usersMap[uid].playerSessions += evtSess;
+                    // Track per character
+                    if (!usersMap[uid].chars[char.id]) usersMap[uid].chars[char.id] = { name: char.name, cls: char.class, race: char.race, playerSessions: 0, dmSessions: 0 };
+                    usersMap[uid].chars[char.id].playerSessions += evtSess;
+                });
+
+                // DM sessions: group by user_id through characters
+                dmLogs.forEach(d => {
+                    const char = chars.find(c => c.id === d.character_id);
+                    if (!char) return;
+                    const uid = char.user_id;
+                    if (!usersMap[uid]) usersMap[uid] = { playerSessions: 0, dmSessions: 0, chars: {} };
+                    const evtSess = countEventSessions(Number(d.hours) || 0);
+                    usersMap[uid].dmSessions += evtSess;
+                    // Track per character
+                    if (!usersMap[uid].chars[char.id]) usersMap[uid].chars[char.id] = { name: char.name, cls: char.class, race: char.race, playerSessions: 0, dmSessions: 0 };
+                    usersMap[uid].chars[char.id].dmSessions += evtSess;
+                });
+
+                // Render for current user
+                const myData = usersMap[currentUser.id] || { playerSessions: 0, dmSessions: 0, chars: {} };
+                const myPlayerPts = calcPlayerPoints(myData.playerSessions);
+                const myDMPts = calcDMPoints(myData.dmSessions);
+
+                document.getElementById('total-player-sessions').textContent = myData.playerSessions;
+                document.getElementById('total-dm-sessions').textContent = myData.dmSessions;
+                document.getElementById('total-points').textContent = myPlayerPts + myDMPts;
+
+                // Character breakdown
+                renderCharBreakdown(myData, currentUser.id, chars);
+
+                // Admin table — per character
+                if (isAdmin) {
+                    document.getElementById('admin-section').style.display = 'block';
+                    allPlayersData = [];
+                    Object.entries(usersMap).forEach(([uid, d]) => {
+                        Object.entries(d.chars).forEach(([charId, c]) => {
+                            const pPts = calcPlayerPoints(c.playerSessions);
+                            const dPts = calcDMPoints(c.dmSessions);
+                            allPlayersData.push({
+                                charId, name: c.name, race: c.race, cls: c.cls,
+                                email: userMap[uid] || uid,
+                                playerSessions: c.playerSessions, dmSessions: c.dmSessions,
+                                playerPts: pPts, dmPts: dPts,
+                                totalPts: pPts + dPts
+                            });
+                        });
+                    });
+                    allPlayersData.sort((a, b) => b.totalPts - a.totalPts);
+                    adminCurrentPage = 1;
+                    filterAdminTable();
+                }
+
+                notice.style.display = 'none';
+                content.style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                notice.innerHTML = `<div class="text-4xl mb-3">❌</div><p class="text-red-400">เกิดข้อผิดพลาด: ${err.message}</p>`;
+            }
+        }
+
+        function renderCharBreakdown(data, userId, allChars) {
+            const container = document.getElementById('char-breakdown');
+            const myChars = Object.values(data.chars);
+            if (myChars.length === 0) {
+                container.innerHTML = `<div class="text-center py-8"><p class="text-4xl mb-2">📭</p><p class="text-gray-400">ยังไม่มีเซสชั่นในช่วงกิจกรรม</p></div>`;
+                return;
+            }
+            const rows = myChars.map(c => {
+                const pPts = calcPlayerPoints(c.playerSessions);
+                const dPts = calcDMPoints(c.dmSessions);
+                return `
+                <tr class="hover:bg-gray-800/50 transition-colors">
+                    <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center text-white font-bold text-xs">${c.name.charAt(0)}</div>
+                            <div>
+                                <p class="text-white font-medium">${c.name}</p>
+                                <p class="text-xs text-gray-500">${c.race || ''} · ${c.cls || ''}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3 text-center text-emerald-400 font-bold">${c.playerSessions}</td>
+                    <td class="px-5 py-3 text-center text-purple-400 font-bold">${c.dmSessions}</td>
+                    <td class="px-5 py-3 text-center text-emerald-300">${pPts}</td>
+                    <td class="px-5 py-3 text-center text-purple-300">${dPts}</td>
+                    <td class="px-5 py-3 text-center text-yellow-400 font-bold text-lg">${pPts + dPts}</td>
+                </tr>`;
+            }).join('');
+            container.innerHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-800/80">
+                        <tr>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">ชื่อตัวละคร</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Player Sessions</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">DM Sessions</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Player Points</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">DM Points</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-yellow-500 uppercase font-bold">รวม</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">${rows}</tbody>
+                </table>
+            </div>`;
+        }
+
+        const ADMIN_PAGE_SIZE = 20;
+        let adminCurrentPage = 1;
+        let adminFilteredData = [];
+
+        function renderAdminTable(data, page) {
+            const tbody = document.getElementById('admin-table-body');
+            const totalPages = Math.max(1, Math.ceil(data.length / ADMIN_PAGE_SIZE));
+            if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
+            adminCurrentPage = page;
+
+            const start = (page - 1) * ADMIN_PAGE_SIZE;
+            const pageData = data.slice(start, start + ADMIN_PAGE_SIZE);
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">ไม่พบข้อมูล</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(p => `
+                    <tr class="hover:bg-gray-800/50 transition-colors">
+                        <td class="px-5 py-3">
+                            <div>
+                                <p class="text-white font-medium">${p.name}</p>
+                                <p class="text-xs text-gray-500">${p.race || ''} · ${p.cls || ''}</p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 text-center text-emerald-400 font-bold">${p.playerSessions}</td>
+                        <td class="px-5 py-3 text-center text-purple-400 font-bold">${p.dmSessions}</td>
+                        <td class="px-5 py-3 text-center text-emerald-300">${p.playerPts}</td>
+                        <td class="px-5 py-3 text-center text-purple-300">${p.dmPts}</td>
+                        <td class="px-5 py-3 text-center text-yellow-400 font-bold text-lg">${p.totalPts}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update pagination controls
+            document.getElementById('admin-page-info').textContent = `หน้า ${page} / ${totalPages} (${data.length} ตัวละคร)`;
+            document.getElementById('admin-prev-btn').disabled = page <= 1;
+            document.getElementById('admin-next-btn').disabled = page >= totalPages;
+        }
+
+        function filterAdminTable() {
+            const q = document.getElementById('admin-search').value.toLowerCase().trim();
+            adminFilteredData = q ? allPlayersData.filter(p => p.name.toLowerCase().includes(q)) : allPlayersData;
+            adminCurrentPage = 1;
+            renderAdminTable(adminFilteredData, 1);
+        }
+
+        function adminChangePage(delta) {
+            renderAdminTable(adminFilteredData, adminCurrentPage + delta);
+        }
+    </script>
+</body>
+
+</html>
