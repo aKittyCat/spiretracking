@@ -487,49 +487,47 @@
       try {
         console.log("🔄 Admin Loading: Fetching Raw Data...");
 
-        const [chars, sessions, dmlogs, golds, favors, users] = await Promise.all([
+        const [chars, charStats, sessions, dmlogs, golds, users] = await Promise.all([
           supabase.from('characters').select('*'),
-          supabase.from('sessions').select('*').order('created_at', { ascending: false }),
-          supabase.from('dm_logs').select('*'),
-          supabase.from('gold_logs').select('*'),
-          supabase.from('favor_logs').select('*'),
+          supabase.from('character_stats').select('character_id, total_hours, total_gold'),
+          supabase.from('sessions').select('*').order('created_at', { ascending: false }).limit(500),
+          supabase.from('dm_logs').select('*').order('created_at', { ascending: false }).limit(10000),
+          supabase.from('gold_logs').select('*').order('created_at', { ascending: false }).limit(10000),
           supabase.rpc('get_all_user_emails')
         ]);
 
         if (chars.error) throw chars.error;
+        if (charStats.error) throw charStats.error;
+
+        // Build a lookup map from character_stats by character id
+        const statMap = {};
+        (charStats.data || []).forEach(s => { statMap[s.character_id] = s; });
 
         const userMap = {};
         if (users.data) {
           users.data.forEach(u => userMap[u.id] = u.email);
         }
 
-        console.log(`✅ Loaded: ${chars.data.length} chars`);
+        const sessionsData = sessions.data || [];
+        const dmlogsData = dmlogs.data || [];
+        const goldsData = golds.data || [];
+
+        console.log(`✅ Loaded: ${chars.data.length} chars, ${charStats.data.length} stats`);
 
         const aggregatedChars = chars.data.map(c => {
-          const mySessions = sessions.data.filter(s => s.character_id === c.id);
-          const myDMs = dmlogs.data.filter(d => d.character_id === c.id);
-          const myGoldLogs = golds.data.filter(g => g.character_id === c.id);
+          const stat = statMap[c.id] || {};
 
-          // Sum Hours
-          const sessHours = mySessions.reduce((sum, s) => sum + (Number(s.hours) || 0), 0);
-          const dmHours = myDMs.reduce((sum, d) => sum + (Number(d.hours) || 0), 0);
-          const totalHours = sessHours + dmHours;
+          // ใช้ total_hours และ total_gold จาก characters_stat โดยตรง
+          const totalHours = Number(stat.total_hours) || 0;
+          const totalGold = Number(stat.total_gold) || 0;
 
-          // Sum Gold
-          const startGold = Number(c.gold_start) || 0;
-          const sessGold = mySessions.reduce((sum, s) => sum + (Number(s.auto_gold) || 0), 0);
-          const dmGold = myDMs.reduce((sum, d) => sum + (Number(d.auto_gold) || 0), 0);
-          const logGold = myGoldLogs.reduce((sum, g) => sum + (Number(g.amount) || 0), 0);
-          const totalGold = startGold + sessGold + dmGold + logGold;
-
-          // Level Calc
+          // Level Calc จาก total_hours ใน characters_stat
           const { level: currentLevel } = calculateCurrentLevel(c.level || 1, totalHours);
 
           return {
             ...c,
             calculated_level: currentLevel,
             total_gold_num: totalGold,
-            // Use created_at from DB, fallback to created_at
             create_date: c.created_at ? new Date(c.created_at) : new Date(0),
             user_email: userMap[c.user_id] || 'Unknown ID'
           };
@@ -541,14 +539,14 @@
         // Apply sorting immediately
         applySort();
 
-        renderStats(allCharacters, dmlogs.data.length);
+        renderStats(allCharacters, dmlogsData.length);
         renderAdminTable(1);
-        renderLatestActivity(sessions.data, allCharacters);
+        renderLatestActivity(sessionsData, allCharacters);
 
         // Economy Index
-        allGoldLogs = golds.data || [];
-        allSessions = sessions.data || [];
-        allDmLogs = dmlogs.data || [];
+        allGoldLogs = goldsData;
+        allSessions = sessionsData;
+        allDmLogs = dmlogsData;
         renderEconomyIndex(allGoldLogs, allSessions, allDmLogs, allCharacters);
 
       } catch (error) {
