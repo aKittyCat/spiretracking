@@ -439,9 +439,9 @@
     let allCharacters = [];
     let filteredCharacters = [];
     let chartInstances = [];
-    let allGoldLogs = []; // Store gold logs for economy index
-    let allSessions = []; // Store sessions for economy index
-    let allDmLogs = []; // Store dm_logs for economy index
+    let allGoldLogs = [];
+    let allSessions = [];
+    let allDmLogs = [];
     let economyChartInstance = null;
 
     // Pagination Config
@@ -449,7 +449,7 @@
     let currentAdminPage = 1;
 
     // Sorting State
-    let currentSortMode = 'level_desc'; // Default sort
+    let currentSortMode = 'level_desc';
 
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -480,7 +480,7 @@
     // --- Load Data ---
     async function loadDashboardDataManual() {
       document.getElementById('tableLoadingText').style.display = 'block';
-      document.getElementById('allCharsTable').innerHTML = ''; // Clear table
+      document.getElementById('allCharsTable').innerHTML = '';
       const btnRefresh = document.getElementById('btnRefresh');
       if (btnRefresh) { btnRefresh.disabled = true; btnRefresh.classList.add('opacity-50'); }
 
