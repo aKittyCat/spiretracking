@@ -322,7 +322,7 @@
                         <div
                             class="flex items-center gap-3 bg-purple-500/10 rounded-xl p-3 border border-purple-500/20">
                             <span class="text-purple-400 text-2xl font-bold">+10</span>
-                            <span class="text-gray-300 text-sm">แต้มโบนัส ทุกๆ 10 เซสชั่น</span>
+                            <span class="text-gray-300 text-sm">แต้มโบนัส ทุกๆ 5 เซสชั่น</span>
                         </div>
                     </div>
                 </div>
@@ -716,7 +716,7 @@
             return sessions + 7 * Math.floor(sessions / 10);
         }
         function calcDMPoints(sessions) {
-            return sessions * 3 + 10 * Math.floor(sessions / 10);
+            return sessions * 3 + 10 * Math.floor(sessions / 5);
         }
 
         async function loadTracker() {
