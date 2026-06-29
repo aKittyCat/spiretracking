@@ -236,6 +236,9 @@
             <div class="flex flex-wrap justify-center gap-4 mb-12">
                 <button onclick="switchSpireArea('grand-hall')" id="btn-area-grand-hall" class="spire-area-btn px-6 py-2 border-b-2 border-gold text-gold font-bold transition-all">The Grand Hall</button>
                 <button onclick="switchSpireArea('training')" id="btn-area-training" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">สนามฝึกฝน</button>
+                <button onclick="switchSpireArea('paradise')" id="btn-area-paradise" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Spiral Paradise</button>
+                <button onclick="switchSpireArea('zhareth')" id="btn-area-zhareth" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Zha'reth Ulm</button>
+                <button onclick="switchSpireArea('sanctum')" id="btn-area-sanctum" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Sanctum Of The Silent Star</button>
             </div>
 
             <!-- Content for Grand Hall -->
@@ -288,6 +291,59 @@
                     </blockquote>
                 </div>
             </div>
+
+            <!-- Content for Spiral Paradise -->
+            <div id="area-paradise" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1934&auto=format&fit=crop" alt="Spiral Paradise" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                </div>
+                <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Spiral Paradise</h2>
+                    <p>พวกเราต่างมาจากที่ไหนสักแห่ง หรืออาจจากช่วงเวลาใดช่วงเวลาหนึ่ง สับสนและหลงใหลอยู่ในหอคอยลึกลับแห่งนี้ แต่เมื่อเปิดประตูไม้บานนี้แล้ว... พวกเรากลับรู้สึกเหมือนได้กลับมายังบ้านเกิด</p>
+                    <p>หากดูเพียงผิวเผิน ประตูบานนี้อาจดูเหมือนแค่ประตูไม้ที่เปิดเข้าไปสู่โรงเตี๊ยมเล็กๆ ข้างทาง แต่เมื่อก้าวผ่านเข้าไป จะได้พบกับบรรยากาศอันแสนผ่อนคลาย เสียงแก้วชนกันประสานเป็นท่วงทำนอง กลิ่นอายของบ้านที่จากมาไกล...</p>
+                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-4 bg-black/20 rounded-r">
+                        <span class="text-xl text-[#c5a059] font-bold">"The Spiral Paradise"</span><br>
+                        จุดพักผ่อนอันเลื่องชื่อของเหล่านักผจญภัยภายใน The Spire Tower
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Content for Zha'reth Ulm -->
+            <div id="area-zhareth" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="https://images.unsplash.com/photo-1509928504952-0e92f66abf98?q=80&w=2000&auto=format&fit=crop" alt="Zha'reth Ulm" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter contrast-125">
+                </div>
+                <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Zha'reth Ulm</h2>
+                    <p>ในส่วนลึกของ The Spire Tower — ดินแดนที่แม้แต่เทพยังไม่กล้ารุกราน — มีห้องหนึ่งซ่อนตัวอยู่เงียบๆ <span class="text-[#c5a059] font-bold">Zha’reth Ulm</span> ไม่ใช่วิหาร ไม่ใช่สุสาน แต่เป็นจุดกึ่งกลางระหว่าง “ก่อนจะตาย” กับ “หลังจากนั้น” ที่มนุษย์มิอาจนิยาม</p>
+                    <p>ผนังหินสูงตระหง่านรอบตัว เสาหินร้าวบ้าง หักบ้าง แต่ยังคงยืนหยัดราวกับบันทึกเวลาหลายร้อยปี แสงเพียงริ้วเดียวจากฟากฟ้าเหนือเพดานที่ผุพัง สาดลงมายังวงเวทกลางห้อง แสงเส้นนั้นส่องลงมายังจุดกึ่งกลางอย่างแม่นยำ — ราวกับสวรรค์ยังจดจำตำแหน่งของพิธีได้แม้จะหลับตา</p>
+                    <p>ลวดลายจารึกภาษา Abyssal คืบคลานไปตามพื้นและผนังดั่งรากไม้แห่งความลับ บางจารึกส่องแสงสว่างรวยริน เมื่อก้าวเข้าไปใกล้ —</p>
+                    <p>ณ ใจกลางของห้องนั้น ปรากฏหญิงสาวผู้เปล่งพลังลึกล้ำราวกับเงาเงียบในหอวิหาร... <span class="text-[#c5a059] font-bold">"Amelia Syrenholm"</span></p>
+                    <p>เรือนผมยาวสลวยสีม่วงเข้ม กอปรด้วยสีแดงเพลิง — เหมือนเปลวไฟที่ครั้งหนึ่งเคยเผาผลาญหัวใจเธอ และยังคงไม่มอดสนิท ผิวขาวซีดอย่างผู้ที่ไม่ค่อยได้พบแสงอาทิตย์ แต่นั่นไม่ทำให้เธอดูอ่อนแอ ตรงกันข้าม—มันเสริมให้เธอดูเหมือนภาพลวงตาที่หลุดมาจากอีกภพหนึ่ง</p>
+                    <p>นัยน์ตาของเธอสีแดงเข้มเหมือนเลือดที่เพิ่งหลั่ง สดและนิ่ง ไม่มีความโกรธ ไม่มีความอบอุ่น มีแต่การมองทะลุ — และการตัดสิน</p>
+                    <blockquote class="border-l-4 border-red-900 pl-4 italic text-gray-400 mt-6 py-3 bg-red-950/20 rounded-r">
+                        เสื้อคลุมสีดำดุจรัตติกาล บดบังสรีระสิ้น เบื้องใต้ไร้เกราะ ไร้อาวุธ<br>เพราะสำหรับ Amelia แล้ว เธอไม่จำเป็นต้องป้องกันตัว… <span class="text-red-400 font-bold">ความตายรู้จักเธอดีเกินกว่าจะแตะต้อง</span>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Content for Sanctum of the Silent Star -->
+            <div id="area-sanctum" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2093&auto=format&fit=crop" alt="Sanctum Of The Silent Star" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter brightness-110">
+                </div>
+                <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Sanctum Of The Silent Star</h2>
+                    <p>ภายในหอคอย The Spire Tower ที่สูงเสียดฟ้าจนเมฆล้อมรอบ — มีชั้นหนึ่งที่ผู้คนกล่าวถึงในเสียงกระซิบว่าเป็นสถานที่ศักดิ์สิทธิ์ที่แม้แต่เหล่าทวยเทพยังทอดสายตามองลงมา นั่นคือ <span class="text-[#c5a059] font-bold">Sanctum of the Silent Star</span></p>
+                    <p>อารามตั้งอยู่ในห้องโถงวงกลมกว้างใหญ่ ผนังประดับด้วยคริสตัลใสที่เรืองแสงอ่อนๆ ตามจังหวะของคลื่นพลังเวทจาก Astral Plane</p>
+                    <p>เหนือศีรษะคือเพดานโดมโปร่งแสงที่เปิดสู่ท้องฟ้า — หรืออาจจะเป็นห้วงอวกาศที่ไร้ขอบเขตก็ไม่มีใครแน่ใจ ดวงดาวนับพันระยิบระยับอยู่เหนือศีรษะ และเสียงสวดของเหล่านักบวชจะสะท้อนขึ้นไปในความเวิ้งว้างนั้น</p>
+                    <p>พื้นของอารามเป็นวงแหวนเวทศักดิ์สิทธิ์ที่จารึกด้วยชื่อของเทพเจ้าหลายองค์ ทั้งจาก Faerûn, Mulhorand, และแม้แต่เทพโบราณที่ไม่มีบันทึกในตำนานใดๆ อีกต่อไป</p>
+                    <blockquote class="border-l-4 border-blue-400 pl-4 italic text-gray-300 mt-6 py-3 bg-blue-900/20 rounded-r shadow-inner">
+                        ผู้แสวงบุญและนักผจญภัยที่มาถึงมักคุกเข่าอยู่กลางวงแหวนแห่งแสงนี้เพื่อสวดภาวนาต่อเทพของตน เชื่อกันว่าคำภาวนาที่กล่าว ณ จุดนี้จะเดินทางตรงสู่ดินแดนของเทพเจ้าโดยไม่หลงทางใน <span class="font-bold text-blue-300">Astral Sea</span>
+                    </blockquote>
+                </div>
+            </div>
+
         </div>
 
         <!-- Footer -->
