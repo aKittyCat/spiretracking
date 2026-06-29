@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Spire Tracking - Worldmap</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Geoman CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a; overflow: hidden;
+        }
+
+        #map { width: 100vw; height: 100vh; background-color: #242424; }
+
+        /* Icon Styles */
+        .custom-div-icon {
+            display: flex; justify-content: center; align-items: flex-end;
+        }
+        /* Custom Image Marker */
+        .custom-img-marker {
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            background-color: #333;
+            object-fit: cover;
+        }
+
+        /* Sidebar สำหรับแสดง Lore */
+        #lore-sidebar {
+            position: absolute; top: 0; right: -400px; width: 380px; height: 100vh;
+            background: rgba(26, 26, 26, 0.95); color: #fff;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            transition: right 0.3s ease-in-out; z-index: 1000;
+            overflow-y: auto; border-left: 2px solid #b8860b;
+        }
+        #lore-sidebar.active { right: 0; }
+        .sidebar-close {
+            position: absolute; top: 15px; right: 15px; cursor: pointer; color: #aaa; transition: color 0.2s;
+        }
+        .sidebar-close:hover { color: #fff; }
+        #lore-sidebar::-webkit-scrollbar { width: 8px; }
+        #lore-sidebar::-webkit-scrollbar-track { background: #1a1a1a; }
+        #lore-sidebar::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
+        
+        /* Modals */
+        .overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(3px);
+            z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #2a2a2a; color: #e5e5e5; padding: 24px;
+            border-radius: 8px; width: 90%; max-width: 500px; border: 1px solid #444;
+        }
+
+        #toast {
+            position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%);
+            background: #10b981; color: white; padding: 10px 20px;
+            border-radius: 8px; transition: bottom 0.3s; z-index: 3000;
+        }
+        #toast.show { bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- ปุ่มกลับหน้าหลัก (ซ้ายล่าง) -->
+    <div class="absolute bottom-6 left-6 z-[1000]">
+        <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:shadow-lg">
+            <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+        </button>
+    </div>
+
+    <!-- แถบเครื่องมือ Admin (ซ่อนเป็นค่าเริ่มต้น) -->
+    <div id="admin-toolbar" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-700 flex space-x-3 items-center">
+        <span class="text-sm text-yellow-500 font-bold mr-2"><i class="fas fa-crown mr-1"></i> Admin Mode</span>
+        <button onclick="exportData()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
+            <i class="fas fa-file-export mr-2"></i>Export JSON
+        </button>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Sidebar แสดงเนื้อเรื่อง -->
+    <div id="lore-sidebar" class="p-6">
+        <i class="fas fa-times fa-lg sidebar-close" onclick="closeSidebar()"></i>
+        <div id="sidebar-content" class="mt-8">
+            <img id="sidebar-image" src="" alt="Lore Image" class="w-full h-48 object-cover rounded shadow-lg border border-gray-600 hidden">
+            <h2 id="sidebar-title" class="text-2xl font-bold mt-4 mb-2 text-yellow-500"></h2>
+            <div class="w-full h-px bg-gray-600 mb-4"></div>
+            <p id="sidebar-lore" class="text-gray-300 leading-relaxed whitespace-pre-wrap"></p>
+        </div>
+    </div>
+
+    <!-- Admin Form Modal ตอนปักหมุด -->
+    <div id="admin-modal-overlay" class="overlay">
+        <div class="modal-content shadow-2xl overflow-y-auto max-h-screen">
+            <h3 class="text-xl font-bold mb-4 text-yellow-500"><i class="fas fa-map-pin mr-2"></i>เพิ่มข้อมูลสถานที่ใหม่ (Admin)</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">ชื่อสถานที่ (Title)</label>
+                    <input type="text" id="admin-title" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">ภาพประกอบใน Sidebar (URL)</label>
+                    <input type="text" id="admin-image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">เนื้อเรื่อง (Lore)</label>
+                    <textarea id="admin-lore" rows="3" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none"></textarea>
+                </div>
+                
+                <div class="border-t border-gray-600 my-2 pt-2"></div>
+                
+                <!-- ส่วนเลือกรูปแบบหมุด -->
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-blue-400">รูปแบบหมุดบนแผนที่ (Marker Type)</label>
+                    <select id="admin-icon-type" onchange="toggleCustomIconUrl()" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none">
+                        <option value="default">📍 หมุดพื้นฐาน (แดง)</option>
+                        <option value="city">🏰 เมือง / ปราสาท (ฟ้า)</option>
+                        <option value="danger">💀 พื้นที่อันตราย (เขียว)</option>
+                        <option value="custom">🖼️ อัปโหลดรูปภาพ Marker เอง (URL)</option>
+                    </select>
+                </div>
+                <div id="custom-icon-url-group" class="hidden">
+                    <label class="block text-sm font-medium mb-1 text-gray-300">URL รูปภาพ Marker (แนะนำขนาด 1:1 แบบโปร่งใส)</label>
+                    <input type="text" id="admin-icon-url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none" placeholder="https://example.com/marker.png">
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button onclick="cancelAdminForm()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ยกเลิก</button>
+                    <button onclick="saveAdminForm()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded transition">บันทึก & สร้าง JSON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSON Output Modal -->
+    <div id="json-modal-overlay" class="overlay">
+        <div class="modal-content shadow-2xl w-full max-w-2xl">
+            <h3 class="text-xl font-bold mb-2 text-green-400"><i class="fas fa-check-circle mr-2"></i>สร้างข้อมูลสำเร็จ</h3>
+            <p class="text-sm text-gray-400 mb-4">คัดลอก JSON ไปวางใน <code class="bg-gray-800 px-1 rounded text-yellow-300">worldmap-data.js</code></p>
+            <textarea id="json-output" rows="8" class="w-full p-3 bg-gray-900 border border-gray-700 rounded font-mono text-sm text-green-300 focus:outline-none" readonly></textarea>
+            <textarea id="hidden-copy-area" style="position: absolute; left: -9999px;"></textarea>
+            <div class="flex justify-end space-x-3 mt-4">
+                <button onclick="closeJsonModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ปิด</button>
+                <button onclick="copyJson()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 font-bold rounded transition"><i class="fas fa-copy mr-2"></i>Copy JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"><i class="fas fa-info-circle mr-2"></i><span id="toast-msg"></span></div>
+
+    <!-- Leaflet JS & Geoman -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+
+    <script>
+        // ==========================================
+        // 2. Map & UI Setup
+        // ==========================================
+        const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 3, zoomControl: false });
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        const bounds = [[0, 0], [1500, 2000]];
+        const imageUrl = 'https://i.ibb.co/dgYvsZ7/Faerun-Map-Redone-Roll-20-Res-Hexes.jpg'; 
+        
+        L.imageOverlay(imageUrl, bounds).addTo(map);
+        
+        // ชี้ไปที่จุดกึ่งกลาง [แกน Y, แกน X] และตั้งค่าระดับการซูม (ปรับเลข 1 เป็น 0 หรือ 2 ได้ถ้าอยากให้ไกล/ใกล้กว่านี้)
+        map.setView([750, 1000], 1); 
+        map.setMaxBounds(bounds);
+
+        let loreData = [];
+        let currentAdminMarker = null;
+        let isGeomanEnabled = false;
+
+        // ฟังก์ชันสร้างไอคอนจากข้อมูล JSON
+        function getMarkerIcon(item) {
+            if (item.iconType === 'custom' && item.iconUrl) {
+                // กรณีเป็นรูปภาพ Custom URL
+                return L.icon({
+                    iconUrl: item.iconUrl,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20], // ให้อยู่กึ่งกลาง
+                    className: 'custom-img-marker'
+                });
+            } else {
+                // กรณีเป็นไอคอนพื้นฐาน (FontAwesome)
+                let faClass = 'fa-map-marker-alt';
+                let color = '#ef4444'; // สีแดง
+                
+                if (item.iconType === 'city') {
+                    faClass = 'fa-chess-rook';
+                    color = '#60a5fa'; // สีฟ้า
+                } else if (item.iconType === 'danger') {
+                    faClass = 'fa-skull-crossbones';
+                    color = '#10b981'; // สีเขียว
+                }
+
+                return L.divIcon({
+                    html: `<i class="fas ${faClass}" style="color: ${color}; font-size: 26px; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8));"></i>`,
+                    className: 'custom-div-icon',
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 26]
+                });
+            }
+        }
+
+        // ==========================================
+        // 3. Data Fetching & Rendering (ดึงจาก GitHub)
+        // ==========================================
+        async function loadLoreData() {
+            try {
+                // อิงจาก Raw URL ของ GitHub
+                const githubRawUrl = 'https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js';
+                const response = await fetch(githubRawUrl);
+                
+                if (!response.ok) throw new Error('File not found on GitHub');
+                
+                const textData = await response.text();
+                
+                try {
+                    // ลอง Parse เป็น JSON ก่อน (ในกรณีที่ข้อมูลข้างในเป็นแค่โครงสร้าง JSON)
+                    loreData = JSON.parse(textData);
+                } catch (jsonError) {
+                    // หากไฟล์เป็น JS ที่มีการประกาศตัวแปร เช่น `const data = [...]`
+                    // เราจะใช้ Regex ดึงเฉพาะส่วนที่เป็น Array ออกมา
+                    const arrayMatch = textData.match(/\[[\s\S]*\]/);
+                    if (arrayMatch) {
+                        loreData = JSON.parse(arrayMatch[0]);
+                    } else {
+                        throw new Error("ไม่สามารถอ่านรูปแบบข้อมูล Array ได้");
+                    }
+                }
+                
+                renderMarkers();
+            } catch (error) {
+                console.warn("โหลดข้อมูลจาก GitHub ไม่สำเร็จ หรือยังไม่มีไฟล์", error);
+                loreData = []; // ไม่ใส่ Mock Data แล้ว ปล่อยเป็น Array ว่าง
+                renderMarkers();
+            }
+        }
+
+        function renderMarkers() {
+            // ล้างหมุดก่อนหน้า (ถ้ามี)
+            map.eachLayer((layer) => {
+                if (layer instanceof L.Marker && layer !== currentAdminMarker) {
+                    map.removeLayer(layer);
+                }
+            });
+            loreData.forEach(item => createMarker(item));
+        }
+
+        function createMarker(item) {
+            const icon = getMarkerIcon(item);
+            const marker = L.marker([item.lat, item.lng], { icon: icon }).addTo(map);
+            marker.bindTooltip(item.title, { direction: 'top', offset: [0, -15] });
+            marker.on('click', () => openSidebar(item));
+        }
+
+        // ==========================================
+        // 4. Admin Auto-Check & Export
+        // ==========================================
+        async function checkAdminStatus() {
+            if (typeof supabase === 'undefined' || !supabase.auth) {
+                console.warn('❌ ไม่พบ Supabase Client หรือ supabase.auth! กรุณาตรวจสอบไฟล์ supabase-config.js');
+                return;
+            }
+
+            try {
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError || !session) return; 
+
+                const email = session.user.email;
+                const { data: settingsData, error } = await supabase
+                    .from('settings')
+                    .select('admin_emails')
+                    .eq('id', 'admin')
+                    .single();
+
+                if (!error && settingsData && settingsData.admin_emails.includes(email)) {
+                    enableAdminMode();
+                } else {
+                    const { data: isAdmin } = await supabase.rpc('is_admin');
+                    if (isAdmin) {
+                        enableAdminMode();
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking admin status:", error);
+            }
+        }
+
+        function enableAdminMode() {
+            if (!isGeomanEnabled) {
+                map.pm.setLang('en');
+                map.pm.addControls({
+                    position: 'topleft', drawMarker: true, editMode: true, removalMode: true,
+                    drawCircleMarker: false, drawPolyline: false, drawRectangle: false, drawPolygon: false, drawCircle: false, drawText: false
+                });
+                isGeomanEnabled = true;
+                
+                // แสดงปุ่ม Export
+                document.getElementById('admin-toolbar').classList.remove('hidden');
+                
+                showToast("โหมด Admin ทำงานแล้ว: เปิดใช้งานเครื่องมือจัดการแผนที่และระบบ Export");
+            }
+        }
+
+        // ฟังก์ชัน Export ข้อมูลทั้งหมดออกเป็นไฟล์ JSON
+        function exportData() {
+            if (loreData.length === 0) {
+                alert("ไม่มีข้อมูลสำหรับทำการ Export");
+                return;
+            }
+
+            // จัดฟอร์แมตข้อมูลเป็น JSON สตริงให้สวยงาม
+            const dataStr = JSON.stringify(loreData, null, 4);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            // สร้างแท็ก <a> จำลองเพื่อสั่งดาวน์โหลดไฟล์
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "worldmap-data.json"; // เปลี่ยนชื่อไฟล์สำหรับดาวน์โหลด
+            document.body.appendChild(a);
+            a.click();
+            
+            // คืนค่าหน่วยความจำ
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast("ส่งออกข้อมูลสำเร็จ! โปรดนำไฟล์นี้ไปอัปเดตบน GitHub");
+        }
+
+        // ==========================================
+        // 5. จัดการ Geoman Form & Custom Icons
+        // ==========================================
+        map.on('pm:create', (e) => {
+            if (e.shape === 'Marker') {
+                currentAdminMarker = e.layer;
+                document.getElementById('admin-modal-overlay').style.display = 'flex';
+                // Reset Form
+                document.getElementById('admin-title').value = '';
+                document.getElementById('admin-image').value = '';
+                document.getElementById('admin-lore').value = '';
+                document.getElementById('admin-icon-type').value = 'default';
+                document.getElementById('admin-icon-url').value = '';
+                toggleCustomIconUrl();
+            }
+        });
+
+        // หากมีการลบหมุดในโหมด Admin ก็ให้อัปเดต Array ด้วย
+        map.on('pm:remove', (e) => {
+            if (e.layer && e.layer.getLatLng) {
+                const latlng = e.layer.getLatLng();
+                // ลบข้อมูลที่พิกัดตรงกันออกจาก Array
+                loreData = loreData.filter(item => 
+                    !(Math.abs(item.lat - latlng.lat) < 0.01 && Math.abs(item.lng - latlng.lng) < 0.01)
+                );
+                showToast("ลบสถานที่เรียบร้อยแล้ว (อย่าลืมกด Export เพื่อบันทึกผลลัพธ์ใหม่)");
+            }
+        });
+
+        function toggleCustomIconUrl() {
+            const type = document.getElementById('admin-icon-type').value;
+            const urlGroup = document.getElementById('custom-icon-url-group');
+            if (type === 'custom') urlGroup.classList.remove('hidden');
+            else urlGroup.classList.add('hidden');
+        }
+
+        function cancelAdminForm() {
+            document.getElementById('admin-modal-overlay').style.display = 'none';
+            if (currentAdminMarker) {
+                map.removeLayer(currentAdminMarker);
+                currentAdminMarker = null;
+            }
+        }
+
+        function saveAdminForm() {
+            const title = document.getElementById('admin-title').value.trim();
+            const image = document.getElementById('admin-image').value.trim();
+            const lore = document.getElementById('admin-lore').value.trim();
+            const iconType = document.getElementById('admin-icon-type').value;
+            const iconUrl = document.getElementById('admin-icon-url').value.trim();
+
+            if (!title || !lore) {
+                alert("กรุณากรอก 'ชื่อสถานที่' และ 'เนื้อเรื่อง'");
+                return;
+            }
+            if (iconType === 'custom' && !iconUrl) {
+                alert("กรุณาใส่ URL ของรูปภาพ Marker");
+                return;
+            }
+
+            const latlng = currentAdminMarker.getLatLng();
+
+            const newLoreObj = {
+                id: Date.now(),
+                title: title,
+                image: image,
+                lore: lore,
+                iconType: iconType,
+                ...(iconType === 'custom' && { iconUrl: iconUrl }), 
+                lat: parseFloat(latlng.lat.toFixed(2)),
+                lng: parseFloat(latlng.lng.toFixed(2))
+            };
+
+            const jsonString = JSON.stringify(newLoreObj, null, 4);
+            document.getElementById('json-output').value = jsonString;
+            
+            map.removeLayer(currentAdminMarker); // เอาหมุดชั่วคราวออก
+            createMarker(newLoreObj); // สร้างหมุดด้วย Icon ที่เลือกจริงๆ
+            loreData.push(newLoreObj);
+
+            document.getElementById('admin-modal-overlay').style.display = 'none';
+            document.getElementById('json-modal-overlay').style.display = 'flex';
+        }
+
+        // ==========================================
+        // 6. Utility Functions
+        // ==========================================
+        function closeJsonModal() { document.getElementById('json-modal-overlay').style.display = 'none'; }
+        
+        function copyJson() {
+            const jsonText = document.getElementById('json-output').value;
+            const hiddenTextArea = document.getElementById('hidden-copy-area');
+            hiddenTextArea.value = jsonText; hiddenTextArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("คัดลอก JSON เรียบร้อยแล้ว!");
+            } catch (err) { alert("ไม่สามารถคัดลอกอัตโนมัติได้"); }
+        }
+
+        const sidebar = document.getElementById('lore-sidebar');
+        function openSidebar(item) {
+            document.getElementById('sidebar-title').textContent = item.title;
+            document.getElementById('sidebar-lore').textContent = item.lore;
+            const imgEl = document.getElementById('sidebar-image');
+            if (item.image) { imgEl.src = item.image; imgEl.classList.remove('hidden'); } 
+            else { imgEl.classList.add('hidden'); }
+            sidebar.classList.add('active');
+        }
+        function closeSidebar() { sidebar.classList.remove('active'); }
+        map.on('click', () => closeSidebar());
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // โหลดข้อมูลและตรวจสอบสิทธิ์อัตโนมัติเมื่อเปิดหน้าเว็บ
+        window.onload = async () => {
+            loadLoreData();
+            checkAdminStatus();
+        };
+
+    </script>
+</body>
+</html>
