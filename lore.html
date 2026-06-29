@@ -176,6 +176,9 @@
             <button onclick="switchPage('gallery')" id="btn-gallery" class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
                 Newspapers
             </button>
+            <button onclick="switchPage('spire')" id="btn-spire" class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+                Spire
+            </button>
         </div>
 
         <!-- Right Side: Home Button -->
@@ -227,6 +230,66 @@
             </div>
         </div>
 
+        <!-- PAGE 3: Spire -->
+        <div id="page-spire" class="hidden-page w-full max-w-6xl">
+            <!-- Secondary Navigation for Spire Areas -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button onclick="switchSpireArea('grand-hall')" id="btn-area-grand-hall" class="spire-area-btn px-6 py-2 border-b-2 border-gold text-gold font-bold transition-all">The Grand Hall</button>
+                <button onclick="switchSpireArea('training')" id="btn-area-training" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">สนามฝึกฝน</button>
+            </div>
+
+            <!-- Content for Grand Hall -->
+            <div id="area-grand-hall" class="spire-area-content grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=2070&auto=format&fit=crop" alt="The Grand Hall" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                </div>
+                <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">The Grand Hall</h2>
+                    <p>ทันทีที่ก้าวพ้นธรณีประตูของ The Spire Tower ผู้มาเยือนทุกคนจะพบกับความเงียบที่ “ลึก” ยิ่งกว่าความเงียบใดที่เคยสัมผัส</p>
+                    <p>ไม่ใช่เพราะขาดเสียง… แต่เพราะสิ่งที่อยู่ตรงหน้า “ดึงทุกประสาทสัมผัสไปจนลืมหายใจ”</p>
+                    <p>โถงหลักของ The Spire Tower สูงตระหง่านจนมองไม่เห็นเพดาน แสงสว่างอ่อนๆ ลอยอยู่ในอากาศราวกับฝุ่นทองที่ขับเคลื่อนตามกระแสเวท พื้นหินสีเทาดำขัดเงา สะท้อนเงาผู้เดินทางอย่างบิดเบี้ยวเล็กน้อย เสาทรงเรียวยาวที่สลักอักษรโบราณทอดขึ้นสู่ความมืดด้านบน ราวกับรับน้ำหนักของ “อะไรบางอย่าง” ที่มากกว่าหิน</p>
+                    <p>ตรงกลางห้องคือจุดรวมสายตา —แท่นคริสตัลขนาดใหญ่ ที่เปล่งแสงจางๆ และเปลี่ยนสีไปตามบุคลิกของผู้ที่เข้าใกล้ ว่ากันว่า แท่นนี้คือหัวใจของ The Spire และมัน “เฝ้ามอง” นักผจญภัยทุกคนที่ผ่านเข้ามา</p>
+                    <p class="font-bold text-gray-200 mt-6 pt-4 border-t border-gray-800">โดยรอบโถงมี:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-400 pl-2">
+                        <li>ประตูมากมายที่นำไปสู่พื้นที่อื่นในหอคอย: หอสมุดเวท, ลานฝึก, ตลาดเวทมนตร์, และศาลารับภารกิจ</li>
+                        <li>ระเบียงชั้นบนที่เปิดให้เห็นนักผจญภัยคนอื่นที่กำลังเดินผ่าน, สนทนา, หรือรอลงทะเบียนภารกิจ</li>
+                        <li>กระดานภารกิจกลางโถง ซึ่งจะเปลี่ยนข้อความด้วยตัวเองเมื่อมีผู้เข้าใกล้</li>
+                    </ul>
+                    <p class="mt-6">แม้จะเป็นสถานที่ที่น่าตื่นตา แต่โถงแห่งนี้ให้ความรู้สึกสงบอย่างน่าประหลาด เหมือนสิ่งปลูกสร้างนี้ “รับรู้ได้” ว่าผู้ที่เดินเข้ามาไม่ได้มาเพื่อชื่นชม แต่เพื่อ "เริ่มต้นบางสิ่ง"</p>
+                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
+                        “ทุกภารกิจ ทุกเรื่องเล่า ทุกตำนาน... ล้วนมีรากฐานมาจากที่นี่”<br>
+                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">— Edwina, The Receptionist of The Spire Tower</span>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Content for Training Ground -->
+            <div id="area-training" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?q=80&w=1887&auto=format&fit=crop" alt="สนามฝึกฝน" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                </div>
+                <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Training Ground (สนามฝึกฝน)</h2>
+                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mb-6 py-2 bg-black/20 rounded-r">
+                        “ทุกการผจญภัยเริ่มจากหนึ่งก้าว... และหนึ่งก้าวนั้นเริ่มที่นี่”
+                    </blockquote>
+                    <p>ภายในชั้นกลางของ The Spire Tower อันลึกลับ มีลานเปิดขนาดใหญ่ที่รายล้อมด้วยกำแพงหินโค้งและแสงอาทิตย์ที่สาดผ่านหน้าต่างเวทมนตร์บนเพดานสูง— ที่นั่นคือ ลานฝึกของเหล่านักผจญภัย จุดเริ่มต้นที่ทุกคนสามารถทดสอบฝีมือของตนเองโดยไม่ต้องเสี่ยงชีวิต</p>
+                    <p>พื้นลานถูกปูด้วยหินเวทมนตร์ที่สามารถดูดซับแรงกระแทกและเวทมนตร์รุนแรงได้โดยไม่ก่อให้เกิดอันตรายจริง ในมุมต่างๆ ของลาน มี <span class="text-[#c5a059] font-bold">หุ่นจำลองเวทมนตร์</span> ที่เคลื่อนไหวได้ พร้อมกับ <span class="text-[#c5a059] font-bold">เวทป้องกันพิเศษ</span> ที่ล้อมสนามไว้ เพื่อให้การฝึกทุกครั้งสามารถหยุดได้ทันทีหากเกิดอาการบาดเจ็บหรือพลังเวทไม่สมดุล</p>
+                    <p class="font-bold text-gray-200 mt-6 pt-4 border-t border-gray-800">สิ่งที่ทำให้ลานฝึกแห่งนี้เป็นที่นิยมในหมู่นักผจญภัย:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-400 pl-2">
+                        <li>ไม่มีความเสี่ยงถึงชีวิต เหมาะสำหรับทั้งมือใหม่และมือเก๋าที่ต้องการฝึกฝนโดยไม่ถูกลงโทษด้วยความตาย</li>
+                        <li>สามารถจำลองศัตรูหรือสถานการณ์พื้นฐานได้ เช่น การต่อสู้กับก๊อบลิน นักธนู หรือหลีกเลี่ยงกับดัก</li>
+                        <li>พื้นที่สงบ ปลอดภัย และมีบรรยากาศผ่อนคลาย ต้นไม้เลื้อยเขียวขจีที่ไต่ไปตามเสาหิน และน้ำพุเล็กๆ ที่ไหลเป็นทางช่วยสร้างความสบายใจ</li>
+                    </ul>
+                    <p class="mt-6">นักผจญภัยจากทั่วทุกหัวระแหงมักมารวมตัวกันที่นี่ก่อนออกภารกิจจริง บางคนมาเพื่อฝึกเวท บางคนฝึกการเคลื่อนไหว และบางคน... ก็แค่มาเพื่อมั่นใจว่า ตนยัง “ไม่ลืมวิธีรอดชีวิต”</p>
+                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
+                        “ไม่มีใครหัวเราะเยาะคนที่ซ้อมเยอะเกินไป... แต่คนที่ไม่ซ้อมเลย มักไม่ได้หัวเราะกลับ”<br>
+                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">— ข้อความบนป้ายไม้เก่าใกล้ทางเข้า</span>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="mt-24 text-center text-xs text-gray-400 py-6 border-t border-gray-800 w-full max-w-4xl">
             <p>&copy;🏰 The Spire Tracking<br>Created by aKittyCat🐈. All rights reserved.</p>
@@ -240,28 +303,65 @@
         function switchPage(page) {
             const lorePage = document.getElementById('page-lore');
             const galleryPage = document.getElementById('page-gallery');
+            const spirePage = document.getElementById('page-spire'); // Add Spire Page
+            
             const btnLore = document.getElementById('btn-lore');
             const btnGallery = document.getElementById('btn-gallery');
+            const btnSpire = document.getElementById('btn-spire'); // Add Spire Button
+            
             const pageTitle = document.getElementById('page-title');
+
+            // Reset all pages and buttons
+            lorePage.style.display = 'none';
+            galleryPage.style.display = 'none';
+            spirePage.style.display = 'none';
+
+            btnLore.classList.remove('active', 'text-white');
+            btnLore.classList.add('text-gray-400');
+            btnGallery.classList.remove('active', 'text-white');
+            btnGallery.classList.add('text-gray-400');
+            btnSpire.classList.remove('active', 'text-white');
+            btnSpire.classList.add('text-gray-400');
 
             if (page === 'lore') {
                 lorePage.style.display = 'block';
-                galleryPage.style.display = 'none';
                 btnLore.classList.add('active', 'text-white');
                 btnLore.classList.remove('text-gray-400');
-                btnGallery.classList.remove('active', 'text-white');
-                btnGallery.classList.add('text-gray-400');
                 pageTitle.innerText = 'The Spire Lore';
-            } else {
-                lorePage.style.display = 'none';
+            } else if (page === 'gallery') {
                 galleryPage.style.display = 'block';
                 btnGallery.classList.add('active', 'text-white');
                 btnGallery.classList.remove('text-gray-400');
-                btnLore.classList.remove('active', 'text-white');
-                btnLore.classList.add('text-gray-400');
                 pageTitle.innerText = 'Archives';
+            } else if (page === 'spire') {
+                spirePage.style.display = 'block';
+                btnSpire.classList.add('active', 'text-white');
+                btnSpire.classList.remove('text-gray-400');
+                pageTitle.innerText = 'Inside The Spire';
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Sub-page Switcher for Spire Areas
+        function switchSpireArea(area) {
+            // Hide all areas
+            const allAreas = document.querySelectorAll('.spire-area-content');
+            allAreas.forEach(el => el.classList.add('hidden'));
+
+            // Reset all buttons
+            const allBtns = document.querySelectorAll('.spire-area-btn');
+            allBtns.forEach(btn => {
+                btn.classList.remove('border-gold', 'text-gold', 'font-bold');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+
+            // Show selected area
+            document.getElementById('area-' + area).classList.remove('hidden');
+
+            // Highlight selected button
+            const activeBtn = document.getElementById('btn-area-' + area);
+            activeBtn.classList.remove('border-transparent', 'text-gray-400');
+            activeBtn.classList.add('border-gold', 'text-gold', 'font-bold');
         }
 
         // Modal Logic
