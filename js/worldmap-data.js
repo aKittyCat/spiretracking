@@ -1,14 +1,5 @@
 const loreData = [
     {
-        "id": 1782840213058,
-        "title": "The Spire Tower",
-        "image": "https://media.discordapp.net/attachments/1440571168519225455/1521561965988679811/IMG_2592.png?ex=6a454881&is=6a43f701&hm=4628cb52f80ea07b4491280fc5db0bfd539b69ddf5f84ec5dd3d7095f8e94e48&=&format=webp&quality=lossless&width=1380&height=813",
-        "lore": "",
-        "iconType": "spire",
-        "lat": 723.5,
-        "lng": 1038.25
-    },
-    {
         "id": 1782785594830,
         "title": "Neverwinter",
         "image": "https://static.wikia.nocookie.net/forgottenrealms/images/8/80/NeverwinterHarbor.jpg",
@@ -28,11 +19,11 @@ const loreData = [
     },
     {
         "id": 1782842724223,
-        "title": "test1",
+        "title": "The Spire Tower",
         "image": "",
         "lore": "",
-        "iconType": "default",
-        "lat": 1173,
-        "lng": 671.25
+        "iconType": "spire",
+        "lat": 723.5,
+        "lng": 1038.25
     }
 ];
