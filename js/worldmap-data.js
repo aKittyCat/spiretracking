@@ -20,7 +20,7 @@ const loreData = [
     {
         "id": 1782842724223,
         "title": "The Spire Tower",
-        "image": "",
+        "image": "https://media.discordapp.net/attachments/1440571168519225455/1521561965988679811/IMG_2592.png",
         "lore": "",
         "iconType": "spire",
         "lat": 723.5,
