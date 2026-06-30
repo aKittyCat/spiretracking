@@ -14,6 +14,9 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
+    <!-- Google Fonts (Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -25,7 +28,7 @@
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Sarabun', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1a1a1a; overflow: hidden;
         }
 
@@ -50,7 +53,7 @@
             background: rgba(26, 26, 26, 0.95); color: #fff;
             box-shadow: -5px 0 15px rgba(0,0,0,0.5);
             transition: right 0.3s ease-in-out; z-index: 1000;
-            overflow-y: auto; border-left: 2px solid #b8860b;
+            overflow-y: auto; border-left: 2px solid #cbd5e1; /* เปลี่ยนกรอบซ้ายเป็นสี Silver (slate-300) */
         }
         #lore-sidebar.active { right: 0; }
         .sidebar-close {
@@ -91,24 +94,24 @@
     <!-- Search Bar (ช่องค้นหาสถานที่) -->
     <div class="absolute top-4 left-4 z-[1000] w-64 sm:w-80">
         <div class="relative group">
-            <input type="text" id="search-input" placeholder="ค้นหาสถานที่..." class="w-full px-4 py-3 pl-11 bg-black/20 hover:bg-black/30 focus:bg-black/40 backdrop-blur-xl text-white border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white-500/50 focus:border-transparent transition-all duration-300 text-sm shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] placeholder-gray-400">
-            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-white transition-colors duration-300"></i>
+            <input type="text" id="search-input" placeholder="ค้นหาสถานที่..." class="w-full px-4 py-2 pl-11 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-slate-400 focus:border-slate-400 focus:outline-none focus:ring-0 focus:ring-offset-0 shadow-lg placeholder-gray-500 appearance-none">
+            <i class="fas fa-search absolute left-4 top-2.5 text-gray-500 group-hover:text-slate-400 group-focus-within:text-slate-400 transition-colors pointer-events-none"></i>
         </div>
         <!-- Suggestions Dropdown -->
-        <ul id="search-suggestions" class="absolute w-full mt-2 bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden hidden max-h-60 overflow-y-auto z-[1001] divide-y divide-white/5 glass-scrollbar">
+        <ul id="search-suggestions" class="absolute w-full mt-2 bg-[#1a1a1a]/95 backdrop-blur-md border border-gray-700 rounded-lg shadow-xl overflow-hidden hidden max-h-60 overflow-y-auto z-[1001] divide-y divide-gray-800 glass-scrollbar">
         </ul>
     </div>
 
     <!-- ปุ่มกลับหน้าหลัก (ซ้ายล่าง) -->
     <div class="absolute bottom-6 left-6 z-[1000]">
-        <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:shadow-lg">
+        <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-slate-400 shadow-lg">
             <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
         </button>
     </div>
 
-    <!-- แถบเครื่องมือ Admin (ซ่อนเป็นค่าเริ่มต้น) -->
+    <!-- แถบเครื่องมือ Admin -->
     <div id="admin-toolbar" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-700 flex space-x-3 items-center">
-        <span class="text-sm text-yellow-500 font-bold mr-2"><i class="fas fa-crown mr-1"></i> Admin Mode</span>
+        <span class="text-sm text-slate-300 font-bold mr-2"><i class="fas fa-crown mr-1"></i> Admin Mode</span>
         <button onclick="exportData()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
             <i class="fas fa-file-export mr-2"></i>Export JSON
         </button>
@@ -121,7 +124,7 @@
         <i class="fas fa-times fa-lg sidebar-close" onclick="closeSidebar()"></i>
         <div id="sidebar-content" class="mt-8">
             <img id="sidebar-image" src="" alt="Lore Image" class="w-full h-48 object-cover rounded shadow-lg border border-gray-600 hidden">
-            <h2 id="sidebar-title" class="text-2xl font-bold mt-4 mb-2 text-yellow-500"></h2>
+            <h2 id="sidebar-title" class="text-2xl font-bold mt-4 mb-2 text-slate-200"></h2>
             <div class="w-full h-px bg-gray-600 mb-4"></div>
             <p id="sidebar-lore" class="text-gray-300 leading-relaxed whitespace-pre-wrap"></p>
         </div>
@@ -130,19 +133,19 @@
     <!-- Admin Form Modal ตอนปักหมุด -->
     <div id="admin-modal-overlay" class="overlay">
         <div class="modal-content shadow-2xl overflow-y-auto max-h-screen">
-            <h3 class="text-xl font-bold mb-4 text-yellow-500"><i class="fas fa-map-pin mr-2"></i>เพิ่มข้อมูลสถานที่ใหม่ (Admin)</h3>
+            <h3 class="text-xl font-bold mb-4 text-slate-200"><i class="fas fa-map-pin mr-2"></i>เพิ่มข้อมูลสถานที่ใหม่ (Admin)</h3>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">ชื่อสถานที่ (Title)</label>
-                    <input type="text" id="admin-title" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none">
+                    <input type="text" id="admin-title" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">ภาพประกอบใน Sidebar (URL)</label>
-                    <input type="text" id="admin-image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none">
+                    <input type="text" id="admin-image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">เนื้อเรื่อง (Lore)</label>
-                    <textarea id="admin-lore" rows="3" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-yellow-500 focus:outline-none"></textarea>
+                    <textarea id="admin-lore" rows="3" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้"></textarea>
                 </div>
                 
                 <div class="border-t border-gray-600 my-2 pt-2"></div>
@@ -150,7 +153,7 @@
                 <!-- ส่วนเลือกรูปแบบหมุด -->
                 <div>
                     <label class="block text-sm font-medium mb-1 text-blue-400">รูปแบบหมุดบนแผนที่ (Marker Type)</label>
-                    <select id="admin-icon-type" onchange="toggleCustomIconUrl()" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none">
+                    <select id="admin-icon-type" onchange="toggleCustomIconUrl()" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none">
                         <option value="default">📍 หมุดพื้นฐาน (แดง)</option>
                         <option value="city">🏰 เมือง / ปราสาท (ฟ้า)</option>
                         <option value="danger">💀 พื้นที่อันตราย (เขียว)</option>
@@ -159,12 +162,12 @@
                 </div>
                 <div id="custom-icon-url-group" class="hidden">
                     <label class="block text-sm font-medium mb-1 text-gray-300">URL รูปภาพ Marker (แนะนำขนาด 1:1 แบบโปร่งใส)</label>
-                    <input type="text" id="admin-icon-url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none" placeholder="https://example.com/marker.png">
+                    <input type="text" id="admin-icon-url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="https://example.com/marker.png">
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4">
                     <button onclick="cancelAdminForm()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ยกเลิก</button>
-                    <button onclick="saveAdminForm()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded transition">บันทึก & สร้าง JSON</button>
+                    <button onclick="saveAdminForm()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded transition">บันทึก & สร้าง JSON</button>
                 </div>
             </div>
         </div>
@@ -174,7 +177,7 @@
     <div id="json-modal-overlay" class="overlay">
         <div class="modal-content shadow-2xl w-full max-w-2xl">
             <h3 class="text-xl font-bold mb-2 text-green-400"><i class="fas fa-check-circle mr-2"></i>สร้างข้อมูลสำเร็จ</h3>
-            <p class="text-sm text-gray-400 mb-4">คัดลอก JSON ไปวางใน <code class="bg-gray-800 px-1 rounded text-yellow-300">worldmap-data.js</code></p>
+            <p class="text-sm text-gray-400 mb-4">คัดลอก JSON ไปวางใน <code class="bg-gray-800 px-1 rounded text-slate-300">worldmap-data.js</code></p>
             <textarea id="json-output" rows="8" class="w-full p-3 bg-gray-900 border border-gray-700 rounded font-mono text-sm text-green-300 focus:outline-none" readonly></textarea>
             <textarea id="hidden-copy-area" style="position: absolute; left: -9999px;"></textarea>
             <div class="flex justify-end space-x-3 mt-4">
@@ -202,7 +205,7 @@
         
         L.imageOverlay(imageUrl, bounds).addTo(map);
         
-        // ชี้ไปที่จุดกึ่งกลาง [แกน Y, แกน X] และตั้งค่าระดับการซูม (ปรับเลข 1 เป็น 0 หรือ 2 ได้ถ้าอยากให้ไกล/ใกล้กว่านี้)
+        // ชี้ไปที่จุดกึ่งกลาง [แกน Y, แกน X] และตั้งค่าระดับการซูม
         map.setView([750, 1000], 1); 
         map.setMaxBounds(bounds);
 
@@ -243,37 +246,57 @@
         }
 
         // ==========================================
-        // 3. Data Fetching & Rendering (ดึงจาก GitHub)
+        // 3. Data Fetching & Rendering
         // ==========================================
         async function loadLoreData() {
+            const cacheKey = 'spire_worldmap_data';
+            const cachedData = localStorage.getItem(cacheKey);
+
+            // 1. ลองโหลดจาก Cache มาแสดงทันที เพื่อความรวดเร็ว
+            if (cachedData) {
+                try {
+                    loreData = JSON.parse(cachedData);
+                    renderMarkers();
+                } catch (e) {
+                    console.error("Cache parsing error", e);
+                }
+            }
+
+            // 2. แอบเช็คข้อมูลใหม่จาก GitHub เบื้องหลัง (ใส่ query string กันแคชเก่าจากเบราว์เซอร์)
             try {
-                // อิงจาก Raw URL ของ GitHub
-                const githubRawUrl = 'https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js';
+                const timestamp = new Date().getTime();
+                const githubRawUrl = `https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js?t=${timestamp}`;
                 const response = await fetch(githubRawUrl);
                 
                 if (!response.ok) throw new Error('File not found on GitHub');
                 
                 const textData = await response.text();
+                let newData = [];
                 
                 try {
-                    // ลอง Parse เป็น JSON ก่อน (ในกรณีที่ข้อมูลข้างในเป็นแค่โครงสร้าง JSON)
-                    loreData = JSON.parse(textData);
+                    newData = JSON.parse(textData);
                 } catch (jsonError) {
-                    // หากไฟล์เป็น JS ที่มีการประกาศตัวแปร เช่น `const data = [...]`
-                    // เราจะใช้ Regex ดึงเฉพาะส่วนที่เป็น Array ออกมา
                     const arrayMatch = textData.match(/\[[\s\S]*\]/);
                     if (arrayMatch) {
-                        loreData = JSON.parse(arrayMatch[0]);
-                    } else {
-                        throw new Error("ไม่สามารถอ่านรูปแบบข้อมูล Array ได้");
+                        newData = JSON.parse(arrayMatch[0]);
                     }
                 }
                 
-                renderMarkers();
+                // ถ้าข้อมูลที่ดึงมาใหม่มีอยู่จริง ให้อัปเดตและเซฟลง Cache ทันที
+                if (newData && newData.length > 0) {
+                    // หากข้อมูลเปลี่ยนไป (เปรียบเทียบง่ายๆ จากความยาว) ค่อยเรนเดอร์หมุดใหม่
+                    if (JSON.stringify(newData) !== JSON.stringify(loreData)) {
+                        loreData = newData;
+                        localStorage.setItem(cacheKey, JSON.stringify(loreData));
+                        renderMarkers();
+                    }
+                }
             } catch (error) {
-                console.warn("โหลดข้อมูลจาก GitHub ไม่สำเร็จ หรือยังไม่มีไฟล์", error);
-                loreData = []; // ไม่ใส่ Mock Data แล้ว ปล่อยเป็น Array ว่าง
-                renderMarkers();
+                console.warn("ดึงข้อมูลใหม่จากเบื้องหลังไม่สำเร็จ (อาจยังไม่มีไฟล์)", error);
+                if (!cachedData) {
+                    loreData = []; 
+                    renderMarkers();
+                }
             }
         }
 
@@ -290,7 +313,7 @@
         function createMarker(item) {
             const icon = getMarkerIcon(item);
             const marker = L.marker([item.lat, item.lng], { icon: icon }).addTo(map);
-            marker.bindTooltip(item.title, { direction: 'top', offset: [0, -15] });
+            marker.bindTooltip(item.title || "สถานที่ไม่มีชื่อ", { direction: 'top', offset: [0, -15] });
             marker.on('click', () => openSidebar(item));
         }
 
@@ -299,7 +322,6 @@
         // ==========================================
         async function checkAdminStatus() {
             if (typeof supabase === 'undefined' || !supabase.auth) {
-                console.warn('❌ ไม่พบ Supabase Client หรือ supabase.auth! กรุณาตรวจสอบไฟล์ supabase-config.js');
                 return;
             }
 
@@ -350,19 +372,16 @@
                 return;
             }
 
-            // จัดฟอร์แมตข้อมูลเป็น JSON สตริงให้สวยงาม
             const dataStr = JSON.stringify(loreData, null, 4);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             
-            // สร้างแท็ก <a> จำลองเพื่อสั่งดาวน์โหลดไฟล์
             const a = document.createElement('a');
             a.href = url;
-            a.download = "worldmap-data.json"; // เปลี่ยนชื่อไฟล์สำหรับดาวน์โหลด
+            a.download = "worldmap-data.js";
             document.body.appendChild(a);
             a.click();
             
-            // คืนค่าหน่วยความจำ
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
@@ -386,11 +405,9 @@
             }
         });
 
-        // หากมีการลบหมุดในโหมด Admin ก็ให้อัปเดต Array ด้วย
         map.on('pm:remove', (e) => {
             if (e.layer && e.layer.getLatLng) {
                 const latlng = e.layer.getLatLng();
-                // ลบข้อมูลที่พิกัดตรงกันออกจาก Array
                 loreData = loreData.filter(item => 
                     !(Math.abs(item.lat - latlng.lat) < 0.01 && Math.abs(item.lng - latlng.lng) < 0.01)
                 );
@@ -414,19 +431,18 @@
         }
 
         function saveAdminForm() {
-            const title = document.getElementById('admin-title').value.trim();
+            let title = document.getElementById('admin-title').value.trim();
             const image = document.getElementById('admin-image').value.trim();
             const lore = document.getElementById('admin-lore').value.trim();
-            const iconType = document.getElementById('admin-icon-type').value;
+            let iconType = document.getElementById('admin-icon-type').value;
             const iconUrl = document.getElementById('admin-icon-url').value.trim();
 
-            if (!title || !lore) {
-                alert("กรุณากรอก 'ชื่อสถานที่' และ 'เนื้อเรื่อง'");
-                return;
-            }
+            // ลบการ Block เมื่อข้อมูลไม่ครบ (ให้ค่า Default แทน)
+            if (!title) title = "สถานที่ไม่มีชื่อ";
+            
+            // หากเลือกรูป Custom แต่ไม่ได้ใส่ URL ให้ใช้รูปแบบ default แทน
             if (iconType === 'custom' && !iconUrl) {
-                alert("กรุณาใส่ URL ของรูปภาพ Marker");
-                return;
+                iconType = 'default'; 
             }
 
             const latlng = currentAdminMarker.getLatLng();
@@ -437,7 +453,7 @@
                 image: image,
                 lore: lore,
                 iconType: iconType,
-                ...(iconType === 'custom' && { iconUrl: iconUrl }), 
+                ...(iconType === 'custom' && iconUrl && { iconUrl: iconUrl }), // ใส่ url เฉพาะเมื่อมีข้อมูล
                 lat: parseFloat(latlng.lat.toFixed(2)),
                 lng: parseFloat(latlng.lng.toFixed(2))
             };
@@ -445,9 +461,12 @@
             const jsonString = JSON.stringify(newLoreObj, null, 4);
             document.getElementById('json-output').value = jsonString;
             
-            map.removeLayer(currentAdminMarker); // เอาหมุดชั่วคราวออก
-            createMarker(newLoreObj); // สร้างหมุดด้วย Icon ที่เลือกจริงๆ
+            map.removeLayer(currentAdminMarker); 
+            createMarker(newLoreObj); 
             loreData.push(newLoreObj);
+
+            // อัปเดตข้อมูลลง Cache ให้ทันที (เพื่อให้รีเฟรชแล้วข้อมูลที่พึ่งทำไม่หาย ก่อนนำไปขึ้น Github)
+            localStorage.setItem('spire_worldmap_data', JSON.stringify(loreData));
 
             document.getElementById('admin-modal-overlay').style.display = 'none';
             document.getElementById('json-modal-overlay').style.display = 'flex';
@@ -468,39 +487,37 @@
                 return;
             }
 
-            // กรองข้อมูลเฉพาะที่มีคำค้นหาอยู่ในชื่อ (Title)
-            const matches = loreData.filter(item => item.title.toLowerCase().includes(query));
+            const matches = loreData.filter(item => {
+                const titleMatch = (item.title || "").toLowerCase().includes(query);
+                return titleMatch;
+            });
 
             if (matches.length > 0) {
                 matches.forEach(match => {
                     const li = document.createElement('li');
-                    // ปรับดีไซน์ Dropdown List เป็นสไตล์ Glass UI สว่างขึ้นตอน Hover
-                    li.className = 'px-4 py-2.5 hover:bg-white/10 cursor-pointer text-gray-200 text-sm transition-all flex items-center gap-3';
+                    li.className = 'px-4 py-2.5 hover:bg-gray-800 cursor-pointer text-gray-300 hover:text-white text-sm transition-all flex items-center gap-3';
                     
-                    // ไอคอนขนาดเล็กใน Dropdown ให้ตรงกับชนิดของหมุด
                     let iconClass = 'fa-map-marker-alt text-red-400';
                     if (match.iconType === 'city') iconClass = 'fa-chess-rook text-blue-400';
                     if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-green-400';
                     if (match.iconType === 'custom') iconClass = 'fa-image text-gray-400';
 
-                    li.innerHTML = `<div class="w-5 flex justify-center"><i class="fas ${iconClass}"></i></div> <span class="truncate">${match.title}</span>`;
+                    const displayTitle = match.title || "สถานที่ไม่มีชื่อ";
+                    li.innerHTML = `<div class="w-5 flex justify-center"><i class="fas ${iconClass}"></i></div> <span class="truncate">${displayTitle}</span>`;
                     
-                    // เมื่อผู้ใช้คลิกเลือกสถานที่
                     li.onclick = () => selectLocation(match);
-                    
                     searchSuggestions.appendChild(li);
                 });
                 searchSuggestions.classList.remove('hidden');
             } else {
                 const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-gray-400 text-sm text-center';
+                li.className = 'px-4 py-3 text-gray-500 text-sm text-center';
                 li.innerText = 'ไม่พบสถานที่';
                 searchSuggestions.appendChild(li);
                 searchSuggestions.classList.remove('hidden');
             }
         });
 
-        // ปิด Dropdown เมื่อคลิกพื้นที่ว่าง
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
                 searchSuggestions.classList.add('hidden');
@@ -508,17 +525,14 @@
         });
 
         function selectLocation(item) {
-            searchInput.value = item.title;
+            searchInput.value = item.title || "สถานที่ไม่มีชื่อ";
             searchSuggestions.classList.add('hidden');
             
-            // แพนและซูมไปยังพิกัด (FlyTo)
-            // ระดับซูมตั้งไว้ที่ 2 (ซึ่งใกล้พิกัดสูงสุดที่ระดับ 3) 
             map.flyTo([item.lat, item.lng], 2, {
                 animate: true,
-                duration: 1.5 // ความเร็วในการเลื่อนหน้าจอ
+                duration: 1.5 
             });
             
-            // ให้หน่วงเวลาเล็กน้อยเพื่อให้แผนที่เลื่อนไปถึงก่อน ค่อยเปิด Sidebar 
             setTimeout(() => {
                 openSidebar(item);
             }, 800);
@@ -541,8 +555,8 @@
 
         const sidebar = document.getElementById('lore-sidebar');
         function openSidebar(item) {
-            document.getElementById('sidebar-title').textContent = item.title;
-            document.getElementById('sidebar-lore').textContent = item.lore;
+            document.getElementById('sidebar-title').textContent = item.title || "สถานที่ไม่มีชื่อ";
+            document.getElementById('sidebar-lore').textContent = item.lore || "";
             const imgEl = document.getElementById('sidebar-image');
             if (item.image) { imgEl.src = item.image; imgEl.classList.remove('hidden'); } 
             else { imgEl.classList.add('hidden'); }
@@ -558,7 +572,6 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // โหลดข้อมูลและตรวจสอบสิทธิ์อัตโนมัติเมื่อเปิดหน้าเว็บ
         window.onload = async () => {
             loadLoreData();
             checkAdminStatus();
