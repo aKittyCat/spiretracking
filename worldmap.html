@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Spire Tracking - Worldmap</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <!-- Leaflet Geoman CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
-    
+
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
+
     <!-- Google Fonts (Sarabun) -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,120 +28,233 @@
     <script src="supabase-config.js"></script>
 
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%;
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             font-family: 'Sarabun', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a; overflow: hidden;
+            background-color: #1a1a1a;
+            overflow: hidden;
         }
 
-        #map { width: 100vw; height: 100vh; background-color: #242424; }
+        #map {
+            width: 100vw;
+            height: 100vh;
+            background-color: #242424;
+        }
 
         /* Icon Styles */
         .custom-div-icon {
-            display: flex; justify-content: center; align-items: flex-end;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
         }
+
         /* Custom Image Marker */
         .custom-img-marker {
             border-radius: 50%;
             border: 2px solid #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
             background-color: #333;
             object-fit: cover;
         }
 
+        /* Spire Marker — ไม่มีกรอบ ไม่มีพื้นหลัง */
+        .spire-marker {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
         /* Sidebar สำหรับแสดง Lore - Desktop */
         #lore-sidebar {
-            position: absolute; top: 0; right: -420px; width: 380px; height: 100vh;
-            background: rgba(18, 18, 18, 0.97); color: #fff;
-            box-shadow: -5px 0 20px rgba(0,0,0,0.6);
-            transition: right 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 1000;
-            overflow-y: auto; border-left: 2px solid #cbd5e1;
+            position: absolute;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: rgba(18, 18, 18, 0.97);
+            color: #fff;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.6);
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+            border-left: 2px solid #cbd5e1;
         }
-        #lore-sidebar.active { right: 0; }
+
+        #lore-sidebar.active {
+            right: 0;
+        }
+
         .sidebar-close {
-            position: absolute; top: 15px; right: 15px; cursor: pointer; color: #aaa;
-            transition: color 0.2s; width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; background: rgba(255,255,255,0.05);
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.2s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
         }
-        .sidebar-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
-        #lore-sidebar::-webkit-scrollbar { width: 6px; }
-        #lore-sidebar::-webkit-scrollbar-track { background: transparent; }
-        #lore-sidebar::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
+
+        .sidebar-close:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #lore-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #lore-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #lore-sidebar::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
 
         /* Mobile: sidebar slides from bottom */
         @media (max-width: 640px) {
             #lore-sidebar {
-                top: auto; right: 0; bottom: -75vh;
-                width: 100%; height: 75vh; max-height: 75vh;
-                border-left: none; border-top: 2px solid #cbd5e1;
+                top: auto;
+                right: 0;
+                bottom: -75vh;
+                width: 100%;
+                height: 75vh;
+                max-height: 75vh;
+                border-left: none;
+                border-top: 2px solid #cbd5e1;
                 border-radius: 20px 20px 0 0;
-                transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1);
+                transition: bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             }
-            #lore-sidebar.active { bottom: 0; }
+
+            #lore-sidebar.active {
+                bottom: 0;
+            }
+
             /* Drag handle */
             #lore-sidebar::before {
-                content: ''; display: block; margin: 10px auto 0;
-                width: 40px; height: 4px; background: rgba(255,255,255,0.2);
+                content: '';
+                display: block;
+                margin: 10px auto 0;
+                width: 40px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.2);
                 border-radius: 2px;
             }
         }
-        
+
         /* Modals */
         .overlay {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(3px);
-            z-index: 2000; justify-content: center; align-items: center;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
         }
+
         .modal-content {
-            background: #2a2a2a; color: #e5e5e5; padding: 24px;
-            border-radius: 8px; width: 90%; max-width: 500px; border: 1px solid #444;
+            background: #2a2a2a;
+            color: #e5e5e5;
+            padding: 24px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid #444;
         }
 
         #toast {
-            position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%);
-            background: #10b981; color: white; padding: 10px 20px;
-            border-radius: 8px; transition: bottom 0.3s; z-index: 3000;
+            position: fixed;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: bottom 0.3s;
+            z-index: 3000;
         }
-        #toast.show { bottom: 20px; }
+
+        #toast.show {
+            bottom: 20px;
+        }
 
         /* Custom Scrollbar สำหรับ Dropdown */
-        .glass-scrollbar::-webkit-scrollbar { width: 6px; }
-        .glass-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .glass-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-        .glass-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        .glass-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .glass-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .glass-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .glass-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
     </style>
 </head>
+
 <body>
 
     <!-- Search Bar (ช่องค้นหาสถานที่) -->
     <div class="absolute top-3 left-3 z-[1000] w-64 sm:w-72" id="search-container">
         <div class="relative group">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-slate-500/0 to-blue-500/0 rounded-xl blur opacity-0 group-focus-within:opacity-40 group-focus-within:from-slate-500/30 group-focus-within:to-blue-500/30 transition-all duration-500"></div>
+            <div
+                class="absolute -inset-0.5 bg-gradient-to-r from-slate-500/0 to-blue-500/0 rounded-xl blur opacity-0 group-focus-within:opacity-40 group-focus-within:from-slate-500/30 group-focus-within:to-blue-500/30 transition-all duration-500">
+            </div>
             <div class="relative flex items-center">
-                <i class="fas fa-search absolute left-3 text-xs text-gray-500 group-hover:text-slate-300 group-focus-within:text-slate-300 transition-all duration-300 pointer-events-none"></i>
-                <input type="text" id="search-input" placeholder="ค้นหาสถานที่..." class="w-full px-3 py-2 pl-8 pr-8 text-xs font-medium text-gray-200 transition-all duration-300 bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 hover:border-white/25 focus:border-slate-400/60 focus:outline-none focus:bg-black/60 shadow-lg shadow-black/20 placeholder-gray-500 appearance-none" autocomplete="off">
-                <button id="search-clear" class="absolute right-2.5 text-gray-600 hover:text-white transition-all duration-200 hidden" onclick="clearSearch()">
+                <i
+                    class="fas fa-search absolute left-3 text-xs text-gray-500 group-hover:text-slate-300 group-focus-within:text-slate-300 transition-all duration-300 pointer-events-none"></i>
+                <input type="text" id="search-input" placeholder="ค้นหาสถานที่..."
+                    class="w-full px-3 py-2 pl-8 pr-8 text-xs font-medium text-gray-200 transition-all duration-300 bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 hover:border-white/25 focus:border-slate-400/60 focus:outline-none focus:bg-black/60 shadow-lg shadow-black/20 placeholder-gray-500 appearance-none"
+                    autocomplete="off">
+                <button id="search-clear"
+                    class="absolute right-2.5 text-gray-600 hover:text-white transition-all duration-200 hidden"
+                    onclick="clearSearch()">
                     <i class="fas fa-times-circle text-xs"></i>
                 </button>
             </div>
         </div>
         <!-- Suggestions Dropdown -->
-        <ul id="search-suggestions" class="absolute w-full mt-1.5 bg-[#0d0d0d] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden hidden max-h-64 overflow-y-auto z-[1001] glass-scrollbar">
+        <ul id="search-suggestions"
+            class="absolute w-full mt-1.5 bg-[#0d0d0d] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden hidden max-h-64 overflow-y-auto z-[1001] glass-scrollbar">
         </ul>
     </div>
 
     <!-- ปุ่มกลับหน้าหลัก -->
     <div class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000]">
-        <button onclick="window.location.href = 'characters.html'" class="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/50 backdrop-blur-xl rounded-xl sm:rounded-lg border border-white/10 hover:border-white/25 shadow-lg active:scale-95">
+        <button onclick="window.location.href = 'characters.html'"
+            class="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/50 backdrop-blur-xl rounded-xl sm:rounded-lg border border-white/10 hover:border-white/25 shadow-lg active:scale-95">
             <i class="fa-solid fa-home sm:mr-2"></i><span class="hidden sm:inline">กลับหน้าหลัก</span>
         </button>
     </div>
 
     <!-- แถบเครื่องมือ Admin -->
-    <div id="admin-toolbar" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-700 flex space-x-3 items-center">
+    <div id="admin-toolbar"
+        class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-700 flex space-x-3 items-center">
         <span class="text-sm text-slate-300 font-bold mr-2"><i class="fas fa-crown mr-1"></i> Admin Mode</span>
-        <button onclick="exportData()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
+        <button onclick="exportData()"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
             <i class="fas fa-file-export mr-2"></i>Export JSON
         </button>
     </div>
@@ -150,7 +265,8 @@
     <div id="lore-sidebar" class="p-6">
         <i class="fas fa-times fa-lg sidebar-close" onclick="closeSidebar()"></i>
         <div id="sidebar-content" class="mt-8">
-            <img id="sidebar-image" src="" alt="Lore Image" class="w-full h-48 object-cover rounded shadow-lg border border-gray-600 hidden">
+            <img id="sidebar-image" src="" alt="Lore Image"
+                class="w-full h-48 object-cover rounded shadow-lg border border-gray-600 hidden">
             <h2 id="sidebar-title" class="text-2xl font-bold mt-4 mb-2 text-slate-200"></h2>
             <div class="w-full h-px bg-gray-600 mb-4"></div>
             <p id="sidebar-lore" class="text-gray-300 leading-relaxed whitespace-pre-wrap"></p>
@@ -160,41 +276,58 @@
     <!-- Admin Form Modal ตอนปักหมุด -->
     <div id="admin-modal-overlay" class="overlay">
         <div class="modal-content shadow-2xl overflow-y-auto max-h-screen">
-            <h3 class="text-xl font-bold mb-4 text-slate-200"><i class="fas fa-map-pin mr-2"></i>เพิ่มข้อมูลสถานที่ใหม่ (Admin)</h3>
+            <h3 class="text-xl font-bold mb-4 text-slate-200"><i class="fas fa-map-pin mr-2"></i>เพิ่มข้อมูลสถานที่ใหม่
+                (Admin)</h3>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">ชื่อสถานที่ (Title)</label>
-                    <input type="text" id="admin-title" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้">
+                    <input type="text" id="admin-title"
+                        class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none"
+                        placeholder="ปล่อยว่างได้">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">ภาพประกอบใน Sidebar (URL)</label>
-                    <input type="text" id="admin-image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้">
+                    <input type="text" id="admin-image"
+                        class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none"
+                        placeholder="ปล่อยว่างได้">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">เนื้อเรื่อง (Lore)</label>
-                    <textarea id="admin-lore" rows="3" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="ปล่อยว่างได้"></textarea>
+                    <textarea id="admin-lore" rows="3"
+                        class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none"
+                        placeholder="ปล่อยว่างได้"></textarea>
                 </div>
-                
+
                 <div class="border-t border-gray-600 my-2 pt-2"></div>
-                
+
                 <!-- ส่วนเลือกรูปแบบหมุด -->
                 <div>
                     <label class="block text-sm font-medium mb-1 text-blue-400">รูปแบบหมุดบนแผนที่ (Marker Type)</label>
-                    <select id="admin-icon-type" onchange="toggleCustomIconUrl()" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none">
-                        <option value="default">📍 หมุดพื้นฐาน (แดง)</option>
-                        <option value="city">🏰 เมือง / ปราสาท (ฟ้า)</option>
-                        <option value="danger">💀 พื้นที่อันตราย (เขียว)</option>
+                    <select id="admin-icon-type" onchange="toggleCustomIconUrl()"
+                        class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none">
+                        <option value="default">📍 หมุดพื้นฐาน</option>
+                        <option value="landmass">🗺️ Landmass</option>
+                        <option value="city">🏰 City</option>
+                        <option value="town">🏘️ Town</option>
+                        <option value="danger">💀 พื้นที่อันตราย</option>
+                        <option value="spire">🗼 Spire</option>
                         <option value="custom">🖼️ อัปโหลดรูปภาพ Marker เอง (URL)</option>
                     </select>
                 </div>
                 <div id="custom-icon-url-group" class="hidden">
-                    <label class="block text-sm font-medium mb-1 text-gray-300">URL รูปภาพ Marker (แนะนำขนาด 1:1 แบบโปร่งใส)</label>
-                    <input type="text" id="admin-icon-url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none" placeholder="https://example.com/marker.png">
+                    <label class="block text-sm font-medium mb-1 text-gray-300">URL รูปภาพ Marker (แนะนำขนาด 1:1
+                        แบบโปร่งใส)</label>
+                    <input type="text" id="admin-icon-url"
+                        class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none"
+                        placeholder="https://example.com/marker.png">
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button onclick="cancelAdminForm()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ยกเลิก</button>
-                    <button onclick="saveAdminForm()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded transition">บันทึก & สร้าง JSON</button>
+                    <button onclick="cancelAdminForm()"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ยกเลิก</button>
+                    <button onclick="saveAdminForm()"
+                        class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded transition">บันทึก
+                        & สร้าง JSON</button>
                 </div>
             </div>
         </div>
@@ -203,13 +336,20 @@
     <!-- JSON Output Modal -->
     <div id="json-modal-overlay" class="overlay">
         <div class="modal-content shadow-2xl w-full max-w-2xl">
-            <h3 class="text-xl font-bold mb-2 text-green-400"><i class="fas fa-check-circle mr-2"></i>สร้างข้อมูลสำเร็จ</h3>
-            <p class="text-sm text-gray-400 mb-4">คัดลอก JSON ไปวางใน <code class="bg-gray-800 px-1 rounded text-slate-300">worldmap-data.js</code></p>
-            <textarea id="json-output" rows="8" class="w-full p-3 bg-gray-900 border border-gray-700 rounded font-mono text-sm text-green-300 focus:outline-none" readonly></textarea>
+            <h3 class="text-xl font-bold mb-2 text-green-400"><i class="fas fa-check-circle mr-2"></i>สร้างข้อมูลสำเร็จ
+            </h3>
+            <p class="text-sm text-gray-400 mb-4">คัดลอก JSON ไปวางใน <code
+                    class="bg-gray-800 px-1 rounded text-slate-300">worldmap-data.js</code></p>
+            <textarea id="json-output" rows="8"
+                class="w-full p-3 bg-gray-900 border border-gray-700 rounded font-mono text-sm text-green-300 focus:outline-none"
+                readonly></textarea>
             <textarea id="hidden-copy-area" style="position: absolute; left: -9999px;"></textarea>
             <div class="flex justify-end space-x-3 mt-4">
-                <button onclick="closeJsonModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ปิด</button>
-                <button onclick="copyJson()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 font-bold rounded transition"><i class="fas fa-copy mr-2"></i>Copy JSON</button>
+                <button onclick="closeJsonModal()"
+                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">ปิด</button>
+                <button onclick="copyJson()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 font-bold rounded transition"><i
+                        class="fas fa-copy mr-2"></i>Copy JSON</button>
             </div>
         </div>
     </div>
@@ -228,12 +368,12 @@
         L.control.zoom({ position: 'topright' }).addTo(map);
 
         const bounds = [[0, 0], [1500, 2000]];
-        const imageUrl = 'https://i.ibb.co/dgYvsZ7/Faerun-Map-Redone-Roll-20-Res-Hexes.jpg'; 
-        
+        const imageUrl = 'https://i.ibb.co/dgYvsZ7/Faerun-Map-Redone-Roll-20-Res-Hexes.jpg';
+
         L.imageOverlay(imageUrl, bounds).addTo(map);
-        
+
         // ชี้ไปที่จุดกึ่งกลาง [แกน Y, แกน X] และตั้งค่าระดับการซูม
-        map.setView([750, 1000], 1); 
+        map.setView([750, 1000], 1);
         map.setMaxBounds(bounds);
 
         let loreData = [];
@@ -246,34 +386,38 @@
 
         // ฟังก์ชันสร้างไอคอนจากข้อมูล JSON
         function getMarkerIcon(item) {
+            // รูปแบบที่ใช้รูปภาพ
             if (item.iconType === 'custom' && item.iconUrl) {
-                // กรณีเป็นรูปภาพ Custom URL
                 return L.icon({
                     iconUrl: item.iconUrl,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20], // ให้อยู่กึ่งกลาง
+                    iconSize: [40, 40], iconAnchor: [20, 20],
                     className: 'custom-img-marker'
                 });
-            } else {
-                // กรณีเป็นไอคอนพื้นฐาน (FontAwesome)
-                let faClass = 'fa-map-marker-alt';
-                let color = '#ef4444'; // สีแดง
-                
-                if (item.iconType === 'city') {
-                    faClass = 'fa-sharp fa-solid fa-scale-balanced';
-                    color = '#60a5fa'; // สีฟ้า
-                } else if (item.iconType === 'danger') {
-                    faClass = 'fa-skull-crossbones';
-                    color = '#10b981'; // สีเขียว
-                }
-
-                return L.divIcon({
-                    html: `<i class="fas ${faClass}" style="color: ${color}; font-size: 26px; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8));"></i>`,
-                    className: 'custom-div-icon',
-                    iconSize: [26, 26],
-                    iconAnchor: [13, 26]
+            }
+            if (item.iconType === 'spire') {
+                return L.icon({
+                    iconUrl: 'pic/map/structure/spire.png',
+                    iconSize: [88, 88], iconAnchor: [28, 56],
+                    className: 'spire-marker'
                 });
             }
+
+            // รูปแบบ FontAwesome
+            const ICONS = {
+                'default':  { fa: 'fa-map-marker-alt',    color: '#ef4444' }, // แดง
+                'landmass': { fa: 'fa-mountain',           color: '#a78b5a' }, // น้ำตาลทอง
+                'city':     { fa: 'fa-chess-rook',         color: '#60a5fa' }, // ฟ้า
+                'town':     { fa: 'fa-house-chimney',      color: '#34d399' }, // เขียวมิ้น
+                'danger':   { fa: 'fa-skull-crossbones',   color: '#c084fc' }, // ม่วง
+            };
+            const cfg = ICONS[item.iconType] || ICONS['default'];
+
+            return L.divIcon({
+                html: `<i class="fas ${cfg.fa}" style="color:${cfg.color}; font-size:26px; filter:drop-shadow(0px 2px 2px rgba(0,0,0,0.8));"></i>`,
+                className: 'custom-div-icon',
+                iconSize: [26, 26],
+                iconAnchor: [13, 26]
+            });
         }
 
         // ==========================================
@@ -296,9 +440,9 @@
             try {
                 const githubRawUrl = `https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js?t=${Date.now()}`;
                 const response = await fetch(githubRawUrl, { cache: 'no-store' });
-                
+
                 if (!response.ok) throw new Error('File not found on GitHub');
-                
+
                 const textData = await response.text();
 
                 let newData = [];
@@ -308,7 +452,7 @@
                     const arrayMatch = textData.match(/\[[\s\S]*\]/);
                     if (arrayMatch) newData = JSON.parse(arrayMatch[0]);
                 }
-                
+
                 // อัปเดตเสมอ แม้ array จะว่าง (กรณีลบข้อมูล)
                 if (Array.isArray(newData)) {
                     // เช็คว่าข้อมูลเปลี่ยนจริงก่อน re-render
@@ -362,7 +506,7 @@
 
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError || !session) return; 
+                if (sessionError || !session) return;
 
                 const email = session.user.email;
                 const { data: settingsData, error } = await supabase
@@ -392,10 +536,10 @@
                     drawCircleMarker: false, drawPolyline: false, drawRectangle: false, drawPolygon: false, drawCircle: false, drawText: false
                 });
                 isGeomanEnabled = true;
-                
+
                 // แสดงปุ่ม Export
                 document.getElementById('admin-toolbar').classList.remove('hidden');
-                
+
                 showToast("โหมด Admin ทำงานแล้ว: เปิดใช้งานเครื่องมือจัดการแผนที่และระบบ Export");
             }
         }
@@ -410,16 +554,16 @@
             const dataStr = JSON.stringify(loreData, null, 4);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            
+
             const a = document.createElement('a');
             a.href = url;
             a.download = "worldmap-data.js";
             document.body.appendChild(a);
             a.click();
-            
+
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
+
             showToast("ส่งออกข้อมูลสำเร็จ! โปรดนำไฟล์นี้ไปอัปเดตบน GitHub");
         }
 
@@ -443,7 +587,7 @@
         map.on('pm:remove', (e) => {
             if (e.layer && e.layer.getLatLng) {
                 const latlng = e.layer.getLatLng();
-                loreData = loreData.filter(item => 
+                loreData = loreData.filter(item =>
                     !(Math.abs(item.lat - latlng.lat) < 0.01 && Math.abs(item.lng - latlng.lng) < 0.01)
                 );
                 showToast("ลบสถานที่เรียบร้อยแล้ว (อย่าลืมกด Export เพื่อบันทึกผลลัพธ์ใหม่)");
@@ -474,10 +618,10 @@
 
             // ลบการ Block เมื่อข้อมูลไม่ครบ (ให้ค่า Default แทน)
             if (!title) title = "สถานที่ไม่มีชื่อ";
-            
+
             // หากเลือกรูป Custom แต่ไม่ได้ใส่ URL ให้ใช้รูปแบบ default แทน
             if (iconType === 'custom' && !iconUrl) {
-                iconType = 'default'; 
+                iconType = 'default';
             }
 
             const latlng = currentAdminMarker.getLatLng();
@@ -495,9 +639,9 @@
 
             const jsonString = JSON.stringify(newLoreObj, null, 4);
             document.getElementById('json-output').value = jsonString;
-            
-            map.removeLayer(currentAdminMarker); 
-            createMarker(newLoreObj); 
+
+            map.removeLayer(currentAdminMarker);
+            createMarker(newLoreObj);
             loreData.push(newLoreObj);
 
             // อัปเดตข้อมูลลง Cache ให้ทันที (เพื่อให้รีเฟรชแล้วข้อมูลที่พึ่งทำไม่หาย ก่อนนำไปขึ้น Github)
@@ -530,11 +674,11 @@
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             searchSuggestions.innerHTML = '';
-            
+
             // แสดง/ซ่อนปุ่ม clear
             if (e.target.value.length > 0) searchClear.classList.remove('hidden');
             else searchClear.classList.add('hidden');
-            
+
             if (query.length === 0) {
                 searchSuggestions.classList.add('hidden');
                 return;
@@ -542,22 +686,25 @@
 
             const matches = loreData.filter(item => {
                 return (item.title || "").toLowerCase().includes(query) ||
-                       (item.lore || "").toLowerCase().includes(query);
+                    (item.lore || "").toLowerCase().includes(query);
             });
 
             if (matches.length > 0) {
                 matches.forEach((match, idx) => {
                     const li = document.createElement('li');
                     li.className = 'px-4 py-3 cursor-pointer text-gray-300 hover:text-white text-sm transition-all duration-200 flex items-center gap-3 hover:bg-white/5' + (idx < matches.length - 1 ? ' border-b border-white/5' : '');
-                    
+
                     let iconClass = 'fa-map-marker-alt text-red-400';
-                    if (match.iconType === 'city') iconClass = 'fa-chess-rook text-blue-400';
-                    if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-emerald-400';
-                    if (match.iconType === 'custom') iconClass = 'fa-image text-purple-400';
+                    if (match.iconType === 'landmass') iconClass = 'fa-mountain text-yellow-700';
+                    if (match.iconType === 'city')     iconClass = 'fa-chess-rook text-blue-400';
+                    if (match.iconType === 'town')     iconClass = 'fa-house-chimney text-emerald-400';
+                    if (match.iconType === 'danger')   iconClass = 'fa-skull-crossbones text-purple-400';
+                    if (match.iconType === 'spire')    iconClass = 'fa-dungeon text-violet-400';
+                    if (match.iconType === 'custom')   iconClass = 'fa-image text-gray-400';
 
                     const displayTitle = match.title || "สถานที่ไม่มีชื่อ";
                     const loreSnippet = match.lore ? match.lore.substring(0, 50) + (match.lore.length > 50 ? '...' : '') : '';
-                    
+
                     li.innerHTML = `
                         <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                             <i class="fas ${iconClass} text-xs"></i>
@@ -567,7 +714,7 @@
                             ${loreSnippet ? `<div class="text-xs text-gray-500 truncate mt-0.5">${highlightMatch(loreSnippet, query)}</div>` : ''}
                         </div>
                         <i class="fas fa-chevron-right text-[10px] text-gray-600 flex-shrink-0"></i>`;
-                    
+
                     li.onclick = () => selectLocation(match);
                     searchSuggestions.appendChild(li);
                 });
@@ -591,12 +738,12 @@
             searchInput.value = item.title || "สถานที่ไม่มีชื่อ";
             searchSuggestions.classList.add('hidden');
             searchClear.classList.remove('hidden');
-            
+
             map.flyTo([item.lat, item.lng], 2, {
                 animate: true,
-                duration: 1.5 
+                duration: 1.5
             });
-            
+
             setTimeout(() => {
                 openSidebar(item);
             }, 800);
@@ -606,7 +753,7 @@
         // 7. Utility Functions
         // ==========================================
         function closeJsonModal() { document.getElementById('json-modal-overlay').style.display = 'none'; }
-        
+
         function copyJson() {
             const jsonText = document.getElementById('json-output').value;
             const hiddenTextArea = document.getElementById('hidden-copy-area');
@@ -622,7 +769,7 @@
             document.getElementById('sidebar-title').textContent = item.title || "สถานที่ไม่มีชื่อ";
             document.getElementById('sidebar-lore').textContent = item.lore || "";
             const imgEl = document.getElementById('sidebar-image');
-            if (item.image) { imgEl.src = item.image; imgEl.classList.remove('hidden'); } 
+            if (item.image) { imgEl.src = item.image; imgEl.classList.remove('hidden'); }
             else { imgEl.classList.add('hidden'); }
             sidebar.classList.add('active');
         }
@@ -643,4 +790,5 @@
 
     </script>
 </body>
+
 </html>
