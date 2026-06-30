@@ -342,7 +342,16 @@
             </div>
 
             <!-- Category Buttons -->
-            <div class="flex flex-wrap gap-2 mb-6" id="categoryButtons"></div>
+            <div class="flex flex-wrap gap-2 mb-4" id="categoryButtons"></div>
+
+            <!-- Racial Feature Notice -->
+            <div id="racialNotice" class="hidden mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                <i class="fa-solid fa-circle-info text-amber-400 mt-0.5 flex-shrink-0"></i>
+                <p class="text-amber-200 text-sm leading-relaxed">
+                    Feature ที่ไม่แสดงในนี้จะมีราคา <strong class="text-amber-400">100 AP</strong>
+                    <span class="text-amber-300/70">(ความสามารถอื่นๆ ของเผ่า)</span>
+                </p>
+            </div>
 
             <!-- Items Grid -->
             <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
@@ -394,6 +403,12 @@
                 b.classList.remove('active');
                 if ((cat === 'all' && b.textContent === 'ทั้งหมด') || b.textContent === cat) b.classList.add('active');
             });
+            const notice = document.getElementById('racialNotice');
+            if (cat === 'Racial Feature') {
+                notice.classList.remove('hidden');
+            } else {
+                notice.classList.add('hidden');
+            }
             filterItems();
         }
 
