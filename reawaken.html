@@ -10,61 +10,126 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #111827; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
         .glass-panel {
             background: rgba(31, 41, 55, 0.7);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(75, 85, 99, 0.4);
         }
+
         .gradient-text {
             background: linear-gradient(to right, #f59e0b, #ef4444);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .tab-btn.active {
             background: rgba(245, 158, 11, 0.2);
             color: #fbbf24;
             border-color: rgba(245, 158, 11, 0.5);
         }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
         .tier-badge {
             font-size: 0.7rem;
             padding: 2px 8px;
             border-radius: 9999px;
             font-weight: 600;
         }
-        .tier-0 { background: rgba(107,114,128,0.3); color: #9ca3af; }
-        .tier-1 { background: rgba(34,197,94,0.2); color: #4ade80; }
-        .tier-2 { background: rgba(59,130,246,0.2); color: #60a5fa; }
-        .tier-3 { background: rgba(168,85,247,0.2); color: #c084fc; }
-        .tier-4 { background: rgba(239,68,68,0.2); color: #f87171; }
-        .tier-5 { background: rgba(245,158,11,0.2); color: #fbbf24; }
+
+        .tier-0 {
+            background: rgba(107, 114, 128, 0.3);
+            color: #9ca3af;
+        }
+
+        .tier-1 {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .tier-2 {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .tier-3 {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .tier-4 {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .tier-5 {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
         .item-card {
             transition: all 0.3s ease;
             cursor: pointer;
         }
+
         .item-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.08);
             border-color: rgba(245, 158, 11, 0.3);
         }
-        .category-btn { transition: all 0.2s ease; }
+
+        .category-btn {
+            transition: all 0.2s ease;
+        }
+
         .category-btn.active {
             background: rgba(245, 158, 11, 0.15);
             color: #fbbf24;
             border-color: rgba(245, 158, 11, 0.4);
         }
+
         .modal-bg {
             background-color: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(4px);
         }
+
         .search-input {
             background-color: #111825;
             border: 1px solid #4b5563;
@@ -72,18 +137,21 @@
             border-radius: 8px;
             padding: 8px 14px;
         }
+
         .search-input:focus {
             border-color: #f59e0b;
             box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
             outline: none;
         }
+
         .glow-line {
             height: 2px;
             background: linear-gradient(to right, transparent, #f59e0b, #ef4444, transparent);
         }
+
         .ap-cost {
-            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(239,68,68,0.1));
-            border: 1px solid rgba(245,158,11,0.3);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
     </style>
 </head>
@@ -132,11 +200,14 @@
                     </div>
                 </div>
                 <p class="text-gray-300 mb-4 leading-relaxed">
-                    เมื่อตัวละครมีเลเวล 20 หรือมากกว่า ผู้เล่นสามารถทำการ Reawaken ตัวละครได้ โดยจะคล้ายกับการสร้างตัวละครใหม่แต่ครั้งนี้ผู้เล่นสามารถนำจำนวนชั่วโมงไปแลกเป็นแต้ม
-                    <strong class="text-amber-400">Awaken Point (AP)</strong> ได้ โดยแต้ม AP สามารถนำไปแลกความสามารถต่างๆให้กับตัวละครได้
+                    เมื่อตัวละครมีเลเวล 20 หรือมากกว่า ผู้เล่นสามารถทำการ Reawaken ตัวละครได้
+                    โดยจะคล้ายกับการสร้างตัวละครใหม่แต่ครั้งนี้ผู้เล่นสามารถนำจำนวนชั่วโมงไปแลกเป็นแต้ม
+                    <strong class="text-amber-400">Awaken Point (AP)</strong> ได้ โดยแต้ม AP
+                    สามารถนำไปแลกความสามารถต่างๆให้กับตัวละครได้
                 </p>
                 <p class="text-gray-300 leading-relaxed">
-                    ผู้เล่นสามารถเลือก Reawaken ตัวละครกลับไปที่จุดเริ่มต้นของ Tier ใดก็ได้ (3, 5, 11, 17, 23) เพื่อแลกแต้ม AP ตามระดับ Tier ที่เลือก โดยจำนวนแต้มจะแสดงให้เห็นเมื่อตัวละครถึงเลเวล 20
+                    ผู้เล่นสามารถเลือก Reawaken ตัวละครกลับไปที่จุดเริ่มต้นของ Tier ใดก็ได้ (3, 5, 11, 17, 23)
+                    เพื่อแลกแต้ม AP ตามระดับ Tier ที่เลือก โดยจำนวนแต้มจะแสดงให้เห็นเมื่อตัวละครถึงเลเวล 20
                 </p>
             </div>
 
@@ -144,17 +215,32 @@
                 <!-- Retained Items -->
                 <div class="glass-panel p-6 rounded-2xl shadow-lg">
                     <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span class="w-1.5 h-6 bg-green-500 rounded-full"></span> สิ่งที่ตัวละครสามารถเก็บไว้ได้เมื่อ Reawaken
+                        <span class="w-1.5 h-6 bg-green-500 rounded-full"></span> สิ่งที่ตัวละครสามารถเก็บไว้ได้เมื่อ
+                        Reawaken
                     </h2>
                     <ul class="space-y-3">
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>ความทรงจำ</span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>ทองและ Favor</span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>ภาษาและ proficiency ที่เรียนมา</span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>ไอเทม <span class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>Boons <span class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>Artifacts <span class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>ผลจาก Manuals ที่ตัวละครเคยใช้ <span class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
-                        <li class="flex items-start gap-3 text-gray-300"><i class="fa-solid fa-check text-green-400 mt-1"></i><span>แต้ม AP ที่เหลือจากการ Reawaken</span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>ความทรงจำ</span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>ทองและ Favor</span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>ภาษาและ proficiency
+                                ที่เรียนมา</span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>ไอเทม <span
+                                    class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>Boons <span
+                                    class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>Artifacts <span
+                                    class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>ผลจาก Manuals ที่ตัวละครเคยใช้
+                                <span class="text-amber-400 text-sm">(ล็อคระดับ Tier)</span></span></li>
+                        <li class="flex items-start gap-3 text-gray-300"><i
+                                class="fa-solid fa-check text-green-400 mt-1"></i><span>แต้ม AP ที่เหลือจากการ
+                                Reawaken</span></li>
                     </ul>
                 </div>
 
@@ -164,15 +250,46 @@
                         <span class="w-1.5 h-6 bg-red-500 rounded-full"></span> จำนวนสูงสุดที่ตัวละครสามารถเลือกได้
                     </h2>
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">ASI/Feat</span><span class="text-amber-400 font-bold">สูงสุด 3</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">เพิ่ม Stat สูงสุด (ต่ออัน)</span><span class="text-amber-400 font-bold">1 ครั้ง/Stat</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Blessing</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Charms</span><span class="text-amber-400 font-bold">สูงสุด 3</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Dark Bargain</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Dark Gift</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Draconic Gift</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Cult</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
-                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span class="text-gray-300">Demonic Boon</span><span class="text-amber-400 font-bold">สูงสุด 1</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">ASI/Feat</span><span class="text-amber-400 font-bold">สูงสุด
+                                3</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">เพิ่ม Stat สูงสุด (ต่ออัน)</span><span
+                                class="text-amber-400 font-bold">1 ครั้ง/Stat</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Blessing</span><span class="text-amber-400 font-bold">สูงสุด
+                                1</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Charms</span><span class="text-amber-400 font-bold">สูงสุด
+                                3</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Dark Bargain</span><span class="text-amber-400 font-bold">สูงสุด
+                                1</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Dark Gift</span><span class="text-amber-400 font-bold">สูงสุด
+                                1</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Draconic Gift</span><span class="text-amber-400 font-bold">สูงสุด
+                                1</span></div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Cult</span><span class="text-amber-400 font-bold">สูงสุด 1</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-800/50"><span
+                                class="text-gray-300">Demonic Boon</span><span class="text-amber-400 font-bold">สูงสุด
+                                1</span></div>
+                        <div class="py-2 px-3 rounded-lg bg-gray-800/50">
+                            <span class="text-gray-300 block mb-1">ความสามารถจากเผ่า <span class="text-gray-500 text-xs">(เลือกอย่างใดอย่างหนึ่ง)</span></span>
+                            <ul class="space-y-1 pl-2">
+                                <li class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-400">ความสามารถพิเศษประจำเผ่า</span>
+                                    <span class="text-amber-400 font-bold">สูงสุด 1</span>
+                                </li>
+                                <li class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-400">ความสามารถอื่นๆ ของเผ่า</span>
+                                    <span class="text-amber-400 font-bold">สูงสุด 2</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,7 +301,9 @@
                         <span class="w-1.5 h-6 bg-amber-500 rounded-full"></span> สามารถ Reawaken ได้ยังไง
                     </h2>
                     <p class="text-gray-300 leading-relaxed">
-                        ผู้เล่นต้องทำการลงบันทึกในช่อง <a class="text-amber-400 hover:text-amber-300 underline">#บันทึกตัวละคร</a> ของตัวละครนั้นๆ จากนั้นรอทางสตาฟตรวจให้เสร็จเรียบร้อย
+                        ผู้เล่นต้องทำการลงบันทึกในช่อง <a
+                            class="text-amber-400 hover:text-amber-300 underline">#บันทึกตัวละคร</a> ของตัวละครนั้นๆ
+                        จากนั้นรอทางสตาฟตรวจให้เสร็จเรียบร้อย
                     </p>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl shadow-lg border border-red-500/20">
@@ -192,7 +311,8 @@
                         <i class="fa-solid fa-triangle-exclamation"></i> ข้อควรระวัง
                     </h2>
                     <p class="text-gray-300 leading-relaxed text-sm">
-                        ความสามารถบางอย่างรวมถึงไอเทมของตัวละครจะไม่สามารถใช้งานได้ถ้าตัวละครยังไม่ถึง Tier ของความสามารถหรือไอเทมนั้นๆ (จากนี้ไปจะถูกล่าวถึงด้วยคำว่า "ล็อคระดับ Tier")
+                        ความสามารถบางอย่างรวมถึงไอเทมของตัวละครจะไม่สามารถใช้งานได้ถ้าตัวละครยังไม่ถึง Tier
+                        ของความสามารถหรือไอเทมนั้นๆ (จากนี้ไปจะถูกล่าวถึงด้วยคำว่า "ล็อคระดับ Tier")
                     </p>
                 </div>
             </div>
@@ -205,9 +325,11 @@
                 <div class="flex flex-col md:flex-row gap-4 items-center">
                     <div class="relative flex-1 w-full">
                         <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อความสามารถ..." class="search-input w-full pl-10" oninput="filterItems()">
+                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อความสามารถ..."
+                            class="search-input w-full pl-10" oninput="filterItems()">
                     </div>
-                    <select id="tierFilter" class="search-input w-full md:w-40 appearance-none" onchange="filterItems()" style="background-image:url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27%3e%3cpolyline points=%276 9 12 15 18 9%27/%3e%3c/svg%3e');background-repeat:no-repeat;background-position:right 0.75rem center;background-size:1em;">
+                    <select id="tierFilter" class="search-input w-full md:w-40 appearance-none" onchange="filterItems()"
+                        style="background-image:url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27%3e%3cpolyline points=%276 9 12 15 18 9%27/%3e%3c/svg%3e');background-repeat:no-repeat;background-position:right 0.75rem center;background-size:1em;">
                         <option value="all">ทุก Tier</option>
                         <option value="0">Tier 0 (Special)</option>
                         <option value="1">Tier 1</option>
@@ -232,10 +354,13 @@
     </div>
 
     <!-- Detail Modal -->
-    <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" onclick="if(event.target===this)closeModal()">
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+        onclick="if(event.target===this)closeModal()">
         <div class="modal-bg fixed inset-0"></div>
-        <div class="glass-panel rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto relative z-10 p-6 fade-in">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+        <div
+            class="glass-panel rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto relative z-10 p-6 fade-in">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"><i
+                    class="fa-solid fa-xmark"></i></button>
             <div id="modalContent"></div>
         </div>
     </div>
@@ -341,4 +466,5 @@
         filterItems();
     </script>
 </body>
+
 </html>
