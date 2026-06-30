@@ -211,6 +211,24 @@
         .glass-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.4);
         }
+
+        /* Sync Status Indicator */
+        #sync-indicator {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 10px; color: rgba(255,255,255,0.4);
+            margin-top: 5px; padding-left: 2px;
+        }
+        #sync-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #4ade80; flex-shrink: 0;
+            transition: background 0.3s;
+        }
+        #sync-dot.syncing { background: #facc15; animation: pulse-dot 1s ease-in-out infinite; }
+        #sync-dot.error   { background: #f87171; animation: none; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.7); }
+        }
     </style>
 </head>
 
@@ -239,6 +257,11 @@
         <ul id="search-suggestions"
             class="absolute w-full mt-1.5 bg-[#0d0d0d] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden hidden max-h-64 overflow-y-auto z-[1001] glass-scrollbar">
         </ul>
+        <!-- Sync Status -->
+        <div id="sync-indicator">
+            <span id="sync-dot" class="syncing"></span>
+            <span id="sync-text">กำลังโหลด...</span>
+        </div>
     </div>
 
     <!-- ปุ่มกลับหน้าหลัก -->
@@ -404,11 +427,11 @@
 
             // รูปแบบ FontAwesome
             const ICONS = {
-                'default':  { fa: 'fa-map-marker-alt',    color: '#ef4444' }, // แดง
-                'landmass': { fa: 'fa-mountain',           color: '#a78b5a' }, // น้ำตาลทอง
-                'city':     { fa: 'fa-chess-rook',         color: '#60a5fa' }, // ฟ้า
-                'town':     { fa: 'fa-house-chimney',      color: '#34d399' }, // เขียวมิ้น
-                'danger':   { fa: 'fa-skull-crossbones',   color: '#c084fc' }, // ม่วง
+                'default': { fa: 'fa-map-marker-alt', color: '#ef4444' }, // แดง
+                'landmass': { fa: 'fa-mountain', color: '#a78b5a' }, // น้ำตาลทอง
+                'city': { fa: 'fa-chess-rook', color: '#60a5fa' }, // ฟ้า
+                'town': { fa: 'fa-house-chimney', color: '#34d399' }, // เขียวมิ้น
+                'danger': { fa: 'fa-skull-crossbones', color: '#c084fc' }, // ม่วง
             };
             const cfg = ICONS[item.iconType] || ICONS['default'];
 
@@ -423,6 +446,18 @@
         // ==========================================
         // 3. Data Fetching & Rendering
         // ==========================================
+        const GITHUB_URL = 'https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js';
+        const POLL_INTERVAL_MS = 60000; // sync ทุก 60 วินาที
+        let syncTimer = null;
+
+        function setSyncStatus(state, text) {
+            const dot = document.getElementById('sync-dot');
+            const txt = document.getElementById('sync-text');
+            if (!dot || !txt) return;
+            dot.className = state === 'syncing' ? 'syncing' : state === 'error' ? 'error' : '';
+            txt.textContent = text;
+        }
+
         async function loadLoreData() {
             const cacheKey = 'spire_worldmap_data';
             const cachedData = localStorage.getItem(cacheKey);
@@ -435,37 +470,58 @@
                 } catch (e) { localStorage.removeItem(cacheKey); }
             }
 
-            // 2. ดึงข้อมูลใหม่จาก GitHub
-            // ใส่ ?t=timestamp เพื่อ bypass CDN cache ของ GitHub (cache: no-store ไม่พอ)
-            try {
-                const githubRawUrl = `https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js?t=${Date.now()}`;
-                const response = await fetch(githubRawUrl, { cache: 'no-store' });
+            // 2. Sync จาก GitHub ครั้งแรก
+            await syncFromGitHub();
 
-                if (!response.ok) throw new Error('File not found on GitHub');
+            // 3. Auto-poll ทุก 60 วินาที (หยุดเมื่อ tab ไม่ active)
+            clearInterval(syncTimer);
+            syncTimer = setInterval(() => {
+                if (!document.hidden) syncFromGitHub();
+            }, POLL_INTERVAL_MS);
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) syncFromGitHub(); // sync ทันทีเมื่อกลับมา
+            });
+        }
+
+        async function syncFromGitHub() {
+            const cacheKey = 'spire_worldmap_data';
+            setSyncStatus('syncing', 'กำลัง sync...');
+            try {
+                // ?t=timestamp บังคับให้ CDN GitHub ส่งไฟล์ใหม่ทุกครั้ง
+                const response = await fetch(`${GITHUB_URL}?t=${Date.now()}`, { cache: 'no-store' });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const textData = await response.text();
-
                 let newData = [];
                 try {
                     newData = JSON.parse(textData);
-                } catch (jsonError) {
-                    const arrayMatch = textData.match(/\[[\s\S]*\]/);
-                    if (arrayMatch) newData = JSON.parse(arrayMatch[0]);
+                } catch {
+                    const m = textData.match(/\[[\s\S]*\]/);
+                    if (m) newData = JSON.parse(m[0]);
                 }
 
-                // อัปเดตเสมอ แม้ array จะว่าง (กรณีลบข้อมูล)
                 if (Array.isArray(newData)) {
-                    // เช็คว่าข้อมูลเปลี่ยนจริงก่อน re-render
                     const newStr = JSON.stringify(newData);
                     const oldStr = JSON.stringify(loreData);
                     loreData = newData;
                     localStorage.setItem(cacheKey, newStr);
-                    if (newStr !== oldStr) renderMarkers();
+                    if (newStr !== oldStr) {
+                        renderMarkers();
+                        setSyncStatus('ok', `อัปเดตแล้ว · ${fmtTime()}`);
+                    } else {
+                        setSyncStatus('ok', `Synced · ${fmtTime()}`);
+                    }
                 }
-            } catch (error) {
-                console.warn("ดึงข้อมูลใหม่ไม่สำเร็จ:", error);
-                if (!cachedData) { loreData = []; renderMarkers(); }
+            } catch (err) {
+                console.warn('Sync ไม่สำเร็จ:', err);
+                setSyncStatus('error', `Sync ล้มเหลว · ${fmtTime()}`);
             }
+        }
+
+        function fmtTime() {
+            return new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
         function renderMarkers() {
@@ -696,11 +752,11 @@
 
                     let iconClass = 'fa-map-marker-alt text-red-400';
                     if (match.iconType === 'landmass') iconClass = 'fa-mountain text-yellow-700';
-                    if (match.iconType === 'city')     iconClass = 'fa-chess-rook text-blue-400';
-                    if (match.iconType === 'town')     iconClass = 'fa-house-chimney text-emerald-400';
-                    if (match.iconType === 'danger')   iconClass = 'fa-skull-crossbones text-purple-400';
-                    if (match.iconType === 'spire')    iconClass = 'fa-dungeon text-violet-400';
-                    if (match.iconType === 'custom')   iconClass = 'fa-image text-gray-400';
+                    if (match.iconType === 'city') iconClass = 'fa-chess-rook text-blue-400';
+                    if (match.iconType === 'town') iconClass = 'fa-house-chimney text-emerald-400';
+                    if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-purple-400';
+                    if (match.iconType === 'spire') iconClass = 'fa-dungeon text-violet-400';
+                    if (match.iconType === 'custom') iconClass = 'fa-image text-gray-400';
 
                     const displayTitle = match.title || "สถานที่ไม่มีชื่อ";
                     const loreSnippet = match.lore ? match.lore.substring(0, 50) + (match.lore.length > 50 ? '...' : '') : '';
