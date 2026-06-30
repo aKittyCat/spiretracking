@@ -26,4 +26,13 @@ const loreData = [
         "lat": 1034.25,
         "lng": 541.5
     },
+    {
+        "id": 1782842724223,
+        "title": "test1",
+        "image": "",
+        "lore": "",
+        "iconType": "default",
+        "lat": 1173,
+        "lng": 671.25
+    }
 ];
