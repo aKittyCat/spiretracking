@@ -47,22 +47,43 @@
             object-fit: cover;
         }
 
-        /* Sidebar สำหรับแสดง Lore */
+        /* Sidebar สำหรับแสดง Lore - Desktop */
         #lore-sidebar {
-            position: absolute; top: 0; right: -400px; width: 380px; height: 100vh;
-            background: rgba(26, 26, 26, 0.95); color: #fff;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            transition: right 0.3s ease-in-out; z-index: 1000;
-            overflow-y: auto; border-left: 2px solid #cbd5e1; /* เปลี่ยนกรอบซ้ายเป็นสี Silver (slate-300) */
+            position: absolute; top: 0; right: -420px; width: 380px; height: 100vh;
+            background: rgba(18, 18, 18, 0.97); color: #fff;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.6);
+            transition: right 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 1000;
+            overflow-y: auto; border-left: 2px solid #cbd5e1;
         }
         #lore-sidebar.active { right: 0; }
         .sidebar-close {
-            position: absolute; top: 15px; right: 15px; cursor: pointer; color: #aaa; transition: color 0.2s;
+            position: absolute; top: 15px; right: 15px; cursor: pointer; color: #aaa;
+            transition: color 0.2s; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; background: rgba(255,255,255,0.05);
         }
-        .sidebar-close:hover { color: #fff; }
-        #lore-sidebar::-webkit-scrollbar { width: 8px; }
-        #lore-sidebar::-webkit-scrollbar-track { background: #1a1a1a; }
+        .sidebar-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        #lore-sidebar::-webkit-scrollbar { width: 6px; }
+        #lore-sidebar::-webkit-scrollbar-track { background: transparent; }
         #lore-sidebar::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
+
+        /* Mobile: sidebar slides from bottom */
+        @media (max-width: 640px) {
+            #lore-sidebar {
+                top: auto; right: 0; bottom: -75vh;
+                width: 100%; height: 75vh; max-height: 75vh;
+                border-left: none; border-top: 2px solid #cbd5e1;
+                border-radius: 20px 20px 0 0;
+                transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1);
+            }
+            #lore-sidebar.active { bottom: 0; }
+            /* Drag handle */
+            #lore-sidebar::before {
+                content: ''; display: block; margin: 10px auto 0;
+                width: 40px; height: 4px; background: rgba(255,255,255,0.2);
+                border-radius: 2px;
+            }
+        }
         
         /* Modals */
         .overlay {
@@ -92,20 +113,26 @@
 <body>
 
     <!-- Search Bar (ช่องค้นหาสถานที่) -->
-    <div class="absolute top-4 left-4 z-[1000] w-64 sm:w-80">
+    <div class="absolute top-3 left-3 z-[1000] w-64 sm:w-72" id="search-container">
         <div class="relative group">
-            <input type="text" id="search-input" placeholder="ค้นหาสถานที่..." class="w-full px-4 py-2 pl-11 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-slate-400 focus:border-slate-400 focus:outline-none focus:ring-0 focus:ring-offset-0 shadow-lg placeholder-gray-500 appearance-none">
-            <i class="fas fa-search absolute left-4 top-2.5 text-gray-500 group-hover:text-slate-400 group-focus-within:text-slate-400 transition-colors pointer-events-none"></i>
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-slate-500/0 to-blue-500/0 rounded-xl blur opacity-0 group-focus-within:opacity-40 group-focus-within:from-slate-500/30 group-focus-within:to-blue-500/30 transition-all duration-500"></div>
+            <div class="relative flex items-center">
+                <i class="fas fa-search absolute left-3 text-xs text-gray-500 group-hover:text-slate-300 group-focus-within:text-slate-300 transition-all duration-300 pointer-events-none"></i>
+                <input type="text" id="search-input" placeholder="ค้นหาสถานที่..." class="w-full px-3 py-2 pl-8 pr-8 text-xs font-medium text-gray-200 transition-all duration-300 bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 hover:border-white/25 focus:border-slate-400/60 focus:outline-none focus:bg-black/60 shadow-lg shadow-black/20 placeholder-gray-500 appearance-none" autocomplete="off">
+                <button id="search-clear" class="absolute right-2.5 text-gray-600 hover:text-white transition-all duration-200 hidden" onclick="clearSearch()">
+                    <i class="fas fa-times-circle text-xs"></i>
+                </button>
+            </div>
         </div>
         <!-- Suggestions Dropdown -->
-        <ul id="search-suggestions" class="absolute w-full mt-2 bg-[#1a1a1a]/95 backdrop-blur-md border border-gray-700 rounded-lg shadow-xl overflow-hidden hidden max-h-60 overflow-y-auto z-[1001] divide-y divide-gray-800 glass-scrollbar">
+        <ul id="search-suggestions" class="absolute w-full mt-1.5 bg-[#0d0d0d] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden hidden max-h-64 overflow-y-auto z-[1001] glass-scrollbar">
         </ul>
     </div>
 
-    <!-- ปุ่มกลับหน้าหลัก (ซ้ายล่าง) -->
-    <div class="absolute bottom-6 left-6 z-[1000]">
-        <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 hover:border-slate-400 shadow-lg">
-            <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+    <!-- ปุ่มกลับหน้าหลัก -->
+    <div class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000]">
+        <button onclick="window.location.href = 'characters.html'" class="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/50 backdrop-blur-xl rounded-xl sm:rounded-lg border border-white/10 hover:border-white/25 shadow-lg active:scale-95">
+            <i class="fa-solid fa-home sm:mr-2"></i><span class="hidden sm:inline">กลับหน้าหลัก</span>
         </button>
     </div>
 
@@ -250,53 +277,52 @@
         // ==========================================
         async function loadLoreData() {
             const cacheKey = 'spire_worldmap_data';
+            const cacheHashKey = 'spire_worldmap_hash';
             const cachedData = localStorage.getItem(cacheKey);
 
-            // 1. ลองโหลดจาก Cache มาแสดงทันที เพื่อความรวดเร็ว
+            // 1. แสดง Cache ก่อนให้เห็นทันที
             if (cachedData) {
                 try {
                     loreData = JSON.parse(cachedData);
                     renderMarkers();
-                } catch (e) {
-                    console.error("Cache parsing error", e);
-                }
+                } catch (e) { localStorage.removeItem(cacheKey); }
             }
 
-            // 2. แอบเช็คข้อมูลใหม่จาก GitHub เบื้องหลัง (ใส่ query string กันแคชเก่าจากเบราว์เซอร์)
+            // 2. ดึงข้อมูลใหม่จาก GitHub โดยบังคับไม่ให้ใช้ browser cache
             try {
-                const timestamp = new Date().getTime();
-                const githubRawUrl = `https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js?t=${timestamp}`;
-                const response = await fetch(githubRawUrl);
+                const githubRawUrl = 'https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js';
+                const response = await fetch(githubRawUrl, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
                 
                 if (!response.ok) throw new Error('File not found on GitHub');
                 
                 const textData = await response.text();
+
+                // hash เร็วๆ เพื่อเปรียบเทียบว่าเปลี่ยนหรือไม่
+                const newHash = textData.length + '_' + textData.slice(0, 200) + textData.slice(-200);
+                const oldHash = localStorage.getItem(cacheHashKey);
+                if (newHash === oldHash && cachedData) return; // ไม่มีอะไรเปลี่ยน
+
                 let newData = [];
-                
                 try {
                     newData = JSON.parse(textData);
                 } catch (jsonError) {
                     const arrayMatch = textData.match(/\[[\s\S]*\]/);
-                    if (arrayMatch) {
-                        newData = JSON.parse(arrayMatch[0]);
-                    }
+                    if (arrayMatch) newData = JSON.parse(arrayMatch[0]);
                 }
                 
-                // ถ้าข้อมูลที่ดึงมาใหม่มีอยู่จริง ให้อัปเดตและเซฟลง Cache ทันที
-                if (newData && newData.length > 0) {
-                    // หากข้อมูลเปลี่ยนไป (เปรียบเทียบง่ายๆ จากความยาว) ค่อยเรนเดอร์หมุดใหม่
-                    if (JSON.stringify(newData) !== JSON.stringify(loreData)) {
-                        loreData = newData;
-                        localStorage.setItem(cacheKey, JSON.stringify(loreData));
-                        renderMarkers();
-                    }
-                }
-            } catch (error) {
-                console.warn("ดึงข้อมูลใหม่จากเบื้องหลังไม่สำเร็จ (อาจยังไม่มีไฟล์)", error);
-                if (!cachedData) {
-                    loreData = []; 
+                // อัปเดตเสมอ แม้ array จะว่าง (กรณีลบข้อมูล)
+                if (Array.isArray(newData)) {
+                    loreData = newData;
+                    localStorage.setItem(cacheKey, JSON.stringify(loreData));
+                    localStorage.setItem(cacheHashKey, newHash);
                     renderMarkers();
                 }
+            } catch (error) {
+                console.warn("ดึงข้อมูลใหม่ไม่สำเร็จ:", error);
+                if (!cachedData) { loreData = []; renderMarkers(); }
             }
         }
 
@@ -477,10 +503,28 @@
         // ==========================================
         const searchInput = document.getElementById('search-input');
         const searchSuggestions = document.getElementById('search-suggestions');
+        const searchClear = document.getElementById('search-clear');
+
+        function clearSearch() {
+            searchInput.value = '';
+            searchSuggestions.classList.add('hidden');
+            searchClear.classList.add('hidden');
+            searchInput.focus();
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark class="bg-slate-400/30 text-white rounded px-0.5">$1</mark>');
+        }
 
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             searchSuggestions.innerHTML = '';
+            
+            // แสดง/ซ่อนปุ่ม clear
+            if (e.target.value.length > 0) searchClear.classList.remove('hidden');
+            else searchClear.classList.add('hidden');
             
             if (query.length === 0) {
                 searchSuggestions.classList.add('hidden');
@@ -488,22 +532,32 @@
             }
 
             const matches = loreData.filter(item => {
-                const titleMatch = (item.title || "").toLowerCase().includes(query);
-                return titleMatch;
+                return (item.title || "").toLowerCase().includes(query) ||
+                       (item.lore || "").toLowerCase().includes(query);
             });
 
             if (matches.length > 0) {
-                matches.forEach(match => {
+                matches.forEach((match, idx) => {
                     const li = document.createElement('li');
-                    li.className = 'px-4 py-2.5 hover:bg-gray-800 cursor-pointer text-gray-300 hover:text-white text-sm transition-all flex items-center gap-3';
+                    li.className = 'px-4 py-3 cursor-pointer text-gray-300 hover:text-white text-sm transition-all duration-200 flex items-center gap-3 hover:bg-white/5' + (idx < matches.length - 1 ? ' border-b border-white/5' : '');
                     
                     let iconClass = 'fa-map-marker-alt text-red-400';
                     if (match.iconType === 'city') iconClass = 'fa-chess-rook text-blue-400';
-                    if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-green-400';
-                    if (match.iconType === 'custom') iconClass = 'fa-image text-gray-400';
+                    if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-emerald-400';
+                    if (match.iconType === 'custom') iconClass = 'fa-image text-purple-400';
 
                     const displayTitle = match.title || "สถานที่ไม่มีชื่อ";
-                    li.innerHTML = `<div class="w-5 flex justify-center"><i class="fas ${iconClass}"></i></div> <span class="truncate">${displayTitle}</span>`;
+                    const loreSnippet = match.lore ? match.lore.substring(0, 50) + (match.lore.length > 50 ? '...' : '') : '';
+                    
+                    li.innerHTML = `
+                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                            <i class="fas ${iconClass} text-xs"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-medium truncate">${highlightMatch(displayTitle, query)}</div>
+                            ${loreSnippet ? `<div class="text-xs text-gray-500 truncate mt-0.5">${highlightMatch(loreSnippet, query)}</div>` : ''}
+                        </div>
+                        <i class="fas fa-chevron-right text-[10px] text-gray-600 flex-shrink-0"></i>`;
                     
                     li.onclick = () => selectLocation(match);
                     searchSuggestions.appendChild(li);
@@ -511,8 +565,8 @@
                 searchSuggestions.classList.remove('hidden');
             } else {
                 const li = document.createElement('li');
-                li.className = 'px-4 py-3 text-gray-500 text-sm text-center';
-                li.innerText = 'ไม่พบสถานที่';
+                li.className = 'px-4 py-4 text-gray-500 text-sm text-center';
+                li.innerHTML = '<i class="fas fa-search mr-2 opacity-50"></i>ไม่พบสถานที่ที่ตรงกับ "' + e.target.value + '"';
                 searchSuggestions.appendChild(li);
                 searchSuggestions.classList.remove('hidden');
             }
@@ -527,6 +581,7 @@
         function selectLocation(item) {
             searchInput.value = item.title || "สถานที่ไม่มีชื่อ";
             searchSuggestions.classList.add('hidden');
+            searchClear.classList.remove('hidden');
             
             map.flyTo([item.lat, item.lng], 2, {
                 animate: true,
