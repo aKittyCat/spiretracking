@@ -239,6 +239,10 @@
         let loreData = [];
         let currentAdminMarker = null;
         let isGeomanEnabled = false;
+        const MARKER_MIN_ZOOM = 2; // แสดง Marker เมื่อ zoom >= 2 (ซ่อนตอน -1, 0, 1)
+
+        // LayerGroup สำหรับเก็บ Marker ทั้งหมด ให้ toggle ได้ง่าย
+        const markerLayer = L.layerGroup().addTo(map);
 
         // ฟังก์ชันสร้างไอคอนจากข้อมูล JSON
         function getMarkerIcon(item) {
@@ -277,7 +281,6 @@
         // ==========================================
         async function loadLoreData() {
             const cacheKey = 'spire_worldmap_data';
-            const cacheHashKey = 'spire_worldmap_hash';
             const cachedData = localStorage.getItem(cacheKey);
 
             // 1. แสดง Cache ก่อนให้เห็นทันที
@@ -288,22 +291,15 @@
                 } catch (e) { localStorage.removeItem(cacheKey); }
             }
 
-            // 2. ดึงข้อมูลใหม่จาก GitHub โดยบังคับไม่ให้ใช้ browser cache
+            // 2. ดึงข้อมูลใหม่จาก GitHub
+            // ใส่ ?t=timestamp เพื่อ bypass CDN cache ของ GitHub (cache: no-store ไม่พอ)
             try {
-                const githubRawUrl = 'https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js';
-                const response = await fetch(githubRawUrl, {
-                    cache: 'no-store',
-                    headers: { 'Cache-Control': 'no-cache' }
-                });
+                const githubRawUrl = `https://raw.githubusercontent.com/aKittyCat/spiretracking/main/js/worldmap-data.js?t=${Date.now()}`;
+                const response = await fetch(githubRawUrl, { cache: 'no-store' });
                 
                 if (!response.ok) throw new Error('File not found on GitHub');
                 
                 const textData = await response.text();
-
-                // hash เร็วๆ เพื่อเปรียบเทียบว่าเปลี่ยนหรือไม่
-                const newHash = textData.length + '_' + textData.slice(0, 200) + textData.slice(-200);
-                const oldHash = localStorage.getItem(cacheHashKey);
-                if (newHash === oldHash && cachedData) return; // ไม่มีอะไรเปลี่ยน
 
                 let newData = [];
                 try {
@@ -315,10 +311,12 @@
                 
                 // อัปเดตเสมอ แม้ array จะว่าง (กรณีลบข้อมูล)
                 if (Array.isArray(newData)) {
+                    // เช็คว่าข้อมูลเปลี่ยนจริงก่อน re-render
+                    const newStr = JSON.stringify(newData);
+                    const oldStr = JSON.stringify(loreData);
                     loreData = newData;
-                    localStorage.setItem(cacheKey, JSON.stringify(loreData));
-                    localStorage.setItem(cacheHashKey, newHash);
-                    renderMarkers();
+                    localStorage.setItem(cacheKey, newStr);
+                    if (newStr !== oldStr) renderMarkers();
                 }
             } catch (error) {
                 console.warn("ดึงข้อมูลใหม่ไม่สำเร็จ:", error);
@@ -327,21 +325,32 @@
         }
 
         function renderMarkers() {
-            // ล้างหมุดก่อนหน้า (ถ้ามี)
-            map.eachLayer((layer) => {
-                if (layer instanceof L.Marker && layer !== currentAdminMarker) {
-                    map.removeLayer(layer);
-                }
-            });
+            // ล้างหมุดทั้งหมดใน LayerGroup
+            markerLayer.clearLayers();
             loreData.forEach(item => createMarker(item));
+            updateMarkersVisibility();
         }
 
         function createMarker(item) {
             const icon = getMarkerIcon(item);
-            const marker = L.marker([item.lat, item.lng], { icon: icon }).addTo(map);
+            const marker = L.marker([item.lat, item.lng], { icon: icon });
             marker.bindTooltip(item.title || "สถานที่ไม่มีชื่อ", { direction: 'top', offset: [0, -15] });
             marker.on('click', () => openSidebar(item));
+            markerLayer.addLayer(marker);
         }
+
+        // แสดง/ซ่อน marker ตาม zoom level
+        function updateMarkersVisibility() {
+            const zoom = map.getZoom();
+            const el = markerLayer.getPane ? null : document.querySelector('.leaflet-pane.leaflet-marker-pane');
+            if (zoom >= MARKER_MIN_ZOOM) {
+                map.addLayer(markerLayer);
+            } else {
+                map.removeLayer(markerLayer);
+            }
+        }
+
+        map.on('zoomend', updateMarkersVisibility);
 
         // ==========================================
         // 4. Admin Auto-Check & Export
