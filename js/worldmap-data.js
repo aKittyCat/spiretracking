@@ -4,7 +4,7 @@ const loreData = [
         "title": "Neverwinter",
         "image": "https://static.wikia.nocookie.net/forgottenrealms/images/8/80/NeverwinterHarbor.jpg",
         "lore": "หรือที่รู้จักกันในชื่อเมืองแห่งช่างฝีมือ และอัญมณีแห่งแดนเหนือ",
-        "iconType": "default",
+        "iconType": "city",
         "lat": 1121.75,
         "lng": 462.25
     },
