@@ -214,20 +214,46 @@
 
         /* Sync Status Indicator */
         #sync-indicator {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 10px; color: rgba(255,255,255,0.4);
-            margin-top: 5px; padding-left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+            padding-left: 2px;
         }
+
         #sync-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #4ade80; flex-shrink: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            flex-shrink: 0;
             transition: background 0.3s;
         }
-        #sync-dot.syncing { background: #facc15; animation: pulse-dot 1s ease-in-out infinite; }
-        #sync-dot.error   { background: #f87171; animation: none; }
+
+        #sync-dot.syncing {
+            background: #facc15;
+            animation: pulse-dot 1s ease-in-out infinite;
+        }
+
+        #sync-dot.error {
+            background: #f87171;
+            animation: none;
+        }
+
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.5; transform: scale(0.7); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
         }
     </style>
 </head>
@@ -840,6 +866,13 @@
         }
 
         window.onload = async () => {
+            if (typeof supabase !== 'undefined' && supabase.auth) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
             loadLoreData();
             checkAdminStatus();
         };
