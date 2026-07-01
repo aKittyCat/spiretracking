@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Spire Tracking - Reawaken</title>
     <meta name="description" content="Reawaken System">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -278,7 +281,8 @@
                                 class="text-gray-300">Demonic Boon</span><span class="text-amber-400 font-bold">สูงสุด
                                 1</span></div>
                         <div class="py-2 px-3 rounded-lg bg-gray-800/50">
-                            <span class="text-gray-300 block mb-1">ความสามารถจากเผ่า <span class="text-gray-500 text-xs">(เลือกอย่างใดอย่างหนึ่ง)</span></span>
+                            <span class="text-gray-300 block mb-1">ความสามารถจากเผ่า <span
+                                    class="text-gray-500 text-xs">(เลือกอย่างใดอย่างหนึ่ง)</span></span>
                             <ul class="space-y-1 pl-2">
                                 <li class="flex justify-between items-center text-sm">
                                     <span class="text-gray-400">ความสามารถพิเศษประจำเผ่า</span>
@@ -345,7 +349,8 @@
             <div class="flex flex-wrap gap-2 mb-4" id="categoryButtons"></div>
 
             <!-- Racial Feature Notice -->
-            <div id="racialNotice" class="hidden mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div id="racialNotice"
+                class="hidden mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
                 <i class="fa-solid fa-circle-info text-amber-400 mt-0.5 flex-shrink-0"></i>
                 <p class="text-amber-200 text-sm leading-relaxed">
                     Feature ที่ไม่แสดงในนี้จะมีราคา <strong class="text-amber-400">100 AP</strong>
@@ -476,9 +481,14 @@
 
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-        // Init
-        initCategories();
-        filterItems();
+        (async () => {
+            if (typeof supabase !== 'undefined' && supabase.auth) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) { window.location.href = 'index.html'; return; }
+            }
+            initCategories();
+            filterItems();
+        })();
     </script>
 </body>
 
