@@ -793,7 +793,7 @@
             marker.bindTooltip(item.title || "สถานที่ไม่มีชื่อ", { direction: 'top', offset: [0, -15] });
             marker.on('click', () => openSidebar(item));
             markerLayer.addLayer(marker);
-            item._marker = marker; // เก็บ reference เผื่อ deep-link
+            item._marker = marker;
         }
 
         // แสดง/ซ่อน marker ตาม zoom level
@@ -879,7 +879,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast('ดาวน์โหลด worldmap-data.js เรียบร้อย! นำไปเขียนทับไฟล์ใน js/ แล้ว Push');
+            showToast('ดาวน์โหลด worldmap-data.js เรียบร้อย!');
         }
 
         // Export ปุ่ม (Admin toolbar) 
@@ -939,41 +939,62 @@
                 alert('โปรดวางหมุดบนแผนที่ก่อน (กดปุ่ม ▲ Draw Marker ในแถบซ้าย แล้วคลิกบนแผนที่)');
                 return;
             }
-            let title = document.getElementById('admin-title').value.trim();
-            const image = document.getElementById('admin-image').value.trim();
-            const lore = document.getElementById('admin-lore').value.trim();
-            let iconType = document.getElementById('admin-icon-type').value;
-            const iconUrl = document.getElementById('admin-icon-url').value.trim();
 
-            if (!title) title = "สถานที่ไม่มีชื่อ";
-            if (iconType === 'custom' && !iconUrl) iconType = 'default';
+            let errMsg = null;
+            try {
+                let title = document.getElementById('admin-title').value.trim();
+                const image = document.getElementById('admin-image').value.trim();
+                const lore = document.getElementById('admin-lore').value.trim();
+                let iconType = document.getElementById('admin-icon-type').value;
+                const iconUrl = document.getElementById('admin-icon-url').value.trim();
 
-            const latlng = currentAdminMarker.getLatLng();
-            const newLoreObj = {
-                id: Date.now(),
-                title: title,
-                image: image,
-                lore: lore,
-                iconType: iconType,
-                ...(iconType === 'custom' && iconUrl && { iconUrl: iconUrl }),
-                lat: parseFloat(latlng.lat.toFixed(2)),
-                lng: parseFloat(latlng.lng.toFixed(2))
-            };
+                if (!title) title = "สถานที่ไม่มีชื่อ";
+                if (iconType === 'custom' && !iconUrl) iconType = 'default';
 
-            // ลบ temp marker ของ Geoman แล้วสร้าง styled marker แทน
-            map.removeLayer(currentAdminMarker);
-            currentAdminMarker = null;
-            createMarker(newLoreObj);
+                const latlng = currentAdminMarker.getLatLng();
+                const newLoreObj = {
+                    id: Date.now(),
+                    title: title,
+                    image: image,
+                    lore: lore,
+                    iconType: iconType,
+                    ...(iconType === 'custom' && iconUrl && { iconUrl: iconUrl }),
+                    lat: parseFloat(latlng.lat.toFixed(2)),
+                    lng: parseFloat(latlng.lng.toFixed(2))
+                };
 
-            // บันทึกลง loreData (ไม่เอา _marker ติดไป)
-            const { _marker, ...cleanObj } = newLoreObj;
-            loreData.push(cleanObj);
-            localStorage.setItem('spire_worldmap_data', JSON.stringify(loreData));
+                // ลบ temp marker ของ Geoman แล้วสร้าง styled marker แทน
+                map.removeLayer(currentAdminMarker);
+                currentAdminMarker = null;
+                createMarker(newLoreObj);
 
+                // push แล้วกรอง _marker ออกจากทุก item ใน loreData (รวมของเก่าที่ผ่าน createMarker)
+                loreData.push(newLoreObj);
+                loreData = loreData.map(({ _marker, ...rest }) => rest);
+
+                try {
+                    localStorage.setItem('spire_worldmap_data', JSON.stringify(loreData));
+                } catch (e) { console.warn('localStorage save failed:', e); }
+
+            } catch (err) {
+                console.error('saveAdminForm error:', err);
+                errMsg = err.message;
+            }
+
+            // ปิด Modal เสมอ ไม่ว่า error หรือเปล่า
             document.getElementById('admin-modal-overlay').style.display = 'none';
 
-            // ดาวน์โหลดไฟล์ worldmap-data.js ที่มีข้อมูลทั้งหมด (เขียนทับไฟล์เดิมได้เลย)
-            downloadDataFile();
+            if (errMsg) {
+                setTimeout(() => alert('เกิดข้อผิดพลาด: ' + errMsg), 50);
+                return;
+            }
+
+            // ดาวน์โหลดหลัง UI update เสร็จ
+            setTimeout(() => {
+                try { downloadDataFile(); } catch (e) {
+                    showToast('บันทึกแล้ว แต่ download ไม่สำเร็จ — กด Export JSON');
+                }
+            }, 100);
         }
 
         // ==========================================
