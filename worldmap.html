@@ -214,76 +214,216 @@
 
         /* Sync Status Indicator */
         #sync-indicator {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 10px; color: rgba(255,255,255,0.4);
-            margin-top: 5px; padding-left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+            padding-left: 2px;
         }
+
         #sync-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #4ade80; flex-shrink: 0; transition: background 0.3s;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            flex-shrink: 0;
+            transition: background 0.3s;
         }
-        #sync-dot.syncing { background: #facc15; animation: pulse-dot 1s ease-in-out infinite; }
-        #sync-dot.error   { background: #f87171; animation: none; }
+
+        #sync-dot.syncing {
+            background: #facc15;
+            animation: pulse-dot 1s ease-in-out infinite;
+        }
+
+        #sync-dot.error {
+            background: #f87171;
+            animation: none;
+        }
+
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.5; transform: scale(0.7); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
         }
 
         /* ==================== Marker Filter Panel ==================== */
         #filter-panel {
-            position: absolute; top: 3px; right: 52px; z-index: 1000;
+            position: absolute;
+            top: 3px;
+            right: 52px;
+            z-index: 1000;
         }
+
         #filter-toggle {
-            display: flex; align-items: center; gap: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             padding: 7px 12px;
-            background: rgba(0,0,0,0.55); backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px; color: #d1d5db;
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #d1d5db;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
-        #filter-toggle:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+        #filter-toggle:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
         #filter-dropdown {
-            display: none; margin-top: 6px;
-            background: rgba(10,10,14,0.92); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
-            padding: 12px; min-width: 180px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-            right: 0; position: absolute;
+            display: none;
+            margin-top: 6px;
+            background: rgba(10, 10, 14, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 12px;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            right: 0;
+            position: absolute;
         }
-        #filter-dropdown.open { display: block; }
+
+        #filter-dropdown.open {
+            display: block;
+        }
+
         .filter-label {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 8px; border-radius: 8px;
-            font-size: 12px; color: #d1d5db; cursor: pointer;
-            transition: background 0.15s; user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: background 0.15s;
+            user-select: none;
         }
-        .filter-label:hover { background: rgba(255,255,255,0.06); }
-        .filter-label input[type=checkbox] { accent-color: #818cf8; width: 14px; height: 14px; }
-        .filter-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px 0; }
+
+        .filter-label:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .filter-label input[type=checkbox] {
+            accent-color: #818cf8;
+            width: 14px;
+            height: 14px;
+        }
+
+        .filter-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 8px 0;
+        }
+
         .filter-select-all {
-            width: 100%; text-align: center; font-size: 11px;
-            color: #94a3b8; cursor: pointer; padding: 4px;
-            border-radius: 6px; transition: color 0.2s;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: color 0.2s;
         }
-        .filter-select-all:hover { color: #fff; }
+
+        .filter-select-all:hover {
+            color: #fff;
+        }
 
         /* ==================== Markdown Prose (Sidebar Lore) ==================== */
-        .lore-prose { color: #cbd5e1; line-height: 1.75; }
-        .lore-prose h1,.lore-prose h2,.lore-prose h3 { color: #e2e8f0; font-weight: 700; margin: 1em 0 0.4em; }
-        .lore-prose h1 { font-size: 1.25em; }
-        .lore-prose h2 { font-size: 1.1em; }
-        .lore-prose h3 { font-size: 1em; }
-        .lore-prose p  { margin: 0.5em 0; }
-        .lore-prose strong { color: #f1f5f9; font-weight: 700; }
-        .lore-prose em { color: #a5b4fc; font-style: italic; }
-        .lore-prose ul,.lore-prose ol { padding-left: 1.4em; margin: 0.5em 0; }
-        .lore-prose li { margin: 0.2em 0; }
-        .lore-prose code { background: rgba(255,255,255,0.1); border-radius: 4px; padding: 1px 5px; font-size: 0.85em; color: #7dd3fc; }
-        .lore-prose blockquote { border-left: 3px solid #475569; padding-left: 0.9em; color: #94a3b8; margin: 0.5em 0; }
-        .lore-prose hr { border: none; border-top: 1px solid #334155; margin: 1em 0; }
-        .lore-prose a { color: #60a5fa; text-decoration: underline; }
+        .lore-prose {
+            color: #cbd5e1;
+            line-height: 1.75;
+        }
+
+        .lore-prose h1,
+        .lore-prose h2,
+        .lore-prose h3 {
+            color: #e2e8f0;
+            font-weight: 700;
+            margin: 1em 0 0.4em;
+        }
+
+        .lore-prose h1 {
+            font-size: 1.25em;
+        }
+
+        .lore-prose h2 {
+            font-size: 1.1em;
+        }
+
+        .lore-prose h3 {
+            font-size: 1em;
+        }
+
+        .lore-prose p {
+            margin: 0.5em 0;
+        }
+
+        .lore-prose strong {
+            color: #f1f5f9;
+            font-weight: 700;
+        }
+
+        .lore-prose em {
+            color: #a5b4fc;
+            font-style: italic;
+        }
+
+        .lore-prose ul,
+        .lore-prose ol {
+            padding-left: 1.4em;
+            margin: 0.5em 0;
+        }
+
+        .lore-prose li {
+            margin: 0.2em 0;
+        }
+
+        .lore-prose code {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-size: 0.85em;
+            color: #7dd3fc;
+        }
+
+        .lore-prose blockquote {
+            border-left: 3px solid #475569;
+            padding-left: 0.9em;
+            color: #94a3b8;
+            margin: 0.5em 0;
+        }
+
+        .lore-prose hr {
+            border: none;
+            border-top: 1px solid #334155;
+            margin: 1em 0;
+        }
+
+        .lore-prose a {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -328,13 +468,20 @@
             <span class="filter-select-all" onclick="filterSelectAll(true)">เลือกทั้งหมด</span>
             <span class="filter-select-all" onclick="filterSelectAll(false)">ยกเลิกทั้งหมด</span>
             <div class="filter-divider"></div>
-            <label class="filter-label"><input type="checkbox" value="default" checked onchange="renderMarkers()"> 📍 หมุดพื้นฐาน</label>
-            <label class="filter-label"><input type="checkbox" value="landmass" checked onchange="renderMarkers()"> 🗺️ Landmass</label>
-            <label class="filter-label"><input type="checkbox" value="city" checked onchange="renderMarkers()"> 🏰 City</label>
-            <label class="filter-label"><input type="checkbox" value="town" checked onchange="renderMarkers()"> 🏘️ Town</label>
-            <label class="filter-label"><input type="checkbox" value="danger" checked onchange="renderMarkers()"> 💀 พื้นที่อันตราย</label>
-            <label class="filter-label"><input type="checkbox" value="spire" checked onchange="renderMarkers()"> 🗼 Spire</label>
-            <label class="filter-label"><input type="checkbox" value="custom" checked onchange="renderMarkers()"> 🖼️ Custom</label>
+            <label class="filter-label"><input type="checkbox" value="default" checked onchange="renderMarkers()"> 📍
+                หมุดพื้นฐาน</label>
+            <label class="filter-label"><input type="checkbox" value="landmass" checked onchange="renderMarkers()"> 🗺️
+                Landmass</label>
+            <label class="filter-label"><input type="checkbox" value="city" checked onchange="renderMarkers()"> 🏰
+                City</label>
+            <label class="filter-label"><input type="checkbox" value="town" checked onchange="renderMarkers()"> 🏘️
+                Town</label>
+            <label class="filter-label"><input type="checkbox" value="danger" checked onchange="renderMarkers()"> 💀
+                พื้นที่อันตราย</label>
+            <label class="filter-label"><input type="checkbox" value="spire" checked onchange="renderMarkers()"> 🗼
+                Spire</label>
+            <label class="filter-label"><input type="checkbox" value="custom" checked onchange="renderMarkers()"> 🖼️
+                Custom</label>
         </div>
     </div>
 
@@ -354,6 +501,12 @@
             class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
             <i class="fas fa-file-export mr-2"></i>Export JSON
         </button>
+    </div>
+
+    <!-- Admin Coordinates Display (เฉพาะ Admin) -->
+    <div id="admin-coords" class="hidden absolute bottom-16 right-3 z-[1000]"
+        style="font-size:11px; color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); font-family:monospace; pointer-events:none;">
+        Y: <span id="coord-lat">-</span> &nbsp; X: <span id="coord-lng">-</span>
     </div>
 
     <div id="map"></div>
@@ -464,7 +617,7 @@
         // 2. Map & UI Setup
         // ==========================================
         const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 3, zoomControl: false });
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         const bounds = [[0, 0], [1500, 2000]];
         const imageUrl = 'https://i.ibb.co/dgYvsZ7/Faerun-Map-Redone-Roll-20-Res-Hexes.jpg';
@@ -628,7 +781,7 @@
             loreData.forEach(item => {
                 const type = item.iconType || 'default';
                 // custom หมายรวมทุก type ที่ไม่ตรงกับประเภทมาตรฐาน
-                const filterKey = ['default','landmass','city','town','danger','spire'].includes(type) ? type : 'custom';
+                const filterKey = ['default', 'landmass', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
                 if (active.has(filterKey)) createMarker(item);
             });
             updateMarkersVisibility();
@@ -693,12 +846,21 @@
                 map.pm.setLang('en');
                 map.pm.addControls({
                     position: 'topleft', drawMarker: true, editMode: true, removalMode: true,
-                    drawCircleMarker: false, drawPolyline: false, drawRectangle: false, drawPolygon: false, drawCircle: false, drawText: false
+                    drawCircleMarker: false, drawPolyline: false, drawRectangle: false,
+                    drawPolygon: false, drawCircle: false, drawText: false
                 });
                 isGeomanEnabled = true;
 
                 // แสดงปุ่ม Export
                 document.getElementById('admin-toolbar').classList.remove('hidden');
+
+                // แสดงตัวชี้พิกัดเมาส์
+                const coordsEl = document.getElementById('admin-coords');
+                coordsEl.classList.remove('hidden');
+                map.on('mousemove', (e) => {
+                    document.getElementById('coord-lat').textContent = e.latlng.lat.toFixed(2);
+                    document.getElementById('coord-lng').textContent = e.latlng.lng.toFixed(2);
+                });
 
                 showToast("โหมด Admin ทำงานแล้ว: เปิดใช้งานเครื่องมือจัดการแผนที่และระบบ Export");
             }
@@ -711,7 +873,9 @@
                 return;
             }
 
-            const dataStr = JSON.stringify(loreData, null, 4);
+            // กรอง _marker (circular reference) ออกก่อน stringify
+            const cleanData = loreData.map(({ _marker, ...rest }) => rest);
+            const dataStr = JSON.stringify(cleanData, null, 4);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
 
@@ -800,11 +964,13 @@
             const jsonString = JSON.stringify(newLoreObj, null, 4);
             document.getElementById('json-output').value = jsonString;
 
+            // ลบ temp marker ของ Geoman แล้วสร้าง styled marker แทน
             map.removeLayer(currentAdminMarker);
             createMarker(newLoreObj);
-            loreData.push(newLoreObj);
 
-            // อัปเดตข้อมูลลง Cache ให้ทันที (เพื่อให้รีเฟรชแล้วข้อมูลที่พึ่งทำไม่หาย ก่อนนำไปขึ้น Github)
+            // กรอง _marker (circular reference) ออกก่อน cache
+            const { _marker, ...cleanObj } = newLoreObj;
+            loreData.push(cleanObj);
             localStorage.setItem('spire_worldmap_data', JSON.stringify(loreData));
 
             document.getElementById('admin-modal-overlay').style.display = 'none';
@@ -943,7 +1109,7 @@
         // ==========================================
         function checkDeepLink() {
             const params = new URLSearchParams(window.location.search);
-            const idParam  = params.get('id');
+            const idParam = params.get('id');
             const locParam = params.get('loc');
             if (!idParam && !locParam) return;
 
@@ -953,13 +1119,13 @@
             } else if (locParam) {
                 const q = locParam.toLowerCase();
                 found = loreData.find(d => (d.title || '').toLowerCase() === q)
-                     || loreData.find(d => (d.title || '').toLowerCase().includes(q));
+                    || loreData.find(d => (d.title || '').toLowerCase().includes(q));
             }
 
             if (found) {
                 // บังคับให้ filter ของ type นั้นเปิดอยู่
                 const type = found.iconType || 'default';
-                const filterKey = ['default','landmass','city','town','danger','spire'].includes(type) ? type : 'custom';
+                const filterKey = ['default', 'landmass', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
                 const cb = document.querySelector(`#filter-dropdown input[value="${filterKey}"]`);
                 if (cb) cb.checked = true;
                 renderMarkers();
