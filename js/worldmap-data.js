@@ -34,5 +34,14 @@ const loreData = [
         "iconType": "landmass",
         "lat": 694.5,
         "lng": 776
+    },
+    {
+        "id": 1783029143121,
+        "title": "The High Forest",
+        "image": "",
+        "lore": "",
+        "iconType": "landmass",
+        "lat": 1124.25,
+        "lng": 681.5
     }
 ];

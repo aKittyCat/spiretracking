@@ -963,6 +963,9 @@
                     lng: parseFloat(latlng.lng.toFixed(2))
                 };
 
+                const jsonString = JSON.stringify(newLoreObj, null, 4) + ',';
+                document.getElementById('json-output').value = jsonString;
+
                 // ลบ temp marker ของ Geoman แล้วสร้าง styled marker แทน
                 map.removeLayer(currentAdminMarker);
                 currentAdminMarker = null;
@@ -981,7 +984,7 @@
                 errMsg = err.message;
             }
 
-            // ปิด Modal เสมอ ไม่ว่า error หรือเปล่า
+            // ปิด Admin Modal
             document.getElementById('admin-modal-overlay').style.display = 'none';
 
             if (errMsg) {
@@ -989,12 +992,8 @@
                 return;
             }
 
-            // ดาวน์โหลดหลัง UI update เสร็จ
-            setTimeout(() => {
-                try { downloadDataFile(); } catch (e) {
-                    showToast('บันทึกแล้ว แต่ download ไม่สำเร็จ — กด Export JSON');
-                }
-            }, 100);
+            // เปิด JSON Output Modal ให้ user copy (ไม่บังคับโหลดไฟล์)
+            document.getElementById('json-modal-overlay').style.display = 'flex';
         }
 
         // ==========================================
