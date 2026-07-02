@@ -25,5 +25,14 @@ const loreData = [
         "iconType": "spire",
         "lat": 723.5,
         "lng": 1038.25
+    },
+    {
+        "id": 1783028384014,
+        "title": "AMN",
+        "image": "",
+        "lore": "",
+        "iconType": "landmass",
+        "lat": 694.5,
+        "lng": 776
     }
 ];

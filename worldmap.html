@@ -866,37 +866,37 @@
             }
         }
 
-        // ฟังก์ชัน Export ข้อมูลทั้งหมดออกเป็นไฟล์ JSON
-        function exportData() {
-            if (loreData.length === 0) {
-                alert("ไม่มีข้อมูลสำหรับทำการ Export");
-                return;
-            }
-
-            // กรอง _marker (circular reference) ออกก่อน stringify
+        // สร้างไฟล์ worldmap-data.js 
+        function downloadDataFile() {
             const cleanData = loreData.map(({ _marker, ...rest }) => rest);
-            const dataStr = JSON.stringify(cleanData, null, 4);
-            const blob = new Blob([dataStr], { type: "application/json" });
+            const content = 'const loreData = ' + JSON.stringify(cleanData, null, 4) + ';';
+            const blob = new Blob([content], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
             a.href = url;
-            a.download = "worldmap-data.js";
+            a.download = 'worldmap-data.js';
             document.body.appendChild(a);
             a.click();
-
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            showToast('ดาวน์โหลด worldmap-data.js เรียบร้อย! นำไปเขียนทับไฟล์ใน js/ แล้ว Push');
+        }
 
-            showToast("ส่งออกข้อมูลสำเร็จ! โปรดนำไฟล์นี้ไปอัปเดตบน GitHub");
+        // Export ปุ่ม (Admin toolbar) 
+        function exportData() {
+            if (loreData.length === 0) { alert('ไม่มีข้อมูล'); return; }
+            downloadDataFile();
         }
 
         // ==========================================
         // 5. จัดการ Geoman Form & Custom Icons
         // ==========================================
         map.on('pm:create', (e) => {
-            if (e.shape === 'Marker') {
+            // Geoman บางเวอร์ชันส่ง shape เป็น  'Marker' หรือ 'marker'
+            if (e.shape && e.shape.toLowerCase() === 'marker') {
                 currentAdminMarker = e.layer;
+                // ปิด draw mode หลังวางหมุดเสร็จ
+                map.pm.disableDraw();
                 document.getElementById('admin-modal-overlay').style.display = 'flex';
                 // Reset Form
                 document.getElementById('admin-title').value = '';
@@ -934,47 +934,46 @@
         }
 
         function saveAdminForm() {
+            // null-guard: ถ้า Geoman ยังไม่ได้วางหมุด
+            if (!currentAdminMarker) {
+                alert('โปรดวางหมุดบนแผนที่ก่อน (กดปุ่ม ▲ Draw Marker ในแถบซ้าย แล้วคลิกบนแผนที่)');
+                return;
+            }
             let title = document.getElementById('admin-title').value.trim();
             const image = document.getElementById('admin-image').value.trim();
             const lore = document.getElementById('admin-lore').value.trim();
             let iconType = document.getElementById('admin-icon-type').value;
             const iconUrl = document.getElementById('admin-icon-url').value.trim();
 
-            // ลบการ Block เมื่อข้อมูลไม่ครบ (ให้ค่า Default แทน)
             if (!title) title = "สถานที่ไม่มีชื่อ";
-
-            // หากเลือกรูป Custom แต่ไม่ได้ใส่ URL ให้ใช้รูปแบบ default แทน
-            if (iconType === 'custom' && !iconUrl) {
-                iconType = 'default';
-            }
+            if (iconType === 'custom' && !iconUrl) iconType = 'default';
 
             const latlng = currentAdminMarker.getLatLng();
-
             const newLoreObj = {
                 id: Date.now(),
                 title: title,
                 image: image,
                 lore: lore,
                 iconType: iconType,
-                ...(iconType === 'custom' && iconUrl && { iconUrl: iconUrl }), // ใส่ url เฉพาะเมื่อมีข้อมูล
+                ...(iconType === 'custom' && iconUrl && { iconUrl: iconUrl }),
                 lat: parseFloat(latlng.lat.toFixed(2)),
                 lng: parseFloat(latlng.lng.toFixed(2))
             };
 
-            const jsonString = JSON.stringify(newLoreObj, null, 4);
-            document.getElementById('json-output').value = jsonString;
-
             // ลบ temp marker ของ Geoman แล้วสร้าง styled marker แทน
             map.removeLayer(currentAdminMarker);
+            currentAdminMarker = null;
             createMarker(newLoreObj);
 
-            // กรอง _marker (circular reference) ออกก่อน cache
+            // บันทึกลง loreData (ไม่เอา _marker ติดไป)
             const { _marker, ...cleanObj } = newLoreObj;
             loreData.push(cleanObj);
             localStorage.setItem('spire_worldmap_data', JSON.stringify(loreData));
 
             document.getElementById('admin-modal-overlay').style.display = 'none';
-            document.getElementById('json-modal-overlay').style.display = 'flex';
+
+            // ดาวน์โหลดไฟล์ worldmap-data.js ที่มีข้อมูลทั้งหมด (เขียนทับไฟล์เดิมได้เลย)
+            downloadDataFile();
         }
 
         // ==========================================
@@ -1156,7 +1155,7 @@
                 }
             }
             await loadLoreData();
-            checkDeepLink(); // เช็ค URL หลังข้อมูลโหลดเสร็จ
+            checkDeepLink();
             checkAdminStatus();
         };
 
