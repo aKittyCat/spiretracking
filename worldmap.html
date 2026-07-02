@@ -259,8 +259,8 @@
         /* ==================== Marker Filter Panel ==================== */
         #filter-panel {
             position: absolute;
-            top: 3px;
-            right: 52px;
+            top: 12px;
+            right: 12px;
             z-index: 1000;
         }
 
@@ -485,10 +485,17 @@
         </div>
     </div>
 
-    <!-- ปุ่มกลับหน้าหลัก -->
-    <div class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000]">
+    <!-- ปุ่มกลับหน้าหลัก & Admin Coordinates -->
+    <div class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000] flex flex-col items-end sm:items-start gap-2 pointer-events-none">
+        
+        <!-- Admin Coordinates Display (เฉพาะ Admin) -->
+        <div id="admin-coords" class="hidden"
+            style="font-size:11px; color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); font-family:monospace; pointer-events:auto;">
+            Y: <span id="coord-lat">-</span> &nbsp; X: <span id="coord-lng">-</span>
+        </div>
+
         <button onclick="window.location.href = 'characters.html'"
-            class="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/50 backdrop-blur-xl rounded-xl sm:rounded-lg border border-white/10 hover:border-white/25 shadow-lg active:scale-95">
+            class="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/50 backdrop-blur-xl rounded-xl sm:rounded-lg border border-white/10 hover:border-white/25 shadow-lg active:scale-95 pointer-events-auto">
             <i class="fa-solid fa-home sm:mr-2"></i><span class="hidden sm:inline">กลับหน้าหลัก</span>
         </button>
     </div>
@@ -501,12 +508,6 @@
             class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-bold transition-colors shadow-lg shadow-green-600/20">
             <i class="fas fa-file-export mr-2"></i>Export JSON
         </button>
-    </div>
-
-    <!-- Admin Coordinates Display (เฉพาะ Admin) -->
-    <div id="admin-coords" class="hidden absolute bottom-16 right-3 z-[1000]"
-        style="font-size:11px; color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); font-family:monospace; pointer-events:none;">
-        Y: <span id="coord-lat">-</span> &nbsp; X: <span id="coord-lng">-</span>
     </div>
 
     <div id="map"></div>
