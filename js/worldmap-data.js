@@ -239,8 +239,8 @@ const loreData = [
         "image": "",
         "lore": "",
         "iconType": "capital",
-        "lat": 427.38,
-        "lng": 446.38
+        "lat": 425.98,
+        "lng": 447.09
     },
     {
         "id": 1783116914698,
