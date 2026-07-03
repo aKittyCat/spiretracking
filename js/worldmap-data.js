@@ -162,6 +162,24 @@ const loreData = [
         "lng": 838.88
     },
     {
+        "id": 1783075219153,
+        "title": "Ss'khanaja",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 966.88,
+        "lng": 729.38
+    },
+    {
+        "id": 1783075409787,
+        "title": "Skalnaedyr",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 794,
+        "lng": 1858.5
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
