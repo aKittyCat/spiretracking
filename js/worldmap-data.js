@@ -234,6 +234,15 @@ const loreData = [
         "lng": 1739.38
     },
     {
+        "id": 1783076409142,
+        "title": "Sambar",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 427.38,
+        "lng": 446.38
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
