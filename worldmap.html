@@ -472,6 +472,8 @@
                 หมุดพื้นฐาน</label>
             <label class="filter-label"><input type="checkbox" value="landmass" checked onchange="renderMarkers()"> 🗺️
                 Landmass</label>
+            <label class="filter-label"><input type="checkbox" value="capital" checked onchange="renderMarkers()"> 👑
+                Capital</label>
             <label class="filter-label"><input type="checkbox" value="city" checked onchange="renderMarkers()"> 🏰
                 City</label>
             <label class="filter-label"><input type="checkbox" value="town" checked onchange="renderMarkers()"> 🏘️
@@ -558,6 +560,7 @@
                         class="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:border-slate-400 focus:outline-none">
                         <option value="default">📍 หมุดพื้นฐาน</option>
                         <option value="landmass">🗺️ Landmass</option>
+                        <option value="capital">👑 Capital</option>
                         <option value="city">🏰 City</option>
                         <option value="town">🏘️ Town</option>
                         <option value="danger">💀 พื้นที่อันตราย</option>
@@ -659,6 +662,7 @@
             const ICONS = {
                 'default': { fa: 'fa-map-marker-alt', color: '#ef4444' }, // แดง
                 'landmass': { fa: 'fa-mountain', color: '#a78b5a' }, // น้ำตาลทอง
+                'capital': { fa: 'fa-solid fa-crown', color: '#eab308' }, // ทอง
                 'city': { fa: 'fa-scale-unbalanced-flip', color: '#60a5fa' }, // ฟ้า
                 'town': { fa: 'fa-house-chimney', color: '#34d399' }, // เขียวมิ้น
                 'danger': { fa: 'fa-skull-crossbones', color: '#c084fc' }, // ม่วง
@@ -782,7 +786,7 @@
             loreData.forEach(item => {
                 const type = item.iconType || 'default';
                 // custom หมายรวมทุก type ที่ไม่ตรงกับประเภทมาตรฐาน
-                const filterKey = ['default', 'landmass', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
+                const filterKey = ['default', 'landmass', 'capital', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
                 if (active.has(filterKey)) createMarker(item);
             });
             updateMarkersVisibility();
@@ -1042,7 +1046,8 @@
 
                     let iconClass = 'fa-map-marker-alt text-red-400';
                     if (match.iconType === 'landmass') iconClass = 'fa-mountain text-yellow-700';
-                    if (match.iconType === 'city') iconClass = 'fa-chess-rook text-blue-400';
+                    if (match.iconType === 'capital') iconClass = 'fa-solid fa-crown text-amber-500';
+                    if (match.iconType === 'city') iconClass = 'fa-scale-unbalanced-flip text-blue-400';
                     if (match.iconType === 'town') iconClass = 'fa-house-chimney text-emerald-400';
                     if (match.iconType === 'danger') iconClass = 'fa-skull-crossbones text-purple-400';
                     if (match.iconType === 'spire') iconClass = 'fa-dungeon text-violet-400';
@@ -1145,7 +1150,7 @@
             if (found) {
                 // บังคับให้ filter ของ type นั้นเปิดอยู่
                 const type = found.iconType || 'default';
-                const filterKey = ['default', 'landmass', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
+                const filterKey = ['default', 'landmass', 'capital', 'city', 'town', 'danger', 'spire'].includes(type) ? type : 'custom';
                 const cb = document.querySelector(`#filter-dropdown input[value="${filterKey}"]`);
                 if (cb) cb.checked = true;
                 renderMarkers();
