@@ -90,6 +90,15 @@ const loreData = [
         "lng": 127
     },
     {
+        "id": 1783074559511,
+        "title": "Urbeth",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 310.25,
+        "lng": 964.5
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
