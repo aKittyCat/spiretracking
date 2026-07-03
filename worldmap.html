@@ -488,8 +488,9 @@
     </div>
 
     <!-- ปุ่มกลับหน้าหลัก & Admin Coordinates -->
-    <div class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000] flex flex-col items-end sm:items-start gap-2 pointer-events-none">
-        
+    <div
+        class="absolute bottom-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto z-[1000] flex flex-col items-end sm:items-start gap-2 pointer-events-none">
+
         <!-- Admin Coordinates Display (เฉพาะ Admin) -->
         <div id="admin-coords" class="hidden"
             style="font-size:11px; color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); padding:4px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); font-family:monospace; pointer-events:auto;">
@@ -722,7 +723,7 @@
             const cacheKey = 'spire_worldmap_data';
             setSyncStatus('syncing', 'กำลัง sync...');
             try {
-                // ?t=timestamp บังคับให้ CDN GitHub ส่งไฟล์ใหม่ทุกครั้ง
+                // ?t=timestamp บังคับให้โหลดไฟล์ใหม่ทุกครั้ง
                 const response = await fetch(`${GITHUB_URL}?t=${Date.now()}`, { cache: 'no-store' });
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -732,15 +733,24 @@
                 try {
                     newData = JSON.parse(textData);
                 } catch {
+                    // Fallback เผื่อมี trailing comma หรือ syntax error เล็กน้อย
                     const m = textData.match(/\[[\s\S]*\]/);
-                    if (m) newData = JSON.parse(m[0]);
+                    if (m) {
+                        // ลบ trailing comma ตัวสุดท้ายก่อน closing bracket เพื่อป้องกัน JSON.parse พัง
+                        let cleanJson = m[0].replace(/,\s*\]$/, ']');
+                        newData = JSON.parse(cleanJson);
+                    }
                 }
 
                 if (Array.isArray(newData)) {
                     const newStr = JSON.stringify(newData);
-                    const oldStr = JSON.stringify(loreData);
+                    // กรอง _marker ออกจาก loreData ก่อนเปรียบเทียบ
+                    const cleanOldData = loreData.map(({ _marker, ...rest }) => rest);
+                    const oldStr = JSON.stringify(cleanOldData);
+
                     loreData = newData;
                     localStorage.setItem(cacheKey, newStr);
+
                     if (newStr !== oldStr) {
                         renderMarkers();
                         setSyncStatus('ok', `อัปเดตแล้ว · ${fmtTime()}`);
