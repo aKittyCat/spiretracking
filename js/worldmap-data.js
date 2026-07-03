@@ -63,6 +63,24 @@ const loreData = [
         "lng": 1711.13
     },
     {
+        "id": 1783074348126,
+        "title": "Ruathym",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 985.88,
+        "lng": 321.38
+    },
+    {
+        "id": 1783074382673,
+        "title": "Vilkstead",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1107,
+        "lng": 218.25
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
