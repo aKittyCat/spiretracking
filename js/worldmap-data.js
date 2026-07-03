@@ -81,6 +81,15 @@ const loreData = [
         "lng": 218.25
     },
     {
+        "id": 1783074478462,
+        "title": "Uttersea",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1237.13,
+        "lng": 127
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
