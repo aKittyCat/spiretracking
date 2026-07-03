@@ -243,6 +243,24 @@ const loreData = [
         "lng": 446.38
     },
     {
+        "id": 1783116914698,
+        "title": "Ormpetarr",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 592.38,
+        "lng": 1207.5
+    },
+    {
+        "id": 1783117001695,
+        "title": "Luthcheo",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 703.25,
+        "lng": 1477.63
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
