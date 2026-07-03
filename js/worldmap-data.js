@@ -189,6 +189,24 @@ const loreData = [
         "lng": 1621.63
     },
     {
+        "id": 1783075528301,
+        "title": "Halarahh",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 124.25,
+        "lng": 1188.38
+    },
+    {
+        "id": 1783075669527,
+        "title": "Darromar",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 493.5,
+        "lng": 852.25
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
