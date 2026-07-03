@@ -153,6 +153,15 @@ const loreData = [
         "lng": 1654.38
     },
     {
+        "id": 1783075155076,
+        "title": "Evereska",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1023.13,
+        "lng": 838.88
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
