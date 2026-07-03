@@ -36,6 +36,33 @@ const loreData = [
         "lng": 776
     },
     {
+        "id": 1783074053113,
+        "title": "Heartwick",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1371.38,
+        "lng": 768.38
+    },
+    {
+        "id": 1783074166934,
+        "title": "Naupau",
+        "image": "",
+        "lore": "",
+        "iconType": "city",
+        "lat": 1409,
+        "lng": 1778.63
+    },
+    {
+        "id": 1783074235541,
+        "title": "Beluir",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 312,
+        "lng": 1711.13
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
