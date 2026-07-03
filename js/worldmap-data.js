@@ -99,6 +99,15 @@ const loreData = [
         "lng": 964.5
     },
     {
+        "id": 1783074656423,
+        "title": "Alaghon",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 788.63,
+        "lng": 1257.13
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
