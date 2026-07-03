@@ -144,6 +144,15 @@ const loreData = [
         "lng": 757.25
     },
     {
+        "id": 1783075084065,
+        "title": "Thaymount",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 961.75,
+        "lng": 1654.38
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
