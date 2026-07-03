@@ -180,6 +180,15 @@ const loreData = [
         "lng": 1858.5
     },
     {
+        "id": 1783075472489,
+        "title": "Cathyr",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 179.88,
+        "lng": 1621.63
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
