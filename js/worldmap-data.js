@@ -108,6 +108,42 @@ const loreData = [
         "lng": 1257.13
     },
     {
+        "id": 1783074697090,
+        "title": "Suzail",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 887,
+        "lng": 973.5
+    },
+    {
+        "id": 1783074863862,
+        "title": "Myth Drannor",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1077.38,
+        "lng": 1114.25
+    },
+    {
+        "id": 1783074910030,
+        "title": "Telos City",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 1210.5,
+        "lng": 1247
+    },
+    {
+        "id": 1783074979541,
+        "title": "Elturel",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 859.5,
+        "lng": 757.25
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
