@@ -225,6 +225,15 @@ const loreData = [
         "lng": 763.75
     },
     {
+        "id": 1783075955485,
+        "title": "Sar'Rukoth",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 500.13,
+        "lng": 1739.38
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
