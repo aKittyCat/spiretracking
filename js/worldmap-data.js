@@ -270,6 +270,24 @@ const loreData = [
         "lng": 1388
     },
     {
+        "id": 1783117106469,
+        "title": "Unthalass",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 628,
+        "lng": 1627.13
+    },
+    {
+        "id": 1783117189903,
+        "title": "Caer Callidyrr",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 794.38,
+        "lng": 437.13
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
