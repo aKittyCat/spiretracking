@@ -207,6 +207,24 @@ const loreData = [
         "lng": 852.25
     },
     {
+        "id": 1783075713103,
+        "title": "Sarmagol",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 83.63,
+        "lng": 647.25
+    },
+    {
+        "id": 1783075746296,
+        "title": "Thindar",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 99.5,
+        "lng": 763.75
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
