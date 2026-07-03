@@ -261,6 +261,15 @@ const loreData = [
         "lng": 1477.63
     },
     {
+        "id": 1783117060770,
+        "title": "Airspur",
+        "image": "",
+        "lore": "",
+        "iconType": "capital",
+        "lat": 762.5,
+        "lng": 1388
+    },
+    {
         "id": 1783029143121,
         "title": "The High Forest",
         "image": "",
