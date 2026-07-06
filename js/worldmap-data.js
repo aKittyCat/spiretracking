@@ -290,7 +290,7 @@ const loreData = [
     {
         "id": 1783308415597,
         "title": "Baldur's Gate",
-        "image": "https://static.wikia.nocookie.net/forgottenrealms/images/c/c4/Baldur%27s_Gate_overview_BG3.png",
+        "image": "https://www.wizardtower.com/wp-content/uploads/Baldurs4.jpg",
         "lore": "เป็นหนึ่งในมหานครและนครรัฐที่ใหญ่ที่สุดบน Sword Coast",
         "iconType": "city",
         "lat": 843.63,
