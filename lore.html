@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,14 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cinzel for headers and Noto Sans Thai for content -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+
     <style>
         :root {
             --color-gold: #c5a059;
@@ -25,15 +32,17 @@
             overflow-x: hidden;
         }
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             font-family: 'Cinzel', serif;
             letter-spacing: 2px;
         }
 
         /* Hero & Background */
         .hero-bg {
-            background-image: linear-gradient(to bottom, rgba(10, 10, 12, 0.6), rgba(10, 10, 12, 0.95)), 
-                              url('https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/spire.png');
+            background-image: linear-gradient(to bottom, rgba(10, 10, 12, 0.6), rgba(10, 10, 12, 0.95)),
+                url('https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/spire.png');
             background-attachment: fixed;
             background-position: center;
             background-repeat: no-repeat;
@@ -47,7 +56,7 @@
         /* Story Section Styling */
         .story-content {
             line-height: 2;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
             max-width: 800px;
             width: 100%;
         }
@@ -130,7 +139,7 @@
             right: 0;
             z-index: 50;
             padding: 1rem 1.5rem;
-            background: linear-gradient(to bottom, rgba(10,10,12,0.9), transparent);
+            background: linear-gradient(to bottom, rgba(10, 10, 12, 0.9), transparent);
             -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
         }
@@ -156,6 +165,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Lightbox Modal -->
@@ -170,27 +180,31 @@
     <nav class="nav-container flex justify-between items-center">
         <!-- Left Side: Page Switcher -->
         <div class="flex space-x-4">
-            <button onclick="switchPage('lore')" id="btn-lore" class="tab-btn active text-sm md:text-base font-bold uppercase tracking-wider">
+            <button onclick="switchPage('lore')" id="btn-lore"
+                class="tab-btn active text-sm md:text-base font-bold uppercase tracking-wider">
                 Lore
             </button>
-            <button onclick="switchPage('gallery')" id="btn-gallery" class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+            <button onclick="switchPage('gallery')" id="btn-gallery"
+                class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
                 Newspapers
             </button>
-            <button onclick="switchPage('spire')" id="btn-spire" class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+            <button onclick="switchPage('spire')" id="btn-spire"
+                class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
                 Spire
             </button>
         </div>
 
         <!-- Right Side: Home Button -->
         <div>
-            <button onclick="window.location.href = 'characters.html'" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700">
+            <button onclick="window.location.href = 'characters.html'"
+                class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700">
                 <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
             </button>
         </div>
     </nav>
 
     <div class="hero-bg px-6 pb-20">
-        
+
         <!-- Header Section -->
         <header class="text-center mt-32 mb-12">
             <h1 id="page-title" class="text-4xl md:text-6xl font-bold text-[#c5a059] mb-4">The Spire Lore</h1>
@@ -202,28 +216,40 @@
             <article class="space-y-8">
                 <p>ไม่มีใครรู้แน่ชัดว่ามันปรากฏขึ้นเมื่อใด</p>
                 <p>บางคนบอกว่ามันเกิดขึ้น “เมื่อคืนนี้” ขณะที่อีกกลุ่มยืนยันว่าพวกเขาจำได้ว่าเห็นมันตั้งแต่เด็ก</p>
-                <p>แต่ไม่เคยมีแผนที่ใดใน <span class="story-text-highlight">Faerûn</span> ที่เคยระบุ <span class="story-text-highlight">“The Spire Tower”</span> ไว้ในตำแหน่งนี้มาก่อน</p>
-                <p>ท่ามกลางหุบเขาอันรกร้างทางตอนเหนือของ <span class="story-text-highlight">The High Forest</span> ณ จุดที่เคยเป็นเพียงทุ่งหญ้าไร้ชื่อ</p>
-                <p>เสาหอคอยหินสูงล้ำเมฆา ปรากฏขึ้นจากเบื้องล่างอย่างเงียบงัน สูงจนไม่มีใครมองเห็นยอด และเย็นเยียบแม้ในยามกลางวัน</p>
+                <p>แต่ไม่เคยมีแผนที่ใดใน <span class="story-text-highlight">Faerûn</span> ที่เคยระบุ <span
+                        class="story-text-highlight">“The Spire Tower”</span> ไว้ในตำแหน่งนี้มาก่อน</p>
+                <p>ท่ามกลางหุบเขาอันรกร้างทางตอนเหนือของ <span class="story-text-highlight">The High Forest</span> ณ
+                    จุดที่เคยเป็นเพียงทุ่งหญ้าไร้ชื่อ</p>
+                <p>เสาหอคอยหินสูงล้ำเมฆา ปรากฏขึ้นจากเบื้องล่างอย่างเงียบงัน สูงจนไม่มีใครมองเห็นยอด
+                    และเย็นเยียบแม้ในยามกลางวัน</p>
                 <p>ผู้คนเริ่มหลั่งไหลมา...</p>
-                <p>ไม่ใช่ด้วยคำสั่งของกษัตริย์ ไม่ใช่ด้วยคำเรียกของเหล่าทวยเทพ แต่ด้วยเสียงกระซิบในฝัน ภาพเงาเลือนรางในนิมิต และบางสิ่ง... ที่พวกเขาไม่อาจอธิบายได้</p>
-                <p>ว่ากันว่า ใต้หอคอยมีประตูมากมาย— แต่ละบานไม่ได้นำไปสู่ห้องอื่นของหอคอย... หากแต่นำไปสู่ <span class="story-text-highlight">“โลกอื่น”</span></p>
-                <p>มิติที่ไม่เคยมีในตำนานของนักปราชญ์ นรกที่เทพยังไม่กล้าเอ่ยชื่อ หรือสวรรค์ที่แม้ Celestial เองยังไม่กล้าสัมผัส</p>
-                <p>และสิ่งที่น่ากลัวยิ่งกว่า—คือทุกครั้งที่ใครบางคนผ่านประตูนั้น <span class="story-text-highlight">“บางสิ่ง”</span> ก็เดินสวนออกมาสู่โลกนี้</p>
-                <p>บัดนี้ <span class="story-text-highlight">The Spire Tower</span> ได้กลายเป็น จุดรวมของเหล่านักผจญภัยจากทั่ว Faerûn ทั้งผู้แสวงหาพลัง ความจริง ความอยู่รอด หรือแม้แต่ความตาย</p>
-                <p>มันไม่ได้เป็นเพียงหอคอย แต่มันคือ <span class="story-text-highlight">“สนามทดสอบ”</span> ของผู้ที่กล้าก้าวข้ามขีดจำกัดของตนเอง และของโลกใบนี้</p>
-                <p class="text-center italic mt-12 text-[#c5a059]">หากคุณได้ยินเสียงเรียก... จงรู้ไว้ว่า The Spire ไม่ได้เลือกใครโดยบังเอิญ</p>
+                <p>ไม่ใช่ด้วยคำสั่งของกษัตริย์ ไม่ใช่ด้วยคำเรียกของเหล่าทวยเทพ แต่ด้วยเสียงกระซิบในฝัน
+                    ภาพเงาเลือนรางในนิมิต และบางสิ่ง... ที่พวกเขาไม่อาจอธิบายได้</p>
+                <p>ว่ากันว่า ใต้หอคอยมีประตูมากมาย— แต่ละบานไม่ได้นำไปสู่ห้องอื่นของหอคอย... หากแต่นำไปสู่ <span
+                        class="story-text-highlight">“โลกอื่น”</span></p>
+                <p>มิติที่ไม่เคยมีในตำนานของนักปราชญ์ นรกที่เทพยังไม่กล้าเอ่ยชื่อ หรือสวรรค์ที่แม้ Celestial
+                    เองยังไม่กล้าสัมผัส</p>
+                <p>และสิ่งที่น่ากลัวยิ่งกว่า—คือทุกครั้งที่ใครบางคนผ่านประตูนั้น <span
+                        class="story-text-highlight">“บางสิ่ง”</span> ก็เดินสวนออกมาสู่โลกนี้</p>
+                <p>บัดนี้ <span class="story-text-highlight">The Spire Tower</span> ได้กลายเป็น
+                    จุดรวมของเหล่านักผจญภัยจากทั่ว Faerûn ทั้งผู้แสวงหาพลัง ความจริง ความอยู่รอด หรือแม้แต่ความตาย</p>
+                <p>มันไม่ได้เป็นเพียงหอคอย แต่มันคือ <span class="story-text-highlight">“สนามทดสอบ”</span>
+                    ของผู้ที่กล้าก้าวข้ามขีดจำกัดของตนเอง และของโลกใบนี้</p>
+                <p class="text-center italic mt-12 text-[#c5a059]">หากคุณได้ยินเสียงเรียก... จงรู้ไว้ว่า The Spire
+                    ไม่ได้เลือกใครโดยบังเอิญ</p>
             </article>
         </div>
 
         <!-- PAGE 2: Gallery -->
         <div id="page-gallery" class="hidden-page w-full max-w-6xl">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                
+
                 <!-- Gallery Item 1 -->
-                <div class="newspaper-card rounded-lg" onclick="openModal('https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/handout1.png')">
+                <div class="newspaper-card rounded-lg"
+                    onclick="openModal('https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/handout1.png')">
                     <div class="img-container rounded">
-                        <img src="https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/handout1.png" alt="Newspaper Issue 1">
+                        <img src="https://raw.githubusercontent.com/aKittyCat/spiretracking/refs/heads/main/pic/lore/handout1.png"
+                            alt="Newspaper Issue 1">
                     </div>
                 </div>
 
@@ -234,75 +260,129 @@
         <div id="page-spire" class="hidden-page w-full max-w-6xl">
             <!-- Secondary Navigation for Spire Areas -->
             <div class="flex flex-wrap justify-center gap-4 mb-12">
-                <button onclick="switchSpireArea('grand-hall')" id="btn-area-grand-hall" class="spire-area-btn px-6 py-2 border-b-2 border-gold text-gold font-bold transition-all">The Grand Hall</button>
-                <button onclick="switchSpireArea('training')" id="btn-area-training" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">สนามฝึกฝน</button>
-                <button onclick="switchSpireArea('paradise')" id="btn-area-paradise" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Spiral Paradise</button>
-                <button onclick="switchSpireArea('zhareth')" id="btn-area-zhareth" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Zha'reth Ulm</button>
-                <button onclick="switchSpireArea('sanctum')" id="btn-area-sanctum" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Sanctum Of The Silent Star</button>
-                <button onclick="switchSpireArea('valeris')" id="btn-area-valeris" class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Valeris Codex</button>
+                <button onclick="switchSpireArea('grand-hall')" id="btn-area-grand-hall"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-gold text-gold font-bold transition-all">The Grand
+                    Hall</button>
+                <button onclick="switchSpireArea('training')" id="btn-area-training"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">สนามฝึกฝน</button>
+                <button onclick="switchSpireArea('paradise')" id="btn-area-paradise"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Spiral
+                    Paradise</button>
+                <button onclick="switchSpireArea('zhareth')" id="btn-area-zhareth"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Zha'reth
+                    Ulm</button>
+                <button onclick="switchSpireArea('sanctum')" id="btn-area-sanctum"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Sanctum
+                    Of The Silent Star</button>
+                <button onclick="switchSpireArea('valeris')" id="btn-area-valeris"
+                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Valeris
+                    Codex</button>
             </div>
 
             <!-- Content for Grand Hall -->
             <div id="area-grand-hall" class="spire-area-content grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://i.pinimg.com/webp87/1200x/bf/a9/e9/bfa9e9a6e8a2be8f2b98e4cef4c53745.webp" alt="The Grand Hall" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                    <img src="https://i.pinimg.com/webp87/1200x/bf/a9/e9/bfa9e9a6e8a2be8f2b98e4cef4c53745.webp"
+                        alt="The Grand Hall"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">The Grand Hall</h2>
-                    <p>ทันทีที่ก้าวพ้นธรณีประตูของ The Spire Tower ผู้มาเยือนทุกคนจะพบกับความเงียบที่ “ลึก” ยิ่งกว่าความเงียบใดที่เคยสัมผัส</p>
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">The Grand
+                        Hall</h2>
+                    <p>ทันทีที่ก้าวพ้นธรณีประตูของ The Spire Tower ผู้มาเยือนทุกคนจะพบกับความเงียบที่ “ลึก”
+                        ยิ่งกว่าความเงียบใดที่เคยสัมผัส</p>
                     <p>ไม่ใช่เพราะขาดเสียง… แต่เพราะสิ่งที่อยู่ตรงหน้า “ดึงทุกประสาทสัมผัสไปจนลืมหายใจ”</p>
-                    <p>โถงหลักของ The Spire Tower สูงตระหง่านจนมองไม่เห็นเพดาน แสงสว่างอ่อนๆ ลอยอยู่ในอากาศราวกับฝุ่นทองที่ขับเคลื่อนตามกระแสเวท พื้นหินสีเทาดำขัดเงา สะท้อนเงาผู้เดินทางอย่างบิดเบี้ยวเล็กน้อย เสาทรงเรียวยาวที่สลักอักษรโบราณทอดขึ้นสู่ความมืดด้านบน ราวกับรับน้ำหนักของ “อะไรบางอย่าง” ที่มากกว่าหิน</p>
-                    <p>ตรงกลางห้องคือจุดรวมสายตา —แท่นคริสตัลขนาดใหญ่ ที่เปล่งแสงจางๆ และเปลี่ยนสีไปตามบุคลิกของผู้ที่เข้าใกล้ ว่ากันว่า แท่นนี้คือหัวใจของ The Spire และมัน “เฝ้ามอง” นักผจญภัยทุกคนที่ผ่านเข้ามา</p>
+                    <p>โถงหลักของ The Spire Tower สูงตระหง่านจนมองไม่เห็นเพดาน แสงสว่างอ่อนๆ
+                        ลอยอยู่ในอากาศราวกับฝุ่นทองที่ขับเคลื่อนตามกระแสเวท พื้นหินสีเทาดำขัดเงา
+                        สะท้อนเงาผู้เดินทางอย่างบิดเบี้ยวเล็กน้อย เสาทรงเรียวยาวที่สลักอักษรโบราณทอดขึ้นสู่ความมืดด้านบน
+                        ราวกับรับน้ำหนักของ “อะไรบางอย่าง” ที่มากกว่าหิน</p>
+                    <p>ตรงกลางห้องคือจุดรวมสายตา —แท่นคริสตัลขนาดใหญ่ ที่เปล่งแสงจางๆ
+                        และเปลี่ยนสีไปตามบุคลิกของผู้ที่เข้าใกล้ ว่ากันว่า แท่นนี้คือหัวใจของ The Spire และมัน “เฝ้ามอง”
+                        นักผจญภัยทุกคนที่ผ่านเข้ามา</p>
                     <p class="font-bold text-gray-200 mt-6 pt-4 border-t border-gray-800">โดยรอบโถงมี:</p>
                     <ul class="list-disc list-inside space-y-2 text-gray-400 pl-2">
-                        <li>ประตูมากมายที่นำไปสู่พื้นที่อื่นในหอคอย: หอสมุดเวท, ลานฝึก, ตลาดเวทมนตร์, และศาลารับภารกิจ</li>
-                        <li>ระเบียงชั้นบนที่เปิดให้เห็นนักผจญภัยคนอื่นที่กำลังเดินผ่าน, สนทนา, หรือรอลงทะเบียนภารกิจ</li>
+                        <li>ประตูมากมายที่นำไปสู่พื้นที่อื่นในหอคอย: หอสมุดเวท, ลานฝึก, ตลาดเวทมนตร์, และศาลารับภารกิจ
+                        </li>
+                        <li>ระเบียงชั้นบนที่เปิดให้เห็นนักผจญภัยคนอื่นที่กำลังเดินผ่าน, สนทนา, หรือรอลงทะเบียนภารกิจ
+                        </li>
                         <li>กระดานภารกิจกลางโถง ซึ่งจะเปลี่ยนข้อความด้วยตัวเองเมื่อมีผู้เข้าใกล้</li>
                     </ul>
-                    <p class="mt-6">แม้จะเป็นสถานที่ที่น่าตื่นตา แต่โถงแห่งนี้ให้ความรู้สึกสงบอย่างน่าประหลาด เหมือนสิ่งปลูกสร้างนี้ “รับรู้ได้” ว่าผู้ที่เดินเข้ามาไม่ได้มาเพื่อชื่นชม แต่เพื่อ "เริ่มต้นบางสิ่ง"</p>
-                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
+                    <p class="mt-6">แม้จะเป็นสถานที่ที่น่าตื่นตา แต่โถงแห่งนี้ให้ความรู้สึกสงบอย่างน่าประหลาด
+                        เหมือนสิ่งปลูกสร้างนี้ “รับรู้ได้” ว่าผู้ที่เดินเข้ามาไม่ได้มาเพื่อชื่นชม แต่เพื่อ
+                        "เริ่มต้นบางสิ่ง"</p>
+                    <blockquote
+                        class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
                         “ทุกภารกิจ ทุกเรื่องเล่า ทุกตำนาน... ล้วนมีรากฐานมาจากที่นี่”<br>
-                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">— Edwina, The Receptionist of The Spire Tower</span>
+                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">— Edwina, The
+                            Receptionist of The Spire Tower</span>
                     </blockquote>
                 </div>
             </div>
 
             <!-- Content for Training Ground -->
-            <div id="area-training" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <div id="area-training"
+                class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://maxion-1.gitbook.io/ragnarok-landverse-whitepaper/~gitbook/image?url=https%3A%2F%2F3132535327-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FxTAc4SBp5rgWM4FIglMO%252Fuploads%252FXL5rYUV6cKfCHZiMS7qa%252FScreenshot%25202024-05-24%2520181916.png%3Falt%3Dmedia%26token%3D168daadc-b37d-416e-adeb-021824d0bfe1&width=768&dpr=1&quality=100&sign=434f6635&sv=2" alt="สนามฝึกฝน" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                    <img src="https://maxion-1.gitbook.io/ragnarok-landverse-whitepaper/~gitbook/image?url=https%3A%2F%2F3132535327-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FxTAc4SBp5rgWM4FIglMO%252Fuploads%252FXL5rYUV6cKfCHZiMS7qa%252FScreenshot%25202024-05-24%2520181916.png%3Falt%3Dmedia%26token%3D168daadc-b37d-416e-adeb-021824d0bfe1&width=768&dpr=1&quality=100&sign=434f6635&sv=2"
+                        alt="สนามฝึกฝน"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Training Ground (สนามฝึกฝน)</h2>
-                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mb-6 py-2 bg-black/20 rounded-r">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Training
+                        Ground (สนามฝึกฝน)</h2>
+                    <blockquote
+                        class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mb-6 py-2 bg-black/20 rounded-r">
                         “ทุกการผจญภัยเริ่มจากหนึ่งก้าว... และหนึ่งก้าวนั้นเริ่มที่นี่”
                     </blockquote>
-                    <p>ภายในชั้นกลางของ The Spire Tower อันลึกลับ มีลานเปิดขนาดใหญ่ที่รายล้อมด้วยกำแพงหินโค้งและแสงอาทิตย์ที่สาดผ่านหน้าต่างเวทมนตร์บนเพดานสูง— ที่นั่นคือ ลานฝึกของเหล่านักผจญภัย จุดเริ่มต้นที่ทุกคนสามารถทดสอบฝีมือของตนเองโดยไม่ต้องเสี่ยงชีวิต</p>
-                    <p>พื้นลานถูกปูด้วยหินเวทมนตร์ที่สามารถดูดซับแรงกระแทกและเวทมนตร์รุนแรงได้โดยไม่ก่อให้เกิดอันตรายจริง ในมุมต่างๆ ของลาน มี <span class="text-[#c5a059] font-bold">หุ่นจำลองเวทมนตร์</span> ที่เคลื่อนไหวได้ พร้อมกับ <span class="text-[#c5a059] font-bold">เวทป้องกันพิเศษ</span> ที่ล้อมสนามไว้ เพื่อให้การฝึกทุกครั้งสามารถหยุดได้ทันทีหากเกิดอาการบาดเจ็บหรือพลังเวทไม่สมดุล</p>
-                    <p class="font-bold text-gray-200 mt-6 pt-4 border-t border-gray-800">สิ่งที่ทำให้ลานฝึกแห่งนี้เป็นที่นิยมในหมู่นักผจญภัย:</p>
+                    <p>ภายในชั้นกลางของ The Spire Tower อันลึกลับ
+                        มีลานเปิดขนาดใหญ่ที่รายล้อมด้วยกำแพงหินโค้งและแสงอาทิตย์ที่สาดผ่านหน้าต่างเวทมนตร์บนเพดานสูง—
+                        ที่นั่นคือ ลานฝึกของเหล่านักผจญภัย
+                        จุดเริ่มต้นที่ทุกคนสามารถทดสอบฝีมือของตนเองโดยไม่ต้องเสี่ยงชีวิต</p>
+                    <p>พื้นลานถูกปูด้วยหินเวทมนตร์ที่สามารถดูดซับแรงกระแทกและเวทมนตร์รุนแรงได้โดยไม่ก่อให้เกิดอันตรายจริง
+                        ในมุมต่างๆ ของลาน มี <span class="text-[#c5a059] font-bold">หุ่นจำลองเวทมนตร์</span>
+                        ที่เคลื่อนไหวได้ พร้อมกับ <span class="text-[#c5a059] font-bold">เวทป้องกันพิเศษ</span>
+                        ที่ล้อมสนามไว้ เพื่อให้การฝึกทุกครั้งสามารถหยุดได้ทันทีหากเกิดอาการบาดเจ็บหรือพลังเวทไม่สมดุล
+                    </p>
+                    <p class="font-bold text-gray-200 mt-6 pt-4 border-t border-gray-800">
+                        สิ่งที่ทำให้ลานฝึกแห่งนี้เป็นที่นิยมในหมู่นักผจญภัย:</p>
                     <ul class="list-disc list-inside space-y-2 text-gray-400 pl-2">
-                        <li>ไม่มีความเสี่ยงถึงชีวิต เหมาะสำหรับทั้งมือใหม่และมือเก๋าที่ต้องการฝึกฝนโดยไม่ถูกลงโทษด้วยความตาย</li>
-                        <li>สามารถจำลองศัตรูหรือสถานการณ์พื้นฐานได้ เช่น การต่อสู้กับก๊อบลิน นักธนู หรือหลีกเลี่ยงกับดัก</li>
-                        <li>พื้นที่สงบ ปลอดภัย และมีบรรยากาศผ่อนคลาย ต้นไม้เลื้อยเขียวขจีที่ไต่ไปตามเสาหิน และน้ำพุเล็กๆ ที่ไหลเป็นทางช่วยสร้างความสบายใจ</li>
+                        <li>ไม่มีความเสี่ยงถึงชีวิต
+                            เหมาะสำหรับทั้งมือใหม่และมือเก๋าที่ต้องการฝึกฝนโดยไม่ถูกลงโทษด้วยความตาย</li>
+                        <li>สามารถจำลองศัตรูหรือสถานการณ์พื้นฐานได้ เช่น การต่อสู้กับก๊อบลิน นักธนู หรือหลีกเลี่ยงกับดัก
+                        </li>
+                        <li>พื้นที่สงบ ปลอดภัย และมีบรรยากาศผ่อนคลาย ต้นไม้เลื้อยเขียวขจีที่ไต่ไปตามเสาหิน และน้ำพุเล็กๆ
+                            ที่ไหลเป็นทางช่วยสร้างความสบายใจ</li>
                     </ul>
-                    <p class="mt-6">นักผจญภัยจากทั่วทุกหัวระแหงมักมารวมตัวกันที่นี่ก่อนออกภารกิจจริง บางคนมาเพื่อฝึกเวท บางคนฝึกการเคลื่อนไหว และบางคน... ก็แค่มาเพื่อมั่นใจว่า ตนยัง “ไม่ลืมวิธีรอดชีวิต”</p>
-                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
+                    <p class="mt-6">นักผจญภัยจากทั่วทุกหัวระแหงมักมารวมตัวกันที่นี่ก่อนออกภารกิจจริง บางคนมาเพื่อฝึกเวท
+                        บางคนฝึกการเคลื่อนไหว และบางคน... ก็แค่มาเพื่อมั่นใจว่า ตนยัง “ไม่ลืมวิธีรอดชีวิต”</p>
+                    <blockquote
+                        class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-2 bg-black/20 rounded-r">
                         “ไม่มีใครหัวเราะเยาะคนที่ซ้อมเยอะเกินไป... แต่คนที่ไม่ซ้อมเลย มักไม่ได้หัวเราะกลับ”<br>
-                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">— ข้อความบนป้ายไม้เก่าใกล้ทางเข้า</span>
+                        <span class="text-xs text-[#c5a059] block mt-2 font-bold uppercase tracking-wider">—
+                            ข้อความบนป้ายไม้เก่าใกล้ทางเข้า</span>
                     </blockquote>
                 </div>
             </div>
 
             <!-- Content for Spiral Paradise -->
-            <div id="area-paradise" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <div id="area-paradise"
+                class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://i.pinimg.com/736x/53/41/41/5341415a4c8c6731305a27fe705a46be.jpg" alt="Spiral Paradise" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
+                    <img src="https://i.pinimg.com/736x/53/41/41/5341415a4c8c6731305a27fe705a46be.jpg"
+                        alt="Spiral Paradise"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Spiral Paradise</h2>
-                    <p>พวกเราต่างมาจากที่ไหนสักแห่ง หรืออาจจากช่วงเวลาใดช่วงเวลาหนึ่ง สับสนและหลงใหลอยู่ในหอคอยลึกลับแห่งนี้ แต่เมื่อเปิดประตูไม้บานนี้แล้ว... พวกเรากลับรู้สึกเหมือนได้กลับมายังบ้านเกิด</p>
-                    <p>หากดูเพียงผิวเผิน ประตูบานนี้อาจดูเหมือนแค่ประตูไม้ที่เปิดเข้าไปสู่โรงเตี๊ยมเล็กๆ ข้างทาง แต่เมื่อก้าวผ่านเข้าไป จะได้พบกับบรรยากาศอันแสนผ่อนคลาย เสียงแก้วชนกันประสานเป็นท่วงทำนอง กลิ่นอายของบ้านที่จากมาไกล...</p>
-                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-4 bg-black/20 rounded-r">
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Spiral
+                        Paradise</h2>
+                    <p>พวกเราต่างมาจากที่ไหนสักแห่ง หรืออาจจากช่วงเวลาใดช่วงเวลาหนึ่ง
+                        สับสนและหลงใหลอยู่ในหอคอยลึกลับแห่งนี้ แต่เมื่อเปิดประตูไม้บานนี้แล้ว...
+                        พวกเรากลับรู้สึกเหมือนได้กลับมายังบ้านเกิด</p>
+                    <p>หากดูเพียงผิวเผิน ประตูบานนี้อาจดูเหมือนแค่ประตูไม้ที่เปิดเข้าไปสู่โรงเตี๊ยมเล็กๆ ข้างทาง
+                        แต่เมื่อก้าวผ่านเข้าไป จะได้พบกับบรรยากาศอันแสนผ่อนคลาย เสียงแก้วชนกันประสานเป็นท่วงทำนอง
+                        กลิ่นอายของบ้านที่จากมาไกล...</p>
+                    <blockquote
+                        class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-4 bg-black/20 rounded-r">
                         <span class="text-xl text-[#c5a059] font-bold">"The Spiral Paradise"</span><br>
                         จุดพักผ่อนอันเลื่องชื่อของเหล่านักผจญภัยภายใน The Spire Tower
                     </blockquote>
@@ -312,18 +392,35 @@
             <!-- Content for Zha'reth Ulm -->
             <div id="area-zhareth" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://i.pinimg.com/1200x/5e/4d/5b/5e4d5b8ac42bc5d10d94c128db829375.jpg" alt="Zha'reth Ulm" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter contrast-125">
+                    <img src="https://i.pinimg.com/1200x/5e/4d/5b/5e4d5b8ac42bc5d10d94c128db829375.jpg"
+                        alt="Zha'reth Ulm"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter contrast-125">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Zha'reth Ulm</h2>
-                    <p>ในส่วนลึกของ The Spire Tower — ดินแดนที่แม้แต่เทพยังไม่กล้ารุกราน — มีห้องหนึ่งซ่อนตัวอยู่เงียบๆ <span class="text-[#c5a059] font-bold">Zha’reth Ulm</span> ไม่ใช่วิหาร ไม่ใช่สุสาน แต่เป็นจุดกึ่งกลางระหว่าง “ก่อนจะตาย” กับ “หลังจากนั้น” ที่มนุษย์มิอาจนิยาม</p>
-                    <p>ผนังหินสูงตระหง่านรอบตัว เสาหินร้าวบ้าง หักบ้าง แต่ยังคงยืนหยัดราวกับบันทึกเวลาหลายร้อยปี แสงเพียงริ้วเดียวจากฟากฟ้าเหนือเพดานที่ผุพัง สาดลงมายังวงเวทกลางห้อง แสงเส้นนั้นส่องลงมายังจุดกึ่งกลางอย่างแม่นยำ — ราวกับสวรรค์ยังจดจำตำแหน่งของพิธีได้แม้จะหลับตา</p>
-                    <p>ลวดลายจารึกภาษา Abyssal คืบคลานไปตามพื้นและผนังดั่งรากไม้แห่งความลับ บางจารึกส่องแสงสว่างรวยริน เมื่อก้าวเข้าไปใกล้ —</p>
-                    <p>ณ ใจกลางของห้องนั้น ปรากฏหญิงสาวผู้เปล่งพลังลึกล้ำราวกับเงาเงียบในหอวิหาร... <span class="text-[#c5a059] font-bold">"Amelia Syrenholm"</span></p>
-                    <p>เรือนผมยาวสลวยสีม่วงเข้ม กอปรด้วยสีแดงเพลิง — เหมือนเปลวไฟที่ครั้งหนึ่งเคยเผาผลาญหัวใจเธอ และยังคงไม่มอดสนิท ผิวขาวซีดอย่างผู้ที่ไม่ค่อยได้พบแสงอาทิตย์ แต่นั่นไม่ทำให้เธอดูอ่อนแอ ตรงกันข้าม—มันเสริมให้เธอดูเหมือนภาพลวงตาที่หลุดมาจากอีกภพหนึ่ง</p>
-                    <p>นัยน์ตาของเธอสีแดงเข้มเหมือนเลือดที่เพิ่งหลั่ง สดและนิ่ง ไม่มีความโกรธ ไม่มีความอบอุ่น มีแต่การมองทะลุ — และการตัดสิน</p>
-                    <blockquote class="border-l-4 border-red-900 pl-4 italic text-gray-400 mt-6 py-3 bg-red-950/20 rounded-r">
-                        เสื้อคลุมสีดำดุจรัตติกาล บดบังสรีระสิ้น เบื้องใต้ไร้เกราะ ไร้อาวุธ<br>เพราะสำหรับ Amelia แล้ว เธอไม่จำเป็นต้องป้องกันตัว… <span class="text-red-400 font-bold">ความตายรู้จักเธอดีเกินกว่าจะแตะต้อง</span>
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Zha'reth
+                        Ulm</h2>
+                    <p>ในส่วนลึกของ The Spire Tower — ดินแดนที่แม้แต่เทพยังไม่กล้ารุกราน — มีห้องหนึ่งซ่อนตัวอยู่เงียบๆ
+                        <span class="text-[#c5a059] font-bold">Zha’reth Ulm</span> ไม่ใช่วิหาร ไม่ใช่สุสาน
+                        แต่เป็นจุดกึ่งกลางระหว่าง “ก่อนจะตาย” กับ “หลังจากนั้น” ที่มนุษย์มิอาจนิยาม
+                    </p>
+                    <p>ผนังหินสูงตระหง่านรอบตัว เสาหินร้าวบ้าง หักบ้าง แต่ยังคงยืนหยัดราวกับบันทึกเวลาหลายร้อยปี
+                        แสงเพียงริ้วเดียวจากฟากฟ้าเหนือเพดานที่ผุพัง สาดลงมายังวงเวทกลางห้อง
+                        แสงเส้นนั้นส่องลงมายังจุดกึ่งกลางอย่างแม่นยำ — ราวกับสวรรค์ยังจดจำตำแหน่งของพิธีได้แม้จะหลับตา
+                    </p>
+                    <p>ลวดลายจารึกภาษา Abyssal คืบคลานไปตามพื้นและผนังดั่งรากไม้แห่งความลับ บางจารึกส่องแสงสว่างรวยริน
+                        เมื่อก้าวเข้าไปใกล้ —</p>
+                    <p>ณ ใจกลางของห้องนั้น ปรากฏหญิงสาวผู้เปล่งพลังลึกล้ำราวกับเงาเงียบในหอวิหาร... <span
+                            class="text-[#c5a059] font-bold">"Amelia Syrenholm"</span></p>
+                    <p>เรือนผมยาวสลวยสีม่วงเข้ม กอปรด้วยสีแดงเพลิง — เหมือนเปลวไฟที่ครั้งหนึ่งเคยเผาผลาญหัวใจเธอ
+                        และยังคงไม่มอดสนิท ผิวขาวซีดอย่างผู้ที่ไม่ค่อยได้พบแสงอาทิตย์ แต่นั่นไม่ทำให้เธอดูอ่อนแอ
+                        ตรงกันข้าม—มันเสริมให้เธอดูเหมือนภาพลวงตาที่หลุดมาจากอีกภพหนึ่ง</p>
+                    <p>นัยน์ตาของเธอสีแดงเข้มเหมือนเลือดที่เพิ่งหลั่ง สดและนิ่ง ไม่มีความโกรธ ไม่มีความอบอุ่น
+                        มีแต่การมองทะลุ — และการตัดสิน</p>
+                    <blockquote
+                        class="border-l-4 border-red-900 pl-4 italic text-gray-400 mt-6 py-3 bg-red-950/20 rounded-r">
+                        เสื้อคลุมสีดำดุจรัตติกาล บดบังสรีระสิ้น เบื้องใต้ไร้เกราะ ไร้อาวุธ<br>เพราะสำหรับ Amelia แล้ว
+                        เธอไม่จำเป็นต้องป้องกันตัว… <span
+                            class="text-red-400 font-bold">ความตายรู้จักเธอดีเกินกว่าจะแตะต้อง</span>
                     </blockquote>
                 </div>
             </div>
@@ -331,16 +428,28 @@
             <!-- Content for Sanctum of the Silent Star -->
             <div id="area-sanctum" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://i.pinimg.com/736x/9a/56/bf/9a56bfb2734398acdb097369579e0a55.jpg" alt="Sanctum Of The Silent Star" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter brightness-110">
+                    <img src="https://i.pinimg.com/736x/9a/56/bf/9a56bfb2734398acdb097369579e0a55.jpg"
+                        alt="Sanctum Of The Silent Star"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter brightness-110">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Sanctum Of The Silent Star</h2>
-                    <p>ภายในหอคอย The Spire Tower ที่สูงเสียดฟ้าจนเมฆล้อมรอบ — มีชั้นหนึ่งที่ผู้คนกล่าวถึงในเสียงกระซิบว่าเป็นสถานที่ศักดิ์สิทธิ์ที่แม้แต่เหล่าทวยเทพยังทอดสายตามองลงมา นั่นคือ <span class="text-[#c5a059] font-bold">Sanctum of the Silent Star</span></p>
-                    <p>อารามตั้งอยู่ในห้องโถงวงกลมกว้างใหญ่ ผนังประดับด้วยคริสตัลใสที่เรืองแสงอ่อนๆ ตามจังหวะของคลื่นพลังเวทจาก Astral Plane</p>
-                    <p>เหนือศีรษะคือเพดานโดมโปร่งแสงที่เปิดสู่ท้องฟ้า — หรืออาจจะเป็นห้วงอวกาศที่ไร้ขอบเขตก็ไม่มีใครแน่ใจ ดวงดาวนับพันระยิบระยับอยู่เหนือศีรษะ และเสียงสวดของเหล่านักบวชจะสะท้อนขึ้นไปในความเวิ้งว้างนั้น</p>
-                    <p>พื้นของอารามเป็นวงแหวนเวทศักดิ์สิทธิ์ที่จารึกด้วยชื่อของเทพเจ้าหลายองค์ ทั้งจาก Faerûn, Mulhorand, และแม้แต่เทพโบราณที่ไม่มีบันทึกในตำนานใดๆ อีกต่อไป</p>
-                    <blockquote class="border-l-4 border-blue-400 pl-4 italic text-gray-300 mt-6 py-3 bg-blue-900/20 rounded-r shadow-inner">
-                        ผู้แสวงบุญและนักผจญภัยที่มาถึงมักคุกเข่าอยู่กลางวงแหวนแห่งแสงนี้เพื่อสวดภาวนาต่อเทพของตน เชื่อกันว่าคำภาวนาที่กล่าว ณ จุดนี้จะเดินทางตรงสู่ดินแดนของเทพเจ้าโดยไม่หลงทางใน <span class="font-bold text-blue-300">Astral Sea</span>
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Sanctum Of
+                        The Silent Star</h2>
+                    <p>ภายในหอคอย The Spire Tower ที่สูงเสียดฟ้าจนเมฆล้อมรอบ —
+                        มีชั้นหนึ่งที่ผู้คนกล่าวถึงในเสียงกระซิบว่าเป็นสถานที่ศักดิ์สิทธิ์ที่แม้แต่เหล่าทวยเทพยังทอดสายตามองลงมา
+                        นั่นคือ <span class="text-[#c5a059] font-bold">Sanctum of the Silent Star</span></p>
+                    <p>อารามตั้งอยู่ในห้องโถงวงกลมกว้างใหญ่ ผนังประดับด้วยคริสตัลใสที่เรืองแสงอ่อนๆ
+                        ตามจังหวะของคลื่นพลังเวทจาก Astral Plane</p>
+                    <p>เหนือศีรษะคือเพดานโดมโปร่งแสงที่เปิดสู่ท้องฟ้า —
+                        หรืออาจจะเป็นห้วงอวกาศที่ไร้ขอบเขตก็ไม่มีใครแน่ใจ ดวงดาวนับพันระยิบระยับอยู่เหนือศีรษะ
+                        และเสียงสวดของเหล่านักบวชจะสะท้อนขึ้นไปในความเวิ้งว้างนั้น</p>
+                    <p>พื้นของอารามเป็นวงแหวนเวทศักดิ์สิทธิ์ที่จารึกด้วยชื่อของเทพเจ้าหลายองค์ ทั้งจาก Faerûn,
+                        Mulhorand, และแม้แต่เทพโบราณที่ไม่มีบันทึกในตำนานใดๆ อีกต่อไป</p>
+                    <blockquote
+                        class="border-l-4 border-blue-400 pl-4 italic text-gray-300 mt-6 py-3 bg-blue-900/20 rounded-r shadow-inner">
+                        ผู้แสวงบุญและนักผจญภัยที่มาถึงมักคุกเข่าอยู่กลางวงแหวนแห่งแสงนี้เพื่อสวดภาวนาต่อเทพของตน
+                        เชื่อกันว่าคำภาวนาที่กล่าว ณ จุดนี้จะเดินทางตรงสู่ดินแดนของเทพเจ้าโดยไม่หลงทางใน <span
+                            class="font-bold text-blue-300">Astral Sea</span>
                     </blockquote>
                 </div>
             </div>
@@ -348,15 +457,28 @@
             <!-- Content for Valeris Codex -->
             <div id="area-valeris" class="spire-area-content hidden grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-lg border border-gray-700 overflow-hidden shadow-2xl shadow-black/50">
-                    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000&auto=format&fit=crop" alt="Valeris Codex" class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter sepia-[0.3]">
+                    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000&auto=format&fit=crop"
+                        alt="Valeris Codex"
+                        class="w-full h-auto object-cover aspect-[4/3] hover:scale-105 transition-transform duration-700 filter sepia-[0.3]">
                 </div>
                 <div class="text-gray-300 font-light space-y-4 text-sm md:text-base leading-relaxed">
-                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Valeris Codex</h2>
-                    <p>เมื่อก้าวผ่านบานประตูไม้โอ๊กสลักลายโบราณเข้าไป กลิ่นอายของหน้ากระดาษเก่าแก่ กลิ่นหมึกเวทมนตร์ และกลิ่นขี้ผึ้งจะโชยมาต้อนรับเป็นสิ่งแรก... ยินดีต้อนรับสู่ <span class="text-[#c5a059] font-bold">Valeris Codex</span> หอสมุดกลางแห่ง The Spire Tower ที่ซึ่งความรู้จากทั่วทุกพหุมิติถูกรวบรวมเอาไว้ในที่เดียว</p>
-                    <p>สถาปัตยกรรมภายในถูกออกแบบให้สอดรับกับรูปลักษณ์ของหอคอย ชั้นวางหนังสือไม้เนื้อแข็งตระหง่านสูงเสียดฟ้าจนมองไม่เห็นเพดาน โดยมีแสงแดดจากภายนอกที่หักเหผ่านผนังคริสตัลเข้ามา คอยส่องสว่างให้แก่ทางเดินและมุมอ่านหนังสืออันเงียบสงบ</p>
-                    <p>ละอองเวทมนตร์สีเงินยวงลอยล่องอยู่ในอากาศ คอยทำหน้าที่ชำระล้างฝุ่นผงและรักษาสภาพของบันทึกโบราณไม่ให้เสื่อมสลายไปตามกาลเวลา</p>
-                    <blockquote class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-4 bg-black/20 rounded-r">
-                        Valeris Codex จึงไม่ใช่แค่สถานที่เก็บกระดาษ แต่มันคือ <span class="text-[#c5a059] font-bold">ขุมทรัพย์ทางปัญญา</span> และเป็นสถานที่ที่นักผจญภัยแห่ง The Spire จะสามารถหาคำตอบให้กับทุกปริศนาที่พวกเขาต้องเผชิญในพหุมิติอันกว้างใหญ่แห่งนี้
+                    <h2 class="text-3xl font-bold text-[#c5a059] mb-6" style="font-family: 'Cinzel', serif;">Valeris
+                        Codex</h2>
+                    <p>เมื่อก้าวผ่านบานประตูไม้โอ๊กสลักลายโบราณเข้าไป กลิ่นอายของหน้ากระดาษเก่าแก่ กลิ่นหมึกเวทมนตร์
+                        และกลิ่นขี้ผึ้งจะโชยมาต้อนรับเป็นสิ่งแรก... ยินดีต้อนรับสู่ <span
+                            class="text-[#c5a059] font-bold">Valeris Codex</span> หอสมุดกลางแห่ง The Spire Tower
+                        ที่ซึ่งความรู้จากทั่วทุกพหุมิติถูกรวบรวมเอาไว้ในที่เดียว</p>
+                    <p>สถาปัตยกรรมภายในถูกออกแบบให้สอดรับกับรูปลักษณ์ของหอคอย
+                        ชั้นวางหนังสือไม้เนื้อแข็งตระหง่านสูงเสียดฟ้าจนมองไม่เห็นเพดาน
+                        โดยมีแสงแดดจากภายนอกที่หักเหผ่านผนังคริสตัลเข้ามา
+                        คอยส่องสว่างให้แก่ทางเดินและมุมอ่านหนังสืออันเงียบสงบ</p>
+                    <p>ละอองเวทมนตร์สีเงินยวงลอยล่องอยู่ในอากาศ
+                        คอยทำหน้าที่ชำระล้างฝุ่นผงและรักษาสภาพของบันทึกโบราณไม่ให้เสื่อมสลายไปตามกาลเวลา</p>
+                    <blockquote
+                        class="border-l-4 border-[#c5a059] pl-4 italic text-gray-400 mt-8 py-4 bg-black/20 rounded-r">
+                        Valeris Codex จึงไม่ใช่แค่สถานที่เก็บกระดาษ แต่มันคือ <span
+                            class="text-[#c5a059] font-bold">ขุมทรัพย์ทางปัญญา</span> และเป็นสถานที่ที่นักผจญภัยแห่ง The
+                        Spire จะสามารถหาคำตอบให้กับทุกปริศนาที่พวกเขาต้องเผชิญในพหุมิติอันกว้างใหญ่แห่งนี้
                     </blockquote>
                 </div>
             </div>
@@ -377,11 +499,11 @@
             const lorePage = document.getElementById('page-lore');
             const galleryPage = document.getElementById('page-gallery');
             const spirePage = document.getElementById('page-spire'); // Add Spire Page
-            
+
             const btnLore = document.getElementById('btn-lore');
             const btnGallery = document.getElementById('btn-gallery');
             const btnSpire = document.getElementById('btn-spire'); // Add Spire Button
-            
+
             const pageTitle = document.getElementById('page-title');
 
             // Reset all pages and buttons
@@ -443,21 +565,36 @@
             const modalImg = document.getElementById('modal-img');
             modalImg.src = imgSrc;
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; 
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             const modal = document.getElementById('image-modal');
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; 
+            document.body.style.overflow = 'auto';
         }
 
         // Close modal on Escape key
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             if (event.key === "Escape") {
                 closeModal();
             }
         });
+
+        (async function checkAuth() {
+            try {
+                if (typeof supabase === 'undefined') {
+                    console.error("Supabase not initialized");
+                    return;
+                }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.error("Auth check failed:", err);
+            }
+        })();
     </script>
 </body>
 

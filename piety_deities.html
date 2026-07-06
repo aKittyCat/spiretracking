@@ -945,16 +945,18 @@
                     return;
                 }
                 const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    currentUser = session.user;
-                    const { data: adminStatus } = await supabase.rpc('is_admin');
-                    if (adminStatus) {
-                        isAdmin = true;
-                        document.getElementById('subtab-admin').classList.remove('hidden');
-                    }
+                if (!session) {
+                    window.location.href = 'index.html';
+                    return;
                 }
+                currentUser = session.user;
+                const { data: adminStatus } = await supabase.rpc('is_admin');
+                if (adminStatus) {
+                    isAdmin = true;
+                    document.getElementById('subtab-admin').classList.remove('hidden');
+                }
+
                 setupForm();
-                // ถ้าเปิดมาหน้าแรกไม่ใช่ status เรายังไม่โหลด data ก็ได้ รอคนกด tab
             } catch (err) {
                 console.log("Supabase not initialized or config missing");
             }
