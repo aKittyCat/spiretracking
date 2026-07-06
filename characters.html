@@ -60,32 +60,47 @@
     </style>
 </head>
 
-<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white">
+<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white flex flex-col md:flex-row">
 
-    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
-
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                    <span class="text-2xl">🧙‍♂️</span>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-white tracking-tight">
-                        ตัวละครของ <span class="gradient-text">ฉัน</span>
-                    </h1>
-                    <p class="text-xs text-gray-500 mt-1">Manage your characters</p>
-                </div>
+    <!-- Mobile Header -->
+    <div class="md:hidden flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-gray-800 rounded-lg border border-gray-700">
+                <span class="text-xl">🧙‍♂️</span>
             </div>
+            <h1 class="text-xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span></h1>
+        </div>
+        <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white p-2 rounded-lg bg-gray-800/50 border border-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
 
-            <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
-                <div class="px-3 flex flex-col items-end">
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity opacity-0" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Sidebar Header (Desktop) -->
+        <div class="p-6 border-b border-gray-800 hidden md:flex items-center gap-3">
+            <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                <span class="text-2xl">🧙‍♂️</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span></h1>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="p-4 border-b border-gray-800">
+            <div class="flex items-center justify-between gap-3 bg-gray-800/40 p-3 rounded-xl border border-gray-700/50">
+                <div class="flex flex-col min-w-0">
                     <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
-                    <span id="userEmail" class="text-sm font-medium text-gray-300">Loading...</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300 truncate">Loading...</span>
                 </div>
                 <button onclick="logout()"
-                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20 flex-shrink-0"
                     title="ออกจากระบบ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                         <polyline points="16 17 21 12 16 7" />
@@ -95,51 +110,74 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap gap-3 mb-8 justify-center sm:justify-start">
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
             <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'"
-                class="glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
-                <span>⚙️</span> Admin Dashboard
+                class="w-full text-left glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">⚙️</span> Admin Dashboard
             </button>
             <button id="homebrewBtn" style="display:none" onclick="location.href='homebrew.html'"
-                class="glass-panel hover:bg-sky-600/20 text-sky-300 hover:text-sky-200 border-sky-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 hover:-translate-y-0.5">
-                <span>📘</span> Homebrew (DM)
+                class="w-full text-left glass-panel hover:bg-sky-600/20 text-sky-300 hover:text-sky-200 border-sky-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📘</span> Homebrew (DM)
             </button>
 
-            <div class="h-10 w-[1px] bg-gray-800 hidden sm:block mx-1"></div>
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
 
             <button onclick="window.open('https://spireform.vercel.app/', '_blank')"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                📝 ฟอร์มสร้างตัวละคร
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📝</span> ฟอร์มสร้างตัวละคร
             </button>
             <button onclick="window.open('https://spiremk.vercel.app/', '_blank')"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                🏪 ร้านค้า
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🏪</span> ร้านค้า
             </button>
             <button onclick="window.location.href = 'glass_arboretum.html'"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                🧪 Glass Arboretum
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧪</span> Glass Arboretum
             </button>
             <button onclick="window.location.href = 'piety_deities.html'"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                ⛪ Piety
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">⛪</span> Piety
             </button>
             <button onclick="window.location.href = 'worldmap.html'"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                🌏 Worldmap
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🌏</span> Worldmap
             </button>
             <button onclick="window.location.href = 'lore.html'"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                📰 Lore
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📰</span> Lore
             </button>
             <button onclick="window.location.href = 'reawaken.html'"
-                class="glass-panel hover:bg-gray-800 text-gray-300 px-5 py-2.5 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-2 hover:-translate-y-0.5">
-                🔥 Reawaken
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🔥</span> Reawaken
             </button>
+            
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+            
             <button onclick="window.location.href = 'eventan.html'"
-                class="glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-5 py-2.5 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-2 group">
-                🎉 Anniversary Event
+                class="w-full text-left glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">🎉</span> Anniversary Event
             </button>
-        </div>
+        </nav>
+        
+        <!-- Mobile Close Sidebar Button -->
+        <button class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-white bg-gray-800/80 p-1.5 rounded-lg border border-gray-700 z-50" onclick="toggleSidebar()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto relative">
+        <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
+            <!-- Page Title -->
+            <div class="mb-8 pb-6 border-b border-gray-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white tracking-tight">
+                        ตัวละครของ <span class="gradient-text">ฉัน</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Manage your characters</p>
+                </div>
+            </div>
 
         <div class="glass-panel rounded-2xl shadow-xl mb-10 border-t-4 border-t-blue-500/50 overflow-hidden">
             <button onclick="toggleAddForm()"
@@ -233,7 +271,8 @@
         <footer class="mt-16 text-center text-xs text-gray-600 mb-8 border-t border-gray-800 pt-8">
             <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
         </footer>
-    </div>
+        </div>
+    </main>
 
     <script src="/js/utils.js"></script>
     <script src="/js/fetch.js"></script>
@@ -616,6 +655,24 @@
             if (al.includes('lawful')) return 'bg-blue-500/20 border-blue-500/50 text-blue-300';
             if (al.includes('chaotic')) return 'bg-purple-500/20 border-purple-500/50 text-purple-300';
             return 'bg-gray-700/50 border-gray-600 text-gray-300';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open sidebar
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                // slight delay for opacity transition
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close sidebar
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300); // match transition duration
+            }
         }
     </script>
 </body>
