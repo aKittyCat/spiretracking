@@ -131,379 +131,513 @@
     </style>
 </head>
 
-<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white">
+<body
+    class="bg-gray-950 text-gray-200 min-h-screen selection:bg-purple-500 selection:text-white flex flex-col md:flex-row">
 
-    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
-
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 pb-6 border-b border-gray-800 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                    <span class="text-2xl">⛪</span>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-white tracking-tight">
-                        <span class="gradient-text">Piety</span> & Deities
-                    </h1>
-                    <p class="text-xs text-gray-500 mt-1">The Spire Tracking</p>
-                </div>
+    <!-- Mobile Header -->
+    <div
+        class="md:hidden flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-gray-800 rounded-lg border border-gray-700">
+                <span class="text-xl">🧙‍♂️</span>
             </div>
+            <h1 class="text-xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span></h1>
+        </div>
+        <button onclick="toggleSidebar()"
+            class="text-gray-400 hover:text-white p-2 rounded-lg bg-gray-800/50 border border-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
 
-            <div class="flex flex-wrap items-center gap-3 justify-center">
-                <button onclick="switchTab('rules')" id="tab-rules"
-                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all active">
-                    <i class="fa-solid fa-book-open mr-2"></i>กฎ & คู่มือ
-                </button>
-                <button onclick="switchTab('deities')" id="tab-deities"
-                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
-                    <i class="fa-solid fa-users mr-2"></i>ทำเนียบเทพ
-                </button>
-                <button onclick="switchTab('status')" id="tab-status"
-                    class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
-                    <i class="fa-solid fa-chart-pie mr-2"></i>สถานะศรัทธา
-                </button>
-                <button onclick="window.location.href = 'characters.html'"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5">
-                    <i class="fa-solid fa-home mr-2"></i>กลับหน้าหลัก
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"
+        onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Sidebar Header (Desktop) -->
+        <div class="p-6 border-b border-gray-800 hidden md:flex items-center gap-3">
+            <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                <span class="text-2xl">🧙‍♂️</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="p-4 border-b border-gray-800">
+            <div
+                class="flex items-center justify-between gap-3 bg-gray-800/40 p-3 rounded-xl border border-gray-700/50">
+                <div class="flex flex-col min-w-0">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300 truncate">Loading...</span>
+                </div>
+                <button onclick="logout()"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20 flex-shrink-0"
+                    title="ออกจากระบบ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                    </svg>
                 </button>
             </div>
         </div>
 
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
+            <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'"
+                class="w-full text-left glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">⚙️</span> Admin Dashboard
+            </button>
+            <button id="homebrewBtn" style="display:none" onclick="location.href='homebrew.html'"
+                class="w-full text-left glass-panel hover:bg-sky-600/20 text-sky-300 hover:text-sky-200 border-sky-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📘</span> Homebrew (DM)
+            </button>
 
-        <div id="content-rules" class="fade-in">
-            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg text-lg">⛪</span>
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'characters.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧙‍♂️</span> ตัวละครของฉัน
+            </button>
+
+            <button onclick="window.open('https://spireform.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📝</span> ฟอร์มสร้างตัวละคร
+            </button>
+            <button onclick="window.open('https://spiremk.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🏪</span> ร้านค้า
+            </button>
+            <button onclick="window.location.href = 'glass_arboretum.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧪</span> Glass Arboretum
+            </button>
+            <button onclick="window.location.href = 'piety_deities.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1 border border-purple-500/30 bg-purple-500/10">
+                <span class="text-lg">⛪</span> Piety
+            </button>
+            <button onclick="window.location.href = 'reawaken.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🔥</span> Reawaken
+            </button>
+            <button onclick="window.location.href = 'worldmap.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🌏</span> Worldmap
+            </button>
+            <button onclick="window.location.href = 'lore.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📰</span> Lore
+            </button>
+
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'eventan.html'"
+                class="w-full text-left glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">🎉</span> Anniversary Event
+            </button>
+        </nav>
+
+        <!-- Mobile Close Sidebar Button -->
+        <button
+            class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-white bg-gray-800/80 p-1.5 rounded-lg border border-gray-700 z-50"
+            onclick="toggleSidebar()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto relative">
+        <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
+
+            <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-gray-800 gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                        <span class="text-2xl">⛪</span>
+                    </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white">เทพแห่ง The Spire</h2>
-                        <p class="text-xs text-gray-500">God System Overview</p>
+                        <h1 class="text-3xl font-bold text-white tracking-tight">
+                            <span class="gradient-text">Piety</span> & Deities
+                        </h1>
+                        <p class="text-xs text-gray-500 mt-1">The Spire Tracking</p>
                     </div>
                 </div>
-                <p class="text-gray-300 mb-4">
-                    เหล่าเทพใน The Spire ค่อนข้างให้ความสนใจกับคนที่นับถือพวกเขามากกว่าเหล่า Deities ส่วนใหญ่ในโลกของ
-                    D&D และมีอิทธิพลที่ส่งผลไปถึงมิติต่างๆอีกด้วย
-                </p>
-                <p class="text-sm text-gray-500 italic">
-                    ทฤษฐีเกี่ยวกับการมีอยู่ของเหล่าเทพใน The Spire เริ่มแพร่ขยายอย่างกว้างขวางขึ้นเรื่อยๆ
-                    แต่เป็นความศรัทธาที่เหมือนๆกันที่สร้างพวกเขาขึ้นมา
-                </p>
+
+                <div class="flex flex-wrap items-center gap-3 justify-start">
+                    <button onclick="switchTab('rules')" id="tab-rules"
+                        class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all active">
+                        <i class="fa-solid fa-book-open mr-2"></i>กฎ & คู่มือ
+                    </button>
+                    <button onclick="switchTab('deities')" id="tab-deities"
+                        class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+                        <i class="fa-solid fa-users mr-2"></i>ทำเนียบเทพ
+                    </button>
+                    <button onclick="switchTab('status')" id="tab-status"
+                        class="tab-btn glass-panel hover:bg-gray-800 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+                        <i class="fa-solid fa-chart-pie mr-2"></i>สถานะศรัทธา
+                    </button>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
-                        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span> ลงบันทึกเทพที่นับถือ
-                        </h2>
-                        <p class="mb-4 text-gray-300 text-sm">
-                            ก่อนที่ผู้เล่นจะทำการ Religious Service ได้ ผู้เล่นจะต้องลงบันทึกเพื่อเป็นการเริ่มต้นก่อน
-                        </p>
-                        <div
-                            class="bg-gray-900 p-4 rounded-xl border-l-4 border-purple-500 font-mono text-sm text-gray-300">
-                            ชื่อตัวละคร:<br>ชื่อเทพ:
+
+            <div id="content-rules" class="fade-in">
+                <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg text-lg">⛪</span>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">เทพแห่ง The Spire</h2>
+                            <p class="text-xs text-gray-500">God System Overview</p>
                         </div>
                     </div>
-
-                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
-                        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span> Religious Service
-                        </h2>
-                        <p class="mb-4 text-gray-300 text-sm">
-                            ตัวละครสามารถทำ Religious Service เพื่อได้รับ Favor จากเทพโดยใช้ <span
-                                class="text-purple-300 bg-gray-900 px-1 rounded font-mono">!piety (จำนวนครั้ง)</span>
-                        </p>
-                        <table class="w-full text-left mb-4 border-collapse text-sm">
-                            <thead>
-                                <tr class="bg-gray-900 text-purple-400 border-b border-gray-700">
-                                    <th class="p-2">DC Check</th>
-                                    <th class="p-2">Result</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-gray-300 divide-y divide-gray-700">
-                                <tr>
-                                    <td class="p-2">DC 1-10</td>
-                                    <td class="p-2 font-bold text-gray-500">0 Piety Favor</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2">DC 11-20</td>
-                                    <td class="p-2 font-bold text-gray-300">1 Piety Favor</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2">DC 21+</td>
-                                    <td class="p-2 font-bold text-purple-400">2 Piety Favor</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="glass-panel p-6 rounded-2xl shadow-lg">
-                        <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> การเปลี่ยนเทพที่นับถือ
-                        </h2>
-                        <p class="text-gray-300 text-sm leading-relaxed">
-                            ตัวละครสามารถเปลี่ยนเทพที่นับถือได้ตลอด แต่แต้ม Piety Favor จะไม่ส่งต่อไปยังเทพองค์อื่น
-                        </p>
-                    </div>
+                    <p class="text-gray-300 mb-4">
+                        เหล่าเทพใน The Spire ค่อนข้างให้ความสนใจกับคนที่นับถือพวกเขามากกว่าเหล่า Deities
+                        ส่วนใหญ่ในโลกของ
+                        D&D และมีอิทธิพลที่ส่งผลไปถึงมิติต่างๆอีกด้วย
+                    </p>
+                    <p class="text-sm text-gray-500 italic">
+                        ทฤษฐีเกี่ยวกับการมีอยู่ของเหล่าเทพใน The Spire เริ่มแพร่ขยายอย่างกว้างขวางขึ้นเรื่อยๆ
+                        แต่เป็นความศรัทธาที่เหมือนๆกันที่สร้างพวกเขาขึ้นมา
+                    </p>
                 </div>
 
-                <div class="lg:col-span-8 space-y-6">
-                    <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-indigo-500/50">
-                        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            🙏 Piety Blessing
-                        </h2>
-                        <p class="mb-4 text-gray-300">
-                            เหล่าเทพสามารถประทานพรให้กับ Champion หรือผู้ที่ศรัทธาพวกเขา
-                        </p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
-                                <div class="text-purple-400 font-bold text-sm">Devotee</div>
-                                <div class="text-xs text-gray-400">3+ Piety</div>
-                            </div>
-                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
-                                <div class="text-purple-400 font-bold text-sm">Votary</div>
-                                <div class="text-xs text-gray-400">10+ Piety</div>
-                            </div>
-                            <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
-                                <div class="text-purple-400 font-bold text-sm">Disciple</div>
-                                <div class="text-xs text-gray-400">25+ Piety</div>
-                            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span> ลงบันทึกเทพที่นับถือ
+                            </h2>
+                            <p class="mb-4 text-gray-300 text-sm">
+                                ก่อนที่ผู้เล่นจะทำการ Religious Service ได้
+                                ผู้เล่นจะต้องลงบันทึกเพื่อเป็นการเริ่มต้นก่อน
+                            </p>
                             <div
-                                class="bg-gray-900 p-3 rounded-xl text-center border border-purple-500/50 shadow-lg shadow-purple-900/20">
-                                <div class="text-purple-400 font-bold text-sm">👑 Champion</div>
-                                <div class="text-xs text-gray-400">50+ Piety</div>
+                                class="bg-gray-900 p-4 rounded-xl border-l-4 border-purple-500 font-mono text-sm text-gray-300">
+                                ชื่อตัวละคร:<br>ชื่อเทพ:
                             </div>
                         </div>
-                        <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700">
-                            <p class="text-sm text-gray-300">
-                                <span class="text-purple-400 font-bold">เงื่อนไขการปลดล็อก:</span> ต้องมีตัวละครที่
-                                Piety Favor ในระดับเดียวกันและจำนวนเท่ากับแต้ม Piety Favor
+
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span> Religious Service
+                            </h2>
+                            <p class="mb-4 text-gray-300 text-sm">
+                                ตัวละครสามารถทำ Religious Service เพื่อได้รับ Favor จากเทพโดยใช้ <span
+                                    class="text-purple-300 bg-gray-900 px-1 rounded font-mono">!piety
+                                    (จำนวนครั้ง)</span>
+                            </p>
+                            <table class="w-full text-left mb-4 border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-900 text-purple-400 border-b border-gray-700">
+                                        <th class="p-2">DC Check</th>
+                                        <th class="p-2">Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-300 divide-y divide-gray-700">
+                                    <tr>
+                                        <td class="p-2">DC 1-10</td>
+                                        <td class="p-2 font-bold text-gray-500">0 Piety Favor</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2">DC 11-20</td>
+                                        <td class="p-2 font-bold text-gray-300">1 Piety Favor</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2">DC 21+</td>
+                                        <td class="p-2 font-bold text-purple-400">2 Piety Favor</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                            <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> การเปลี่ยนเทพที่นับถือ
+                            </h2>
+                            <p class="text-gray-300 text-sm leading-relaxed">
+                                ตัวละครสามารถเปลี่ยนเทพที่นับถือได้ตลอด แต่แต้ม Piety Favor จะไม่ส่งต่อไปยังเทพองค์อื่น
                             </p>
                         </div>
                     </div>
 
-                    <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-yellow-500/50">
-                        <h2 class="text-xl font-bold text-white mb-4">🏆 Deities Champion</h2>
-                        <p class="mb-4 text-gray-300 text-sm">
-                            ในทุกๆ 1 เดือน ตัวละครที่มีค่า Piety Favor สูงที่สุดสำหรับเทพแต่ละองค์จะกลายเป็น Champion
-                        </p>
-                        <ul class="space-y-2 text-gray-300 text-sm">
-                            <li class="flex items-start"><i
-                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>เทพองค์นั้นต้องมีระดับ
-                                Votary ขึ้นไป</li>
-                            <li class="flex items-start"><i
-                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
-                                จะได้รับพรทั้งหมดของเทพองค์นั้น</li>
-                            <li class="flex items-start"><i
-                                    class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
-                                จะไม่ถูกเปลี่ยนจนกว่าครบ 1 เดือน</li>
-                        </ul>
-                    </div>
+                    <div class="lg:col-span-8 space-y-6">
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-indigo-500/50">
+                            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                🙏 Piety Blessing
+                            </h2>
+                            <p class="mb-4 text-gray-300">
+                                เหล่าเทพสามารถประทานพรให้กับ Champion หรือผู้ที่ศรัทธาพวกเขา
+                            </p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                    <div class="text-purple-400 font-bold text-sm">Devotee</div>
+                                    <div class="text-xs text-gray-400">3+ Piety</div>
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                    <div class="text-purple-400 font-bold text-sm">Votary</div>
+                                    <div class="text-xs text-gray-400">10+ Piety</div>
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded-xl text-center border border-gray-700">
+                                    <div class="text-purple-400 font-bold text-sm">Disciple</div>
+                                    <div class="text-xs text-gray-400">25+ Piety</div>
+                                </div>
+                                <div
+                                    class="bg-gray-900 p-3 rounded-xl text-center border border-purple-500/50 shadow-lg shadow-purple-900/20">
+                                    <div class="text-purple-400 font-bold text-sm">👑 Champion</div>
+                                    <div class="text-xs text-gray-400">50+ Piety</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700">
+                                <p class="text-sm text-gray-300">
+                                    <span class="text-purple-400 font-bold">เงื่อนไขการปลดล็อก:</span> ต้องมีตัวละครที่
+                                    Piety Favor ในระดับเดียวกันและจำนวนเท่ากับแต้ม Piety Favor
+                                </p>
+                            </div>
+                        </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="glass-panel p-6 rounded-2xl shadow-lg border-l-4 border-l-red-500">
-                            <h2 class="text-lg font-bold text-white mb-3">⚖️ แนวทางปฏิบัติตน</h2>
-                            <p class="text-sm text-gray-300 mb-4">หากขัดต่อหลักการ DM สามารถลดแต้ม Piety Favor ได้:</p>
-                            <ul class="space-y-2 text-sm">
-                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
-                                        class="text-gray-300">ขัดหลักคำสอนเล็กน้อย</span><span
-                                        class="text-red-400 font-bold">-1</span></li>
-                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
-                                        class="text-gray-300">ขัดหลักคำสอนทั่วไป</span><span
-                                        class="text-red-400 font-bold">-3</span></li>
-                                <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
-                                        class="text-gray-300">ขัดหลักคำสอนร้ายแรง</span><span
-                                        class="text-red-500 font-bold">-5</span></li>
+                        <div class="glass-panel p-6 rounded-2xl shadow-lg border-t-4 border-t-yellow-500/50">
+                            <h2 class="text-xl font-bold text-white mb-4">🏆 Deities Champion</h2>
+                            <p class="mb-4 text-gray-300 text-sm">
+                                ในทุกๆ 1 เดือน ตัวละครที่มีค่า Piety Favor สูงที่สุดสำหรับเทพแต่ละองค์จะกลายเป็น
+                                Champion
+                            </p>
+                            <ul class="space-y-2 text-gray-300 text-sm">
+                                <li class="flex items-start"><i
+                                        class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>เทพองค์นั้นต้องมีระดับ
+                                    Votary ขึ้นไป</li>
+                                <li class="flex items-start"><i
+                                        class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
+                                    จะได้รับพรทั้งหมดของเทพองค์นั้น</li>
+                                <li class="flex items-start"><i
+                                        class="fa-solid fa-caret-right text-purple-500 mt-1 mr-3"></i>Champion
+                                    จะไม่ถูกเปลี่ยนจนกว่าครบ 1 เดือน</li>
                             </ul>
                         </div>
-                        <div class="glass-panel p-6 rounded-2xl shadow-lg">
-                            <h2 class="text-lg font-bold text-white mb-3">👥 การนับถือเทพองค์อื่น</h2>
-                            <p class="text-gray-300 text-sm mb-3">หากต้องการนับถือเทพอื่นๆที่ไม่อยู่ในรายการ
-                                ต้องมีเงื่อนไข:</p>
-                            <div class="bg-gray-900/50 p-3 rounded-xl border border-purple-900/30">
-                                <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
-                                    <li>จำนวนตัวละครที่นับถือเทพองค์เดียวกัน 25 คน</li>
-                                    <li>ค่า Piety Favor ของตัวละครเหล่านั้นอย่างน้อย 10 แต้ม</li>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="glass-panel p-6 rounded-2xl shadow-lg border-l-4 border-l-red-500">
+                                <h2 class="text-lg font-bold text-white mb-3">⚖️ แนวทางปฏิบัติตน</h2>
+                                <p class="text-sm text-gray-300 mb-4">หากขัดต่อหลักการ DM สามารถลดแต้ม Piety Favor ได้:
+                                </p>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                            class="text-gray-300">ขัดหลักคำสอนเล็กน้อย</span><span
+                                            class="text-red-400 font-bold">-1</span></li>
+                                    <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                            class="text-gray-300">ขัดหลักคำสอนทั่วไป</span><span
+                                            class="text-red-400 font-bold">-3</span></li>
+                                    <li class="flex justify-between bg-gray-900 px-3 py-2 rounded-lg"><span
+                                            class="text-gray-300">ขัดหลักคำสอนร้ายแรง</span><span
+                                            class="text-red-500 font-bold">-5</span></li>
                                 </ul>
                             </div>
+                            <div class="glass-panel p-6 rounded-2xl shadow-lg">
+                                <h2 class="text-lg font-bold text-white mb-3">👥 การนับถือเทพองค์อื่น</h2>
+                                <p class="text-gray-300 text-sm mb-3">หากต้องการนับถือเทพอื่นๆที่ไม่อยู่ในรายการ
+                                    ต้องมีเงื่อนไข:</p>
+                                <div class="bg-gray-900/50 p-3 rounded-xl border border-purple-900/30">
+                                    <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
+                                        <li>จำนวนตัวละครที่นับถือเทพองค์เดียวกัน 25 คน</li>
+                                        <li>ค่า Piety Favor ของตัวละครเหล่านั้นอย่างน้อย 10 แต้ม</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="content-deities" class="hidden fade-in">
-            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
-                <h2 class="text-xl font-bold text-white mb-2">ทำเนียบเทพเจ้า</h2>
-                <p class="text-gray-400 text-sm">Pantheon of The Spire</p>
+            <div id="content-deities" class="hidden fade-in">
+                <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                    <h2 class="text-xl font-bold text-white mb-2">ทำเนียบเทพเจ้า</h2>
+                    <p class="text-gray-400 text-sm">Pantheon of The Spire</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="god-grid">
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="god-grid">
-            </div>
-        </div>
+            <div id="content-status" class="flex-grow hidden fade-in">
+                <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-place-of-worship text-purple-400"></i> Deities Status
+                            </h2>
+                            <p class="text-sm text-gray-400">สถานะความศรัทธา</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="switchStatusMode('view')" id="subtab-view"
+                                class="text-sm font-medium px-4 py-2 subtab-active rounded-lg transition">👁️
+                                มุมมองผู้เล่น</button>
+                            <button onclick="switchStatusMode('admin')" id="subtab-admin"
+                                class="text-sm font-medium px-4 py-2 subtab-inactive rounded-lg transition hidden">⚙️
+                                Admin</button>
+                            <button onclick="manualRefresh()" id="btnRefresh"
+                                class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition group border border-gray-700"
+                                title="Refresh Data">
+                                <i id="refreshIcon"
+                                    class="fa-solid fa-arrows-rotate group-hover:text-purple-400 transition-colors"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="content-status" class="flex-grow hidden fade-in">
-            <div class="glass-panel p-6 rounded-2xl shadow-xl mb-8 border-t-4 border-t-purple-500/50">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-place-of-worship text-purple-400"></i> Deities Status
+
+                <div id="loading" class="text-center py-12">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-500"></i>
+                    <p class="mt-2 text-gray-400">กำลังรวบรวมพลังศรัทธา...</p>
+                </div>
+
+                <div id="view-mode" class="hidden fade-in">
+                    <div id="gods-status-grid"
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                    </div>
+                </div>
+
+                <div id="admin-mode" class="hidden fade-in">
+                    <div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                            <i class="fa-solid fa-pen-to-square mr-2 text-amber-500"></i> บันทึกข้อมูลศรัทธา
                         </h2>
-                        <p class="text-sm text-gray-400">สถานะความศรัทธา</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="switchStatusMode('view')" id="subtab-view"
-                            class="text-sm font-medium px-4 py-2 subtab-active rounded-lg transition">👁️
-                            มุมมองผู้เล่น</button>
-                        <button onclick="switchStatusMode('admin')" id="subtab-admin"
-                            class="text-sm font-medium px-4 py-2 subtab-inactive rounded-lg transition hidden">⚙️
-                            Admin</button>
-                        <button onclick="manualRefresh()" id="btnRefresh"
-                            class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition group border border-gray-700"
-                            title="Refresh Data">
-                            <i id="refreshIcon"
-                                class="fa-solid fa-arrows-rotate group-hover:text-purple-400 transition-colors"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-
-            <div id="loading" class="text-center py-12">
-                <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-500"></i>
-                <p class="mt-2 text-gray-400">กำลังรวบรวมพลังศรัทธา...</p>
-            </div>
-
-            <div id="view-mode" class="hidden fade-in">
-                <div id="gods-status-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                </div>
-            </div>
-
-            <div id="admin-mode" class="hidden fade-in">
-                <div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                        <i class="fa-solid fa-pen-to-square mr-2 text-amber-500"></i> บันทึกข้อมูลศรัทธา
-                    </h2>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">ชื่อตัวละคร</label>
-                            <input type="text" id="inputCharName" list="charList" oninput="onCharNameChange()"
-                                class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition"
-                                placeholder="พิมพ์หรือเลือกชื่อตัวละคร...">
-                            <datalist id="charList"></datalist>
-                            <p class="text-xs text-gray-400 mt-1" id="nameHelpText">*เลือกจากรายการตัวละคร
-                                หรือพิมพ์ชื่อใหม่เพื่อสร้างตัวละคร</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">เทพที่นับถือ</label>
-                            <select id="inputDeity"
-                                class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition">
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">แต้มความศรัทธา
-                                (Favor)</label>
-                            <div class="flex items-center gap-2">
-                                <button onclick="adjustPiety(-1)"
-                                    class="bg-gray-700 w-10 h-10 rounded hover:bg-red-500 transition font-bold text-lg">-</button>
-                                <input type="number" id="inputPiety" value="1"
-                                    class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 text-center font-bold focus:border-amber-500 outline-none">
-                                <button onclick="adjustPiety(1)"
-                                    class="bg-gray-700 w-10 h-10 rounded hover:bg-green-500 transition font-bold text-lg">+</button>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">ชื่อตัวละคร</label>
+                                <input type="text" id="inputCharName" list="charList" oninput="onCharNameChange()"
+                                    class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition"
+                                    placeholder="พิมพ์หรือเลือกชื่อตัวละคร...">
+                                <datalist id="charList"></datalist>
+                                <p class="text-xs text-gray-400 mt-1" id="nameHelpText">*เลือกจากรายการตัวละคร
+                                    หรือพิมพ์ชื่อใหม่เพื่อสร้างตัวละคร</p>
                             </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">เทพที่นับถือ</label>
+                                <select id="inputDeity"
+                                    class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 focus:border-amber-500 outline-none transition">
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">แต้มความศรัทธา
+                                    (Favor)</label>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="adjustPiety(-1)"
+                                        class="bg-gray-700 w-10 h-10 rounded hover:bg-red-500 transition font-bold text-lg">-</button>
+                                    <input type="number" id="inputPiety" value="1"
+                                        class="flex-grow bg-gray-900 text-white p-3 rounded border border-gray-600 text-center font-bold focus:border-amber-500 outline-none">
+                                    <button onclick="adjustPiety(1)"
+                                        class="bg-gray-700 w-10 h-10 rounded hover:bg-green-500 transition font-bold text-lg">+</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-700/30 p-3 rounded border border-gray-600 flex items-center justify-between cursor-pointer"
+                                onclick="document.getElementById('inputIsChampion').click()">
+                                <label class="text-sm font-bold text-amber-400 cursor-pointer select-none">
+                                    <i class="fa-solid fa-crown mr-1"></i> แต่งตั้งเป็น Champion
+                                </label>
+                                <input type="checkbox" id="inputIsChampion"
+                                    class="w-5 h-5 text-amber-600 rounded border-gray-500 focus:ring-amber-500 bg-gray-900">
+                            </div>
+
+                            <button onclick="saveAdminData()"
+                                class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2">
+                                <i class="fa-solid fa-save"></i> บันทึกข้อมูล
+                            </button>
                         </div>
 
-                        <div class="bg-gray-700/30 p-3 rounded border border-gray-600 flex items-center justify-between cursor-pointer"
-                            onclick="document.getElementById('inputIsChampion').click()">
-                            <label class="text-sm font-bold text-amber-400 cursor-pointer select-none">
-                                <i class="fa-solid fa-crown mr-1"></i> แต่งตั้งเป็น Champion
-                            </label>
-                            <input type="checkbox" id="inputIsChampion"
-                                class="w-5 h-5 text-amber-600 rounded border-gray-500 focus:ring-amber-500 bg-gray-900">
+                        <div class="mt-8 border-t border-gray-700 pt-4">
+                            <h3 class="text-sm font-bold text-gray-400 mb-2">สถานะล่าสุด:</h3>
+                            <div id="statusMsg" class="text-sm text-gray-500 italic">ยังไม่มีการดำเนินการ</div>
                         </div>
-
-                        <button onclick="saveAdminData()"
-                            class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-save"></i> บันทึกข้อมูล
-                        </button>
-                    </div>
-
-                    <div class="mt-8 border-t border-gray-700 pt-4">
-                        <h3 class="text-sm font-bold text-gray-400 mb-2">สถานะล่าสุด:</h3>
-                        <div id="statusMsg" class="text-sm text-gray-500 italic">ยังไม่มีการดำเนินการ</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="god-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-        aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 modal-bg transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-bottom bg-gray-850 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-600">
-                <div class="bg-gray-850 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-2xl leading-6 font-bold text-amber-500 font-fantasy mb-1" id="modal-title">
-                                God Name</h3>
-                            <p class="text-sm text-gray-400 italic mb-4" id="modal-subtitle">Title & Alignment</p>
+        <div id="god-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title"
+            role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 modal-bg transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div
+                    class="inline-block align-bottom bg-gray-850 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-600">
+                    <div class="bg-gray-850 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-2xl leading-6 font-bold text-amber-500 font-fantasy mb-1"
+                                    id="modal-title">
+                                    God Name</h3>
+                                <p class="text-sm text-gray-400 italic mb-4" id="modal-subtitle">Title & Alignment</p>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
-                                <div class="bg-gray-900 p-3 rounded">
-                                    <strong class="text-gray-300 block mb-1">Domain</strong>
-                                    <span id="modal-domain" class="text-amber-100"></span>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
+                                    <div class="bg-gray-900 p-3 rounded">
+                                        <strong class="text-gray-300 block mb-1">Domain</strong>
+                                        <span id="modal-domain" class="text-amber-100"></span>
+                                    </div>
+                                    <div class="bg-gray-900 p-3 rounded">
+                                        <strong class="text-gray-300 block mb-1">Alignment</strong>
+                                        <span id="modal-alignment" class="text-amber-100"></span>
+                                    </div>
                                 </div>
-                                <div class="bg-gray-900 p-3 rounded">
-                                    <strong class="text-gray-300 block mb-1">Alignment</strong>
-                                    <span id="modal-alignment" class="text-amber-100"></span>
-                                </div>
-                            </div>
 
-                            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                                <div>
-                                    <h4
-                                        class="text-green-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
-                                        <i class="fa-solid fa-check-circle mr-1"></i> แนวทางปฏิบัติ (Conduct)
-                                    </h4>
-                                    <ul id="modal-conduct"
-                                        class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
-                                </div>
-                                <div>
-                                    <h4
-                                        class="text-red-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
-                                        <i class="fa-solid fa-times-circle mr-1"></i> สิ่งที่ทำให้เสีย Piety
-                                    </h4>
-                                    <ul id="modal-loss"
-                                        class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
-                                </div>
-                                <div>
-                                    <h4
-                                        class="text-amber-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
-                                        <i class="fa-solid fa-gift mr-1"></i> พรแห่งศรัทธา (Blessings)
-                                    </h4>
-                                    <div id="modal-benefits" class="space-y-3 text-sm text-gray-300"></div>
+                                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    <div>
+                                        <h4
+                                            class="text-green-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                            <i class="fa-solid fa-check-circle mr-1"></i> แนวทางปฏิบัติ (Conduct)
+                                        </h4>
+                                        <ul id="modal-conduct"
+                                            class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="text-red-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                            <i class="fa-solid fa-times-circle mr-1"></i> สิ่งที่ทำให้เสีย Piety
+                                        </h4>
+                                        <ul id="modal-loss"
+                                            class="list-disc list-inside text-sm text-gray-300 space-y-1 ml-1"></ul>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="text-amber-400 font-bold mb-2 text-sm uppercase tracking-wide border-b border-gray-700 pb-1">
+                                            <i class="fa-solid fa-gift mr-1"></i> พรแห่งศรัทธา (Blessings)
+                                        </h4>
+                                        <div id="modal-benefits" class="space-y-3 text-sm text-gray-300"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-800">
-                    <button type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        onclick="closeModal()">ปิดหน้าต่าง</button>
+                    <div class="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-800">
+                        <button type="button"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                            onclick="closeModal()">ปิดหน้าต่าง</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <footer class="mt-16 mb-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
-        <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
-    </footer>
-    </div>
+        <footer class="mt-16 mb-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8 pb-8">
+            <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
+        </footer>
+        </div>
+    </main>
 
     <script>
         // Tab switch helper
@@ -1283,8 +1417,45 @@
             }
         }
 
+        async function checkSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const emailElem = document.getElementById('userEmail');
+            if (emailElem) emailElem.textContent = session.user.email;
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open sidebar
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close sidebar
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
         // --- INIT ---
         window.onload = function () {
+            checkSession();
             renderGodsList();
             initSupabase();
         }

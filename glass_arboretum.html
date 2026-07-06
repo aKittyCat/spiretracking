@@ -278,38 +278,59 @@
     </style>
 </head>
 
-<body class="bg-gray-950 text-gray-200 min-h-screen selection:bg-green-500 selection:text-white">
+<body
+    class="bg-gray-950 text-gray-200 min-h-screen selection:bg-green-500 selection:text-white flex flex-col md:flex-row">
 
-    <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
-
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 pb-6 border-b border-gray-800 gap-4">
-            <div class="flex items-center gap-4">
-                <a href="characters.html"
-                    class="p-3 bg-gray-800/50 hover:bg-gray-800 rounded-xl border border-gray-700 transition group"
-                    title="กลับหน้าหลัก">
-                    <i class="fa-solid fa-arrow-left text-gray-400 group-hover:text-white"></i>
-                </a>
-                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                    <span class="text-2xl">🧪</span>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-white tracking-tight">
-                        The <span class="gradient-text">Glass Arboretum</span>
-                    </h1>
-                    <p class="text-xs text-gray-500 mt-1">Alchemy Crafting System</p>
-                </div>
+    <!-- Mobile Header -->
+    <div
+        class="md:hidden flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-gray-800 rounded-lg border border-gray-700">
+                <span class="text-xl">🧙‍♂️</span>
             </div>
+            <h1 class="text-xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span></h1>
+        </div>
+        <button onclick="toggleSidebar()"
+            class="text-gray-400 hover:text-white p-2 rounded-lg bg-gray-800/50 border border-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
 
-            <div class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-xl border border-gray-800">
-                <div class="px-3 flex flex-col items-end">
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"
+        onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Sidebar Header (Desktop) -->
+        <div class="p-6 border-b border-gray-800 hidden md:flex items-center gap-3">
+            <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                <span class="text-2xl">🧙‍♂️</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="p-4 border-b border-gray-800">
+            <div
+                class="flex items-center justify-between gap-3 bg-gray-800/40 p-3 rounded-xl border border-gray-700/50">
+                <div class="flex flex-col min-w-0">
                     <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
-                    <span id="userEmail" class="text-sm font-medium text-gray-300">...</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300 truncate">Loading...</span>
                 </div>
                 <button onclick="logout()"
-                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20 flex-shrink-0"
                     title="ออกจากระบบ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                         <polyline points="16 17 21 12 16 7" />
@@ -319,683 +340,799 @@
             </div>
         </div>
 
-        <!-- Main Tab Navigation -->
-        <div class="flex gap-1 mb-0 overflow-x-auto pb-1 scrollbar-hide">
-            <button id="mainTabCrafter" onclick="switchMainPage('crafter')"
-                class="main-tab-btn active text-green-400 flex items-center gap-2 shadow-lg">
-                <i class="fas fa-flask"></i>
-                <span class="hidden sm:inline">Potion Crafter</span>
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
+            <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'"
+                class="w-full text-left glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">⚙️</span> Admin Dashboard
             </button>
-            <button id="mainTabGuide" onclick="switchMainPage('guide')"
-                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
-                <i class="fas fa-book"></i>
-                <span class="hidden sm:inline">คำอธิบาย</span>
+            <button id="homebrewBtn" style="display:none" onclick="location.href='homebrew.html'"
+                class="w-full text-left glass-panel hover:bg-sky-600/20 text-sky-300 hover:text-sky-200 border-sky-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📘</span> Homebrew (DM)
             </button>
-            <button id="mainTabIngredients" onclick="switchMainPage('ingredients')"
-                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
-                <i class="fas fa-leaf"></i>
-                <span class="hidden sm:inline">รายการวัตถุดิบ</span>
-            </button>
-            <button id="mainTabPotions" onclick="switchMainPage('potions')"
-                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
-                <i class="fas fa-prescription-bottle"></i>
-                <span class="hidden sm:inline">รายการยา</span>
-            </button>
-            <button id="mainTabBoons" onclick="switchMainPage('boons')"
-                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
-                <i class="fas fa-gem"></i>
-                <span class="hidden sm:inline">รายการ Boons</span>
-            </button>
-        </div>
 
-        <!-- ==================== PAGE 1: POTION CRAFTER ==================== -->
-        <div id="page-crafter" class="glass-panel rounded-2xl rounded-tl-none p-6 mb-8">
-            <!-- Character Selection -->
-            <div class="bg-gray-900/50 p-5 rounded-xl mb-6 border border-gray-800">
-                <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
-                    <span class="bg-green-500/20 text-green-400 p-1.5 rounded-lg text-sm"><i
-                            class="fa-solid fa-user"></i></span>
-                    เลือกตัวละครที่จะปรุงยา
-                </h2>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <!-- User's Own Characters -->
-                    <div class="flex-1">
-                        <label class="text-xs text-gray-500 mb-1 block">ตัวละครของคุณ</label>
-                        <select id="characterSelect" class="w-full p-3 rounded-xl input-primary pr-10">
-                            <option value="" disabled selected>รายการตัวละคร</option>
-                        </select>
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'characters.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧙‍♂️</span> ตัวละครของฉัน
+            </button>
+
+            <button onclick="window.open('https://spireform.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📝</span> ฟอร์มสร้างตัวละคร
+            </button>
+            <button onclick="window.open('https://spiremk.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🏪</span> ร้านค้า
+            </button>
+            <button onclick="window.location.href = 'glass_arboretum.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1 border border-green-500/30 bg-green-500/10">
+                <span class="text-lg">🧪</span> Glass Arboretum
+            </button>
+            <button onclick="window.location.href = 'piety_deities.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">⛪</span> Piety
+            </button>
+            <button onclick="window.location.href = 'reawaken.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🔥</span> Reawaken
+            </button>
+            <button onclick="window.location.href = 'worldmap.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🌏</span> Worldmap
+            </button>
+            <button onclick="window.location.href = 'lore.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📰</span> Lore
+            </button>
+
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'eventan.html'"
+                class="w-full text-left glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">🎉</span> Anniversary Event
+            </button>
+        </nav>
+
+        <!-- Mobile Close Sidebar Button -->
+        <button
+            class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-white bg-gray-800/80 p-1.5 rounded-lg border border-gray-700 z-50"
+            onclick="toggleSidebar()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto relative">
+        <div class="max-w-[1280px] mx-auto p-4 sm:p-6 lg:p-8">
+
+            <!-- Header -->
+            <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-gray-800/50 gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                        <span class="text-2xl">🧪</span>
                     </div>
-
-                    <!-- Admin Only: Button to Open Modal -->
-                    <div id="adminCharSelectWrapper" class="flex-1 hidden">
-                        <label class="text-xs text-purple-400 mb-1 block flex items-center gap-1">
-                            <i class="fas fa-crown text-yellow-400"></i> ตัวละครทั้งหมด (Admin)
-                        </label>
-                        <button onclick="openAdminCharModal()"
-                            class="w-full p-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 hover:text-white transition flex items-center justify-center gap-2">
-                            <i class="fas fa-users"></i>
-                            <span id="adminSelectedCharName">เลือกตัวละครผู้เล่น...</span>
-                        </button>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white tracking-tight">
+                            The <span class="gradient-text">Glass Arboretum</span>
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Alchemy Crafting System</p>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Tab Navigation -->
+            <div class="flex gap-1 mb-0 overflow-x-auto pb-1 scrollbar-hide">
+                <button id="mainTabCrafter" onclick="switchMainPage('crafter')"
+                    class="main-tab-btn active text-green-400 flex items-center gap-2 shadow-lg">
+                    <i class="fas fa-flask"></i>
+                    <span class="hidden sm:inline">Potion Crafter</span>
+                </button>
+                <button id="mainTabGuide" onclick="switchMainPage('guide')"
+                    class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                    <i class="fas fa-book"></i>
+                    <span class="hidden sm:inline">คำอธิบาย</span>
+                </button>
+                <button id="mainTabIngredients" onclick="switchMainPage('ingredients')"
+                    class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                    <i class="fas fa-leaf"></i>
+                    <span class="hidden sm:inline">รายการวัตถุดิบ</span>
+                </button>
+                <button id="mainTabPotions" onclick="switchMainPage('potions')"
+                    class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                    <i class="fas fa-prescription-bottle"></i>
+                    <span class="hidden sm:inline">รายการยา</span>
+                </button>
+                <button id="mainTabBoons" onclick="switchMainPage('boons')"
+                    class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                    <i class="fas fa-gem"></i>
+                    <span class="hidden sm:inline">รายการ Boons</span>
+                </button>
+            </div>
 
-                <!-- Inventory Panel -->
-                <div class="lg:col-span-1 bg-gray-900/50 p-5 rounded-xl border border-gray-800 flex flex-col h-[65vh]">
-                    <!-- Tabs -->
-                    <div class="flex border-b border-gray-700 mb-4 gap-4">
-                        <button id="tabIngBtn" onclick="switchTab('ingredient')"
-                            class="tab-btn active pb-3 text-sm font-semibold text-green-400 flex items-center gap-2">
-                            <i class="fas fa-leaf"></i> วัตถุดิบ
-                        </button>
-                        <button id="tabPotBtn" onclick="switchTab('potion')"
-                            class="tab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-gray-200 flex items-center gap-2">
-                            <i class="fas fa-prescription-bottle"></i> กระเป๋ายา
-                        </button>
-                    </div>
-
-                    <!-- GM Panel -->
-                    <div id="gmPanel" class="mb-4 flex gap-2">
-                        <div class="relative flex-grow">
-                            <input type="text" id="addItemInput" placeholder="+ เพิ่มวัตถุดิบ (พิมพ์เพื่อค้นหา...)"
-                                class="w-full p-2.5 rounded-xl input-primary text-sm pr-10" autocomplete="off">
-                            <input type="hidden" id="addItemSelect" value="">
-                            <div id="addItemDropdown"
-                                class="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-xl max-h-60 overflow-y-auto z-50 hidden shadow-xl">
-                            </div>
+            <!-- ==================== PAGE 1: POTION CRAFTER ==================== -->
+            <div id="page-crafter" class="glass-panel rounded-2xl rounded-tl-none p-6 mb-8">
+                <!-- Character Selection -->
+                <div class="bg-gray-900/50 p-5 rounded-xl mb-6 border border-gray-800">
+                    <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+                        <span class="bg-green-500/20 text-green-400 p-1.5 rounded-lg text-sm"><i
+                                class="fa-solid fa-user"></i></span>
+                        เลือกตัวละครที่จะปรุงยา
+                    </h2>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <!-- User's Own Characters -->
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-500 mb-1 block">ตัวละครของคุณ</label>
+                            <select id="characterSelect" class="w-full p-3 rounded-xl input-primary pr-10">
+                                <option value="" disabled selected>รายการตัวละคร</option>
+                            </select>
                         </div>
-                        <button onclick="addManualItem()"
-                            class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-xl text-sm font-medium transition shadow-lg shadow-green-600/20">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
 
-                    <!-- Lists -->
-                    <div id="inventoryList" class="flex-grow overflow-y-auto space-y-2 pr-2">
-                        <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
-                            <i class="fa-solid fa-flask-vial text-4xl text-gray-600"></i>
-                            <p>กรุณาเลือกตัวละคร</p>
-                        </div>
-                    </div>
-                    <div id="potionList" class="hidden flex-grow overflow-y-auto space-y-2 pr-2">
-                        <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
-                            <i class="fa-solid fa-bottle-droplet text-4xl text-gray-600"></i>
-                            <p>ไม่มี Potion ที่ปรุงไว้</p>
+                        <!-- Admin Only: Button to Open Modal -->
+                        <div id="adminCharSelectWrapper" class="flex-1 hidden">
+                            <label class="text-xs text-purple-400 mb-1 block flex items-center gap-1">
+                                <i class="fas fa-crown text-yellow-400"></i> ตัวละครทั้งหมด (Admin)
+                            </label>
+                            <button onclick="openAdminCharModal()"
+                                class="w-full p-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 hover:text-white transition flex items-center justify-center gap-2">
+                                <i class="fas fa-users"></i>
+                                <span id="adminSelectedCharName">เลือกตัวละครผู้เล่น...</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Crafting Area -->
-                <div class="lg:col-span-2 flex flex-col gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    <div class="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                                <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
-                                        class="fa-solid fa-flask"></i></span>
-                                โต๊ะปรุงยา (Alchemy Table)
-                            </h2>
-                            <button onclick="openPotionCalculator()"
-                                class="bg-cyan-600/20 hover:bg-cyan-600 text-cyan-400 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border border-cyan-500/30 flex items-center gap-2 shadow-lg shadow-cyan-600/10 hover:shadow-cyan-600/30 hover:-translate-y-0.5">
-                                <i class="fas fa-calculator"></i> คำนวณยาที่ปรุงได้
+                    <!-- Inventory Panel -->
+                    <div
+                        class="lg:col-span-1 bg-gray-900/50 p-5 rounded-xl border border-gray-800 flex flex-col h-[65vh]">
+                        <!-- Tabs -->
+                        <div class="flex border-b border-gray-700 mb-4 gap-4">
+                            <button id="tabIngBtn" onclick="switchTab('ingredient')"
+                                class="tab-btn active pb-3 text-sm font-semibold text-green-400 flex items-center gap-2">
+                                <i class="fas fa-leaf"></i> วัตถุดิบ
+                            </button>
+                            <button id="tabPotBtn" onclick="switchTab('potion')"
+                                class="tab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                                <i class="fas fa-prescription-bottle"></i> กระเป๋ายา
                             </button>
                         </div>
 
-                        <!-- Progression Graph -->
-                        <div class="mb-6 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="text-xs text-gray-400 flex items-center gap-2">
-                                    <i class="fas fa-flask"></i> ความคืบหน้าการปรุงยา
+                        <!-- GM Panel -->
+                        <div id="gmPanel" class="mb-4 flex gap-2">
+                            <div class="relative flex-grow">
+                                <input type="text" id="addItemInput" placeholder="+ เพิ่มวัตถุดิบ (พิมพ์เพื่อค้นหา...)"
+                                    class="w-full p-2.5 rounded-xl input-primary text-sm pr-10" autocomplete="off">
+                                <input type="hidden" id="addItemSelect" value="">
+                                <div id="addItemDropdown"
+                                    class="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-xl max-h-60 overflow-y-auto z-50 hidden shadow-xl">
                                 </div>
-                                <span id="progressLabel" class="text-xs font-mono text-gray-300">0 / 3</span>
                             </div>
-                            <div class="bg-gray-900 rounded-full h-4 overflow-hidden">
-                                <div id="progressBar"
-                                    class="bg-gradient-to-r from-green-600 via-emerald-500 to-green-400 h-full rounded-full transition-all duration-500 ease-out"
-                                    style="width: 0%"></div>
-                            </div>
-                            <div class="flex justify-between text-[10px] text-gray-500 mt-1 px-1">
-                                <span>เริ่มต้น</span>
-                                <span>พร้อมปรุง!</span>
-                            </div>
-                        </div>
-
-                        <!-- Slots -->
-                        <div class="grid grid-cols-3 gap-4 mb-6">
-                            <div id="slot1" class="slot" onclick="removeIngredient(0)">
-                                <span class="text-gray-500 text-sm">วัตถุดิบ 1</span>
-                            </div>
-                            <div id="slot2" class="slot" onclick="removeIngredient(1)">
-                                <span class="text-gray-500 text-sm">วัตถุดิบ 2</span>
-                            </div>
-                            <div id="slot3" class="slot" onclick="removeIngredient(2)">
-                                <span class="text-gray-500 text-sm">วัตถุดิบ 3</span>
-                            </div>
-                        </div>
-
-                        <!-- Stats -->
-                        <div
-                            class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-800/30 p-4 rounded-xl border border-gray-700/50">
-                            <div id="statBoxCombat"
-                                class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
-                                <div class="text-red-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
-                                        class="fas fa-fist-raised"></i> Combat</div>
-                                <div id="totalCombat" class="font-bold text-2xl text-white">0</div>
-                            </div>
-                            <div id="statBoxUtility"
-                                class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
-                                <div class="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
-                                        class="fas fa-tools"></i> Utility</div>
-                                <div id="totalUtility" class="font-bold text-2xl text-white">0</div>
-                            </div>
-                            <div id="statBoxWhimsy"
-                                class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
-                                <div class="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
-                                        class="fas fa-hat-wizard"></i> Whimsy</div>
-                                <div id="totalWhimsy" class="font-bold text-2xl text-white">0</div>
-                            </div>
-                        </div>
-
-                        <!-- Tie Breaker -->
-                        <div id="tieBreaker"
-                            class="hidden mb-4 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-xl text-center">
-                            <p class="text-yellow-400 text-sm mb-3"><i class="fas fa-balance-scale"></i> ค่า Attribute
-                                เท่ากัน!
-                                โปรดเลือกสายที่ต้องการ:</p>
-                            <div class="flex justify-center gap-3" id="tieButtons">
-                            </div>
-                        </div>
-
-                        <!-- Preview Result -->
-                        <div id="previewResult"
-                            class="hidden mb-6 p-5 bg-gradient-to-br from-gray-800/50 to-green-900/20 rounded-xl border border-green-600/30 text-center transition-all">
-                            <div class="text-green-400 text-xs uppercase tracking-wider font-bold mb-2">Potion ที่ได้
-                            </div>
-                            <div id="potionTypeInfo" class="flex justify-center gap-3 mb-2">
-                                <span id="potionType"
-                                    class="text-sm px-3 py-1 rounded-full bg-gray-700 text-gray-300"></span>
-                                <span id="potionRarity"
-                                    class="text-sm px-3 py-1 rounded-full bg-gray-700 text-gray-300 capitalize"></span>
-                                <span id="potionValue"
-                                    class="text-sm px-3 py-1 rounded-full bg-green-600/30 text-green-300 font-bold"></span>
-                            </div>
-                            <h3 id="potionName" class="text-2xl font-bold text-white mb-1">...</h3>
-                            <p id="potionDesc" class="text-sm text-gray-300 italic">...</p>
-                        </div>
-
-                        <!-- Craft Button -->
-                        <button id="craftBtn" onclick="craftPotion()" disabled
-                            class="w-full bg-gray-700 text-gray-400 font-bold py-3.5 rounded-xl shadow transition-all cursor-grab">
-                            ปรุงยา (เลือกวัตถุดิบให้ครบ 3 อย่าง)
-                        </button>
-
-                        <!-- Crafting Log -->
-                        <div id="craftLogArea"
-                            class="hidden mt-6 p-5 bg-gray-800/50 rounded-xl border border-gray-700 relative">
-                            <h4
-                                class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-scroll"></i> Crafting Log
-                            </h4>
-                            <pre id="logContent" class="text-sm text-green-300 font-mono whitespace-pre-wrap"></pre>
-                            <button onclick="copyLog()"
-                                class="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs px-3 py-1.5 rounded-lg border border-gray-600 transition flex items-center gap-1.5">
-                                <i class="fas fa-copy"></i> Copy for Discord
+                            <button onclick="addManualItem()"
+                                class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-xl text-sm font-medium transition shadow-lg shadow-green-600/20">
+                                <i class="fas fa-plus"></i>
                             </button>
                         </div>
+
+                        <!-- Lists -->
+                        <div id="inventoryList" class="flex-grow overflow-y-auto space-y-2 pr-2">
+                            <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
+                                <i class="fa-solid fa-flask-vial text-4xl text-gray-600"></i>
+                                <p>กรุณาเลือกตัวละคร</p>
+                            </div>
+                        </div>
+                        <div id="potionList" class="hidden flex-grow overflow-y-auto space-y-2 pr-2">
+                            <div class="text-center text-gray-500 mt-10 flex flex-col items-center gap-3">
+                                <i class="fa-solid fa-bottle-droplet text-4xl text-gray-600"></i>
+                                <p>ไม่มี Potion ที่ปรุงไว้</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crafting Area -->
+                    <div class="lg:col-span-2 flex flex-col gap-6">
+
+                        <div class="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                                    <span class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-sm"><i
+                                            class="fa-solid fa-flask"></i></span>
+                                    โต๊ะปรุงยา (Alchemy Table)
+                                </h2>
+                                <button onclick="openPotionCalculator()"
+                                    class="bg-cyan-600/20 hover:bg-cyan-600 text-cyan-400 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border border-cyan-500/30 flex items-center gap-2 shadow-lg shadow-cyan-600/10 hover:shadow-cyan-600/30 hover:-translate-y-0.5">
+                                    <i class="fas fa-calculator"></i> คำนวณยาที่ปรุงได้
+                                </button>
+                            </div>
+
+                            <!-- Progression Graph -->
+                            <div class="mb-6 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-xs text-gray-400 flex items-center gap-2">
+                                        <i class="fas fa-flask"></i> ความคืบหน้าการปรุงยา
+                                    </div>
+                                    <span id="progressLabel" class="text-xs font-mono text-gray-300">0 / 3</span>
+                                </div>
+                                <div class="bg-gray-900 rounded-full h-4 overflow-hidden">
+                                    <div id="progressBar"
+                                        class="bg-gradient-to-r from-green-600 via-emerald-500 to-green-400 h-full rounded-full transition-all duration-500 ease-out"
+                                        style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] text-gray-500 mt-1 px-1">
+                                    <span>เริ่มต้น</span>
+                                    <span>พร้อมปรุง!</span>
+                                </div>
+                            </div>
+
+                            <!-- Slots -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div id="slot1" class="slot" onclick="removeIngredient(0)">
+                                    <span class="text-gray-500 text-sm">วัตถุดิบ 1</span>
+                                </div>
+                                <div id="slot2" class="slot" onclick="removeIngredient(1)">
+                                    <span class="text-gray-500 text-sm">วัตถุดิบ 2</span>
+                                </div>
+                                <div id="slot3" class="slot" onclick="removeIngredient(2)">
+                                    <span class="text-gray-500 text-sm">วัตถุดิบ 3</span>
+                                </div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div
+                                class="grid grid-cols-3 gap-4 text-center text-sm mb-6 bg-gray-800/30 p-4 rounded-xl border border-gray-700/50">
+                                <div id="statBoxCombat"
+                                    class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
+                                    <div class="text-red-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                            class="fas fa-fist-raised"></i> Combat</div>
+                                    <div id="totalCombat" class="font-bold text-2xl text-white">0</div>
+                                </div>
+                                <div id="statBoxUtility"
+                                    class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
+                                    <div class="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                            class="fas fa-tools"></i> Utility</div>
+                                    <div id="totalUtility" class="font-bold text-2xl text-white">0</div>
+                                </div>
+                                <div id="statBoxWhimsy"
+                                    class="bg-gray-900/50 rounded-xl p-3 border border-gray-700/30 transition-all">
+                                    <div class="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-1"><i
+                                            class="fas fa-hat-wizard"></i> Whimsy</div>
+                                    <div id="totalWhimsy" class="font-bold text-2xl text-white">0</div>
+                                </div>
+                            </div>
+
+                            <!-- Tie Breaker -->
+                            <div id="tieBreaker"
+                                class="hidden mb-4 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-xl text-center">
+                                <p class="text-yellow-400 text-sm mb-3"><i class="fas fa-balance-scale"></i> ค่า
+                                    Attribute
+                                    เท่ากัน!
+                                    โปรดเลือกสายที่ต้องการ:</p>
+                                <div class="flex justify-center gap-3" id="tieButtons">
+                                </div>
+                            </div>
+
+                            <!-- Preview Result -->
+                            <div id="previewResult"
+                                class="hidden mb-6 p-5 bg-gradient-to-br from-gray-800/50 to-green-900/20 rounded-xl border border-green-600/30 text-center transition-all">
+                                <div class="text-green-400 text-xs uppercase tracking-wider font-bold mb-2">Potion
+                                    ที่ได้
+                                </div>
+                                <div id="potionTypeInfo" class="flex justify-center gap-3 mb-2">
+                                    <span id="potionType"
+                                        class="text-sm px-3 py-1 rounded-full bg-gray-700 text-gray-300"></span>
+                                    <span id="potionRarity"
+                                        class="text-sm px-3 py-1 rounded-full bg-gray-700 text-gray-300 capitalize"></span>
+                                    <span id="potionValue"
+                                        class="text-sm px-3 py-1 rounded-full bg-green-600/30 text-green-300 font-bold"></span>
+                                </div>
+                                <h3 id="potionName" class="text-2xl font-bold text-white mb-1">...</h3>
+                                <p id="potionDesc" class="text-sm text-gray-300 italic">...</p>
+                            </div>
+
+                            <!-- Craft Button -->
+                            <button id="craftBtn" onclick="craftPotion()" disabled
+                                class="w-full bg-gray-700 text-gray-400 font-bold py-3.5 rounded-xl shadow transition-all cursor-grab">
+                                ปรุงยา (เลือกวัตถุดิบให้ครบ 3 อย่าง)
+                            </button>
+
+                            <!-- Crafting Log -->
+                            <div id="craftLogArea"
+                                class="hidden mt-6 p-5 bg-gray-800/50 rounded-xl border border-gray-700 relative">
+                                <h4
+                                    class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-scroll"></i> Crafting Log
+                                </h4>
+                                <pre id="logContent" class="text-sm text-green-300 font-mono whitespace-pre-wrap"></pre>
+                                <button onclick="copyLog()"
+                                    class="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs px-3 py-1.5 rounded-lg border border-gray-600 transition flex items-center gap-1.5">
+                                    <i class="fas fa-copy"></i> Copy for Discord
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ==================== PAGE 2: GUIDE ==================== -->
-        <div id="page-guide" class="glass-panel rounded-2xl p-6 mb-8 hidden">
-            <!-- Lore Section -->
-            <div class="guide-section">
-                <h3><i class="fas fa-scroll"></i> เรือนกระจกแห่ง The Spire - The Glass Arboretum</h3>
-                <div class="text-gray-300 leading-relaxed space-y-4">
-                    <p>ท่ามกลางโครงสร้างหินที่เย็นเยียบและทางเดินที่ไร้จุดสิ้นสุดของหอคอย The Spire...
-                        กลับสัมผัสได้ถึงบางสิ่งที่แปลกแยก กลิ่นชื้นของดินที่อุดมสมบูรณ์
-                        กลิ่นหอมหวานปนเปรี้ยวของเกสรดอกไม้ และเสียงกระซิบของใบไม้ที่เสียดสีกันทั้งที่ไร้ซึ่งกระแสลม</p>
-                    <p>เมื่อผลักประตูไม้โอ๊คขนาดมหึมาเข้าไป... ภาพเบื้องหน้าคือ <span
-                            class="text-green-400 font-semibold">"The Glass Arboretum"</span>
-                        หรือเรือนกระจกยักษ์ที่ฝังตัวอยู่ในหอคอย</p>
-                    <p>เพดานกระจกเบื้องบนสะท้อนแสงจากดวงดาวประหลาดคล้ายกับดวงอาทิตย์ที่ส่องลงมายังพรรณไม้ที่นักปราชญ์คนใดก็ไม่เคยบันทึกชื่อ
-                        ดอกไม้ขนาดเท่าตัวคนที่มีกลีบใสเหมือนแก้วพ่นละอองเรืองแสงออกมาเหมือนหิ่งห้อย
-                        เถาวัลย์หนามสีดำที่ขยับตัวช้าๆ ราวกับกำลังหายใจ และต้นไม้ใหญ่ที่รากของมันไม่ได้หยั่งลงดิน...
-                        แต่หยั่งลงไปในรอยแยกของมิติ</p>
-                    <p class="text-gray-400 italic">
-                        ว่ากันว่าที่แห่งนี้ถูกสร้างขึ้นโดยอดีตนักผจญภัยที่เกษียณไปดูแลสวนสมุนไพรของตัวเองเมื่อนานมาแล้ว...
-                    </p>
-                </div>
-            </div>
-
-            <!-- Conditions Section -->
-            <div class="guide-section">
-                <h3><i class="fas fa-exclamation-triangle text-yellow-400"></i> เงื่อนไข</h3>
-                <ul class="text-gray-300 space-y-2 list-disc list-inside">
-                    <li>วัตถุดิบที่ได้มาไม่สามารถแลกเปลี่ยนได้</li>
-                    <li>Potion ที่สร้างจะต้องลงบันทึกในช่องบันทึกการสร้าง Potion ภายในช่อง <span
-                            class="text-cyan-400 font-mono">#the-glass-arboretum</span></li>
-                </ul>
-            </div>
-
-            <!-- How to Harvest -->
-            <div class="guide-section">
-                <h3><i class="fas fa-seedling text-green-400"></i> จะเก็บเกี่ยววัตถุดิบได้ยังไง</h3>
-                <ul class="text-gray-300 space-y-2 list-disc list-inside">
-                    <li>ตัวละครสามารถทำการสุ่มได้ทุก <span class="text-yellow-400 font-semibold">6 ชั่วโมง</span></li>
-                    <li>ค่าใช้จ่าย: <span class="text-yellow-400 font-semibold">100gp × ระดับ Tier ของตัวละคร</span>
-                    </li>
-                </ul>
-                <div class="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <p class="text-sm text-gray-400 mb-2"><i class="fas fa-terminal mr-2"></i>วิธีใช้งาน:</p>
-                    <p class="text-gray-200">เข้าไปที่ช่อง <span
-                            class="text-cyan-400 font-mono">#the-glass-arboretum</span> ใน Activities จากนั้นใช้คำสั่ง
-                        <code class="bg-gray-700 px-2 py-1 rounded text-green-400">!harvest</code>
-                        (อย่าลืมหักทองออกด้วย)
-                    </p>
-                </div>
-            </div>
-
-            <!-- How to Create Potions -->
-            <div class="guide-section">
-                <h3><i class="fas fa-flask text-purple-400"></i> วิธีสร้าง Potions</h3>
-                <ol class="text-gray-300 space-y-3 list-decimal list-inside">
-                    <li>วัตถุดิบทุกอันจะมีตัวเลข 3 อัน โดยแบ่งเป็น <span class="text-red-400">Combat</span>, <span
-                            class="text-blue-400">Utility</span>, และ <span class="text-purple-400">Whimsy</span><br>
-                        <span class="text-gray-400 text-sm ml-6">ตัวอย่าง: Boom Beri = Combat 7, Utility 6, Whimsy
-                            1</span>
-                    </li>
-                    <li>ในการสร้าง Potion ผู้เล่นต้องใช้วัตถุดิบ <span class="text-yellow-400 font-semibold">3
-                            อย่างไม่ซ้ำกัน</span> เพื่อเพิ่มค่า Attribute ที่ต้องการ</li>
-                    <li>ค่า Attribute ที่สูงที่สุด (Combat, Utility, หรือ Whimsy) จะถูกนำมาใช้ตัดสิน Potion
-                        ที่ผู้เล่นจะได้รับ</li>
-                    <li>ผลสรุปของตัวเลขนั้นๆจะเป็นตัวบอกว่าผู้เล่นได้ Potion อันไหนจากประเภทของ Attribute นั้น<br>
-                        <span class="text-gray-400 text-sm ml-6">ตัวอย่าง: ถ้า Combat สูงสุดและผลรวม = 21 → ได้ Combat
-                            Potion หมายเลข 21</span>
-                    </li>
-                </ol>
-
-                <!-- Tier Requirement Note -->
-                <div class="mt-4 p-4 bg-yellow-900/20 rounded-lg border border-yellow-600/30">
-                    <p class="text-yellow-400 font-semibold mb-2"><i class="fas fa-info-circle mr-2"></i>หมายเหตุ:
-                        ระดับในการสร้าง Potions</p>
-                    <p class="text-gray-300 mb-3">ตัวละครของผู้เล่นต้องอยู่ในระดับ Tier ที่ตรงกับระดับ Rarity ของ Potion
-                        ที่จะสร้าง โดยสามารถแบ่งระดับได้ตามนี้</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-600/30 text-center">
-                            <span
-                                class="text-sm px-2.5 py-0.5 rounded-full bg-gray-600/30 text-gray-300 font-medium">Common</span>
-                            <p class="text-gray-300 text-sm mt-2">Tier 1, Tier 2, Tier 3</p>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-green-600/30 text-center">
-                            <span
-                                class="text-sm px-2.5 py-0.5 rounded-full bg-green-600/30 text-green-300 font-medium">Uncommon</span>
-                            <p class="text-gray-300 text-sm mt-2">Tier 2, Tier 3</p>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-blue-600/30 text-center">
-                            <span
-                                class="text-sm px-2.5 py-0.5 rounded-full bg-blue-600/30 text-blue-300 font-medium">Rare</span>
-                            <p class="text-gray-300 text-sm mt-2">Tier 3</p>
-                        </div>
+            <!-- ==================== PAGE 2: GUIDE ==================== -->
+            <div id="page-guide" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+                <!-- Lore Section -->
+                <div class="guide-section">
+                    <h3><i class="fas fa-scroll"></i> เรือนกระจกแห่ง The Spire - The Glass Arboretum</h3>
+                    <div class="text-gray-300 leading-relaxed space-y-4">
+                        <p>ท่ามกลางโครงสร้างหินที่เย็นเยียบและทางเดินที่ไร้จุดสิ้นสุดของหอคอย The Spire...
+                            กลับสัมผัสได้ถึงบางสิ่งที่แปลกแยก กลิ่นชื้นของดินที่อุดมสมบูรณ์
+                            กลิ่นหอมหวานปนเปรี้ยวของเกสรดอกไม้ และเสียงกระซิบของใบไม้ที่เสียดสีกันทั้งที่ไร้ซึ่งกระแสลม
+                        </p>
+                        <p>เมื่อผลักประตูไม้โอ๊คขนาดมหึมาเข้าไป... ภาพเบื้องหน้าคือ <span
+                                class="text-green-400 font-semibold">"The Glass Arboretum"</span>
+                            หรือเรือนกระจกยักษ์ที่ฝังตัวอยู่ในหอคอย</p>
+                        <p>เพดานกระจกเบื้องบนสะท้อนแสงจากดวงดาวประหลาดคล้ายกับดวงอาทิตย์ที่ส่องลงมายังพรรณไม้ที่นักปราชญ์คนใดก็ไม่เคยบันทึกชื่อ
+                            ดอกไม้ขนาดเท่าตัวคนที่มีกลีบใสเหมือนแก้วพ่นละอองเรืองแสงออกมาเหมือนหิ่งห้อย
+                            เถาวัลย์หนามสีดำที่ขยับตัวช้าๆ ราวกับกำลังหายใจ และต้นไม้ใหญ่ที่รากของมันไม่ได้หยั่งลงดิน...
+                            แต่หยั่งลงไปในรอยแยกของมิติ</p>
+                        <p class="text-gray-400 italic">
+                            ว่ากันว่าที่แห่งนี้ถูกสร้างขึ้นโดยอดีตนักผจญภัยที่เกษียณไปดูแลสวนสมุนไพรของตัวเองเมื่อนานมาแล้ว...
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Calculation Example -->
-            <div class="guide-section">
-                <h3><i class="fas fa-calculator text-cyan-400"></i> ตัวอย่างวิธีคำนวนการสร้าง Potion</h3>
-                <div class="text-gray-300 space-y-4">
-                    <p>ผู้เล่นใช้วัตถุดิบ 3 อย่างต่อไปนี้:</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
-                            <div class="font-semibold text-green-300">Boom Beri</div>
-                            <div class="text-sm"><span class="text-red-400">C:7</span> <span
-                                    class="text-blue-400">U:6</span> <span class="text-purple-400">W:1</span></div>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
-                            <div class="font-semibold text-green-300">Flash Paper</div>
-                            <div class="text-sm"><span class="text-red-400">C:6</span> <span
-                                    class="text-blue-400">U:9</span> <span class="text-purple-400">W:1</span></div>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
-                            <div class="font-semibold text-green-300">Rust Crab</div>
-                            <div class="text-sm"><span class="text-red-400">C:8</span> <span
-                                    class="text-blue-400">U:4</span> <span class="text-purple-400">W:2</span></div>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="mishap-table mt-4">
-                            <thead>
-                                <tr>
-                                    <th>Attribute</th>
-                                    <th>การคำนวน</th>
-                                    <th>ผลรวม</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-red-400 font-semibold">Combat</td>
-                                    <td class="text-gray-400">7 + 6 + 8</td>
-                                    <td class="text-white font-bold">21</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-blue-400 font-semibold">Utility</td>
-                                    <td class="text-gray-400">6 + 9 + 4</td>
-                                    <td class="text-white font-bold">19</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-purple-400 font-semibold">Whimsy</td>
-                                    <td class="text-gray-400">1 + 1 + 2</td>
-                                    <td class="text-white font-bold">4</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="text-gray-300 mt-4">
-                        เนื่องจาก <span class="text-red-400 font-semibold">Combat</span> เป็นค่าที่สูงที่สุด
-                        ผู้เล่นจะได้รับ Combat potion<br>
-                        และเนื่องจากค่าผลรวมของ Combat อยู่ที่ <span class="text-yellow-400 font-semibold">21</span>
-                        ผู้เล่นจะได้รับ <span class="text-green-400 font-semibold">Dancing Juice Potion</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Potion Mishaps -->
-            <div class="guide-section border-t-4 border-t-red-500/50">
-                <h3><i class="fas fa-skull-crossbones text-red-400"></i> Potion Mishaps</h3>
-
-                <div class="mt-4">
-                    <h4 class="text-yellow-400 font-semibold mb-2"><i class="fas fa-dizzy mr-2"></i>Potion Sickness</h4>
-                    <p class="text-gray-300 mb-3">เมื่อตัวละครดื่ม Potion มากกว่า 1 ขวดต่อหนึ่งวัน ให้ทอย <span
-                            class="text-cyan-400 font-semibold">Constitution save DC 13</span></p>
-                    <ul class="text-gray-300 space-y-2 list-disc list-inside ml-4">
-                        <li><span class="text-red-400">ถ้าไม่ผ่าน:</span> ตัวละครจะอาเจียนและ Potion ไม่ส่งผล</li>
-                        <li><span class="text-green-400">ถ้าผ่าน:</span> ตัวละครจะไม่เป็นอะไร... อย่างน้อยๆก็ในตอนนี้
-                        </li>
+                <!-- Conditions Section -->
+                <div class="guide-section">
+                    <h3><i class="fas fa-exclamation-triangle text-yellow-400"></i> เงื่อนไข</h3>
+                    <ul class="text-gray-300 space-y-2 list-disc list-inside">
+                        <li>วัตถุดิบที่ได้มาไม่สามารถแลกเปลี่ยนได้</li>
+                        <li>Potion ที่สร้างจะต้องลงบันทึกในช่องบันทึกการสร้าง Potion ภายในช่อง <span
+                                class="text-cyan-400 font-mono">#the-glass-arboretum</span></li>
                     </ul>
                 </div>
 
-                <div class="mt-4 p-4 bg-yellow-900/20 rounded-lg border border-yellow-600/30">
-                    <p class="text-yellow-400 font-semibold mb-2"><i class="fas fa-arrow-up mr-2"></i>DC เพิ่มขึ้น!</p>
-                    <p class="text-gray-300">ทุกๆครั้งที่ดื่ม Potion เข้าไปในวันนั้นจะยิ่งทำให้ save DC สูงขึ้น:<br>
-                        <span class="text-yellow-400">+2 DC</span> ต่อจำนวน save ที่ผ่านเมื่อดื่ม Potion
-                    </p>
-                    <p class="text-gray-400 text-sm mt-2">ตัวอย่าง: ขวดที่ 2 = DC 13, ขวดที่ 3 = DC 15, ขวดที่ 4 = DC 17
-                        ฯลฯ</p>
-                    <p class="text-gray-400 text-sm mt-2 italic">* การปา, โยน, หรือเทจะไม่นับ</p>
+                <!-- How to Harvest -->
+                <div class="guide-section">
+                    <h3><i class="fas fa-seedling text-green-400"></i> จะเก็บเกี่ยววัตถุดิบได้ยังไง</h3>
+                    <ul class="text-gray-300 space-y-2 list-disc list-inside">
+                        <li>ตัวละครสามารถทำการสุ่มได้ทุก <span class="text-yellow-400 font-semibold">6 ชั่วโมง</span>
+                        </li>
+                        <li>ค่าใช้จ่าย: <span class="text-yellow-400 font-semibold">100gp × ระดับ Tier ของตัวละคร</span>
+                        </li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                        <p class="text-sm text-gray-400 mb-2"><i class="fas fa-terminal mr-2"></i>วิธีใช้งาน:</p>
+                        <p class="text-gray-200">เข้าไปที่ช่อง <span
+                                class="text-cyan-400 font-mono">#the-glass-arboretum</span> ใน Activities
+                            จากนั้นใช้คำสั่ง
+                            <code class="bg-gray-700 px-2 py-1 rounded text-green-400">!harvest</code>
+                            (อย่าลืมหักทองออกด้วย)
+                        </p>
+                    </div>
                 </div>
 
-                <div class="mt-4">
-                    <h4 class="text-red-400 font-semibold mb-2"><i
-                            class="fas fa-exclamation-circle mr-2"></i>ผลข้างเคียง (หาก save ไม่ผ่านหลังจากเคย save
-                        ผ่าน)</h4>
-                    <p class="text-gray-300 mb-3">หากตัวละคร save ผ่านไปแล้วแต่ดัน save ไม่ผ่านในภายหลัง...
-                        ตัวละครยังคงได้รับผลของ Potion Sickness และต้องทอยเต๋า <span class="text-yellow-400">d10</span>
-                        เพื่อดูผลข้างเคียง:</p>
+                <!-- How to Create Potions -->
+                <div class="guide-section">
+                    <h3><i class="fas fa-flask text-purple-400"></i> วิธีสร้าง Potions</h3>
+                    <ol class="text-gray-300 space-y-3 list-decimal list-inside">
+                        <li>วัตถุดิบทุกอันจะมีตัวเลข 3 อัน โดยแบ่งเป็น <span class="text-red-400">Combat</span>, <span
+                                class="text-blue-400">Utility</span>, และ <span
+                                class="text-purple-400">Whimsy</span><br>
+                            <span class="text-gray-400 text-sm ml-6">ตัวอย่าง: Boom Beri = Combat 7, Utility 6, Whimsy
+                                1</span>
+                        </li>
+                        <li>ในการสร้าง Potion ผู้เล่นต้องใช้วัตถุดิบ <span class="text-yellow-400 font-semibold">3
+                                อย่างไม่ซ้ำกัน</span> เพื่อเพิ่มค่า Attribute ที่ต้องการ</li>
+                        <li>ค่า Attribute ที่สูงที่สุด (Combat, Utility, หรือ Whimsy) จะถูกนำมาใช้ตัดสิน Potion
+                            ที่ผู้เล่นจะได้รับ</li>
+                        <li>ผลสรุปของตัวเลขนั้นๆจะเป็นตัวบอกว่าผู้เล่นได้ Potion อันไหนจากประเภทของ Attribute นั้น<br>
+                            <span class="text-gray-400 text-sm ml-6">ตัวอย่าง: ถ้า Combat สูงสุดและผลรวม = 21 → ได้
+                                Combat
+                                Potion หมายเลข 21</span>
+                        </li>
+                    </ol>
 
-                    <div class="overflow-x-auto">
-                        <table class="mishap-table">
-                            <thead>
-                                <tr>
-                                    <th class="w-16">d10</th>
-                                    <th>ผลลัพธ์</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">1</td>
-                                    <td>Sand fills your mouth, making it impossible to speak. This effect lasts for 1
-                                        minute.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">2</td>
-                                    <td>You lose the ability to use your arms as they turn jelly-like in nature. This
-                                        effect lasts until the end of your next turn.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">3</td>
-                                    <td>Your vision blurs then pops back into clarity, only now all creatures look
-                                        exactly the same to you and are indistinguishable except by touch. This effect
-                                        lasts for 1 minute.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">4</td>
-                                    <td>In a blur of magic, you shift into one of the following adorable critters, as if
-                                        the spell Polymorph was cast on you. (roll a d6: 1 Kitten, 2 Songbird, 3 Puppy,
-                                        4 Black Bear Cub, 5 Piglet, 6 Otter Pup)</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">5</td>
-                                    <td>In a blinding flash of light and a sonic boom, you are teleported away. Roll 1d4
-                                        to determine direction with "1" being cardinal north and moving clockwise. Then
-                                        roll 1d4 to determine how many hundreds of feet that you are teleported.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">6</td>
-                                    <td>You can no longer control your voice, causing it to randomly change in volume as
-                                        you speak. This effect lasts for 1 hour.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">7</td>
-                                    <td>Eels grow in your gut for the next hour. Every so often you cough one up.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">8</td>
-                                    <td>For the next week, the sight of potions makes you sick. You must succeed on a DC
-                                        15 Constitution saving throw to drink a potion.</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">9</td>
-                                    <td>Being within 5 feet of any kind of magic causes you to instantly break out in
-                                        itchy hives, reducing any Charisma checks by 2. This allergy lasts for 1d4 days.
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-yellow-400 font-bold">10</td>
-                                    <td>You gain the effect of a random common whimsy potion.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Tier Requirement Note -->
+                    <div class="mt-4 p-4 bg-yellow-900/20 rounded-lg border border-yellow-600/30">
+                        <p class="text-yellow-400 font-semibold mb-2"><i class="fas fa-info-circle mr-2"></i>หมายเหตุ:
+                            ระดับในการสร้าง Potions</p>
+                        <p class="text-gray-300 mb-3">ตัวละครของผู้เล่นต้องอยู่ในระดับ Tier ที่ตรงกับระดับ Rarity ของ
+                            Potion
+                            ที่จะสร้าง โดยสามารถแบ่งระดับได้ตามนี้</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-600/30 text-center">
+                                <span
+                                    class="text-sm px-2.5 py-0.5 rounded-full bg-gray-600/30 text-gray-300 font-medium">Common</span>
+                                <p class="text-gray-300 text-sm mt-2">Tier 1, Tier 2, Tier 3</p>
+                            </div>
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-green-600/30 text-center">
+                                <span
+                                    class="text-sm px-2.5 py-0.5 rounded-full bg-green-600/30 text-green-300 font-medium">Uncommon</span>
+                                <p class="text-gray-300 text-sm mt-2">Tier 2, Tier 3</p>
+                            </div>
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-blue-600/30 text-center">
+                                <span
+                                    class="text-sm px-2.5 py-0.5 rounded-full bg-blue-600/30 text-blue-300 font-medium">Rare</span>
+                                <p class="text-gray-300 text-sm mt-2">Tier 3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculation Example -->
+                <div class="guide-section">
+                    <h3><i class="fas fa-calculator text-cyan-400"></i> ตัวอย่างวิธีคำนวนการสร้าง Potion</h3>
+                    <div class="text-gray-300 space-y-4">
+                        <p>ผู้เล่นใช้วัตถุดิบ 3 อย่างต่อไปนี้:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                                <div class="font-semibold text-green-300">Boom Beri</div>
+                                <div class="text-sm"><span class="text-red-400">C:7</span> <span
+                                        class="text-blue-400">U:6</span> <span class="text-purple-400">W:1</span></div>
+                            </div>
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                                <div class="font-semibold text-green-300">Flash Paper</div>
+                                <div class="text-sm"><span class="text-red-400">C:6</span> <span
+                                        class="text-blue-400">U:9</span> <span class="text-purple-400">W:1</span></div>
+                            </div>
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                                <div class="font-semibold text-green-300">Rust Crab</div>
+                                <div class="text-sm"><span class="text-red-400">C:8</span> <span
+                                        class="text-blue-400">U:4</span> <span class="text-purple-400">W:2</span></div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="mishap-table mt-4">
+                                <thead>
+                                    <tr>
+                                        <th>Attribute</th>
+                                        <th>การคำนวน</th>
+                                        <th>ผลรวม</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-red-400 font-semibold">Combat</td>
+                                        <td class="text-gray-400">7 + 6 + 8</td>
+                                        <td class="text-white font-bold">21</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-blue-400 font-semibold">Utility</td>
+                                        <td class="text-gray-400">6 + 9 + 4</td>
+                                        <td class="text-white font-bold">19</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-purple-400 font-semibold">Whimsy</td>
+                                        <td class="text-gray-400">1 + 1 + 2</td>
+                                        <td class="text-white font-bold">4</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-gray-300 mt-4">
+                            เนื่องจาก <span class="text-red-400 font-semibold">Combat</span> เป็นค่าที่สูงที่สุด
+                            ผู้เล่นจะได้รับ Combat potion<br>
+                            และเนื่องจากค่าผลรวมของ Combat อยู่ที่ <span class="text-yellow-400 font-semibold">21</span>
+                            ผู้เล่นจะได้รับ <span class="text-green-400 font-semibold">Dancing Juice Potion</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Potion Mishaps -->
+                <div class="guide-section border-t-4 border-t-red-500/50">
+                    <h3><i class="fas fa-skull-crossbones text-red-400"></i> Potion Mishaps</h3>
+
+                    <div class="mt-4">
+                        <h4 class="text-yellow-400 font-semibold mb-2"><i class="fas fa-dizzy mr-2"></i>Potion Sickness
+                        </h4>
+                        <p class="text-gray-300 mb-3">เมื่อตัวละครดื่ม Potion มากกว่า 1 ขวดต่อหนึ่งวัน ให้ทอย <span
+                                class="text-cyan-400 font-semibold">Constitution save DC 13</span></p>
+                        <ul class="text-gray-300 space-y-2 list-disc list-inside ml-4">
+                            <li><span class="text-red-400">ถ้าไม่ผ่าน:</span> ตัวละครจะอาเจียนและ Potion ไม่ส่งผล</li>
+                            <li><span class="text-green-400">ถ้าผ่าน:</span> ตัวละครจะไม่เป็นอะไร...
+                                อย่างน้อยๆก็ในตอนนี้
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-yellow-900/20 rounded-lg border border-yellow-600/30">
+                        <p class="text-yellow-400 font-semibold mb-2"><i class="fas fa-arrow-up mr-2"></i>DC เพิ่มขึ้น!
+                        </p>
+                        <p class="text-gray-300">ทุกๆครั้งที่ดื่ม Potion เข้าไปในวันนั้นจะยิ่งทำให้ save DC สูงขึ้น:<br>
+                            <span class="text-yellow-400">+2 DC</span> ต่อจำนวน save ที่ผ่านเมื่อดื่ม Potion
+                        </p>
+                        <p class="text-gray-400 text-sm mt-2">ตัวอย่าง: ขวดที่ 2 = DC 13, ขวดที่ 3 = DC 15, ขวดที่ 4 =
+                            DC 17
+                            ฯลฯ</p>
+                        <p class="text-gray-400 text-sm mt-2 italic">* การปา, โยน, หรือเทจะไม่นับ</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="text-red-400 font-semibold mb-2"><i
+                                class="fas fa-exclamation-circle mr-2"></i>ผลข้างเคียง (หาก save ไม่ผ่านหลังจากเคย save
+                            ผ่าน)</h4>
+                        <p class="text-gray-300 mb-3">หากตัวละคร save ผ่านไปแล้วแต่ดัน save ไม่ผ่านในภายหลัง...
+                            ตัวละครยังคงได้รับผลของ Potion Sickness และต้องทอยเต๋า <span
+                                class="text-yellow-400">d10</span>
+                            เพื่อดูผลข้างเคียง:</p>
+
+                        <div class="overflow-x-auto">
+                            <table class="mishap-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-16">d10</th>
+                                        <th>ผลลัพธ์</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">1</td>
+                                        <td>Sand fills your mouth, making it impossible to speak. This effect lasts for
+                                            1
+                                            minute.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">2</td>
+                                        <td>You lose the ability to use your arms as they turn jelly-like in nature.
+                                            This
+                                            effect lasts until the end of your next turn.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">3</td>
+                                        <td>Your vision blurs then pops back into clarity, only now all creatures look
+                                            exactly the same to you and are indistinguishable except by touch. This
+                                            effect
+                                            lasts for 1 minute.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">4</td>
+                                        <td>In a blur of magic, you shift into one of the following adorable critters,
+                                            as if
+                                            the spell Polymorph was cast on you. (roll a d6: 1 Kitten, 2 Songbird, 3
+                                            Puppy,
+                                            4 Black Bear Cub, 5 Piglet, 6 Otter Pup)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">5</td>
+                                        <td>In a blinding flash of light and a sonic boom, you are teleported away. Roll
+                                            1d4
+                                            to determine direction with "1" being cardinal north and moving clockwise.
+                                            Then
+                                            roll 1d4 to determine how many hundreds of feet that you are teleported.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">6</td>
+                                        <td>You can no longer control your voice, causing it to randomly change in
+                                            volume as
+                                            you speak. This effect lasts for 1 hour.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">7</td>
+                                        <td>Eels grow in your gut for the next hour. Every so often you cough one up.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">8</td>
+                                        <td>For the next week, the sight of potions makes you sick. You must succeed on
+                                            a DC
+                                            15 Constitution saving throw to drink a potion.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">9</td>
+                                        <td>Being within 5 feet of any kind of magic causes you to instantly break out
+                                            in
+                                            itchy hives, reducing any Charisma checks by 2. This allergy lasts for 1d4
+                                            days.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-yellow-400 font-bold">10</td>
+                                        <td>You gain the effect of a random common whimsy potion.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ==================== PAGE 3: INGREDIENTS ==================== -->
+            <div id="page-ingredients" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="bg-green-500/20 text-green-400 p-2 rounded-lg"><i class="fas fa-leaf"></i></span>
+                        รายการวัตถุดิบทั้งหมด
+                    </h2>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <input type="text" id="ingredientSearch" placeholder="ค้นหาวัตถุดิบ..."
+                            class="input-primary text-sm flex-grow md:w-64" oninput="filterIngredients()">
+                        <select id="rarityFilter" class="input-primary text-sm pr-10" onchange="filterIngredients()">
+                            <option value="">ทุก Rarity</option>
+                            <option value="C">Common</option>
+                            <option value="U">Uncommon</option>
+                            <option value="R">Rare</option>
+                            <option value="VR">Very Rare</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Rarity Legend -->
+                <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span>
+                        Common</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span>
+                        Uncommon</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        Rare</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Very
+                        Rare</span>
+                </div>
+
+                <!-- Stats Summary -->
+                <div id="ingredientStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-white" id="totalIngredients">0</div>
+                        <div class="text-xs text-gray-400">วัตถุดิบทั้งหมด</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-gray-400" id="commonCount">0</div>
+                        <div class="text-xs text-gray-400">Common</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-green-400" id="uncommonCount">0</div>
+                        <div class="text-xs text-gray-400">Uncommon</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-blue-400" id="rareCount">0</div>
+                        <div class="text-xs text-gray-400">Rare</div>
+                    </div>
+                </div>
+
+                <!-- Ingredients Grid -->
+                <div id="ingredientsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- ==================== PAGE 4: POTIONS LIST ==================== -->
+            <div id="page-potions" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg"><i
+                                class="fas fa-prescription-bottle"></i></span>
+                        รายการยาทั้งหมด
+                    </h2>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <input type="text" id="potionSearch" placeholder="ค้นหายา..."
+                            class="input-primary text-sm flex-grow md:w-64" oninput="filterPotions()">
+                        <select id="potionTypeFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
+                            <option value="">ทุกประเภท</option>
+                            <option value="Combat">Combat</option>
+                            <option value="Utility">Utility</option>
+                            <option value="Whimsical">Whimsical</option>
+                        </select>
+                        <select id="potionRarityFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
+                            <option value="">ทุก Rarity</option>
+                            <option value="common">Common</option>
+                            <option value="uncommon">Uncommon</option>
+                            <option value="rare">Rare</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Type Legend -->
+                <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        Combat</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        Utility</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                        Whimsical</span>
+                </div>
+
+                <!-- Stats Summary -->
+                <div id="potionStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-white" id="totalPotionsCount">0</div>
+                        <div class="text-xs text-gray-400">ยาทั้งหมด</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-red-400" id="combatPotionsCount">0</div>
+                        <div class="text-xs text-gray-400">Combat</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-blue-400" id="utilityPotionsCount">0</div>
+                        <div class="text-xs text-gray-400">Utility</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-purple-400" id="whimsicalPotionsCount">0</div>
+                        <div class="text-xs text-gray-400">Whimsical</div>
+                    </div>
+                </div>
+
+                <!-- Potions Grid -->
+                <div id="potionsGrid" class="space-y-3">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- ==================== PAGE 5: BOONS LIST ==================== -->
+            <div id="page-boons" class="glass-panel rounded-2xl p-6 mb-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="bg-amber-500/20 text-amber-400 p-2 rounded-lg"><i class="fas fa-gem"></i></span>
+                        รายการ Boons ทั้งหมด
+                    </h2>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <input type="text" id="boonSearch" placeholder="ค้นหา Boon..."
+                            class="input-primary text-sm flex-grow md:w-64" oninput="filterBoons()">
+                        <select id="boonShardFilter" class="input-primary text-sm pr-10" onchange="filterBoons()">
+                            <option value="">ทุกระดับ Shards</option>
+                            <option value="5">5 Shards</option>
+                            <option value="10">10 Shards</option>
+                            <option value="15">15 Shards</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Conditions -->
+                <div class="bg-amber-900/20 border border-amber-600/30 rounded-xl p-4 mb-6">
+                    <h3 class="text-amber-400 font-semibold mb-2 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i> เงื่อนไข
+                    </h3>
+                    <ul class="text-gray-300 space-y-2 list-disc list-inside text-sm">
+                        <li>ตัวละครจะมี Boon ได้แค่ <span class="text-amber-400 font-semibold">1 อันเท่านั้น</span></li>
+                        <li>เมื่อมี Boon Shard เพียงพอที่จะแลก ผู้เล่นต้องลงบันทึกในช่อง <span
+                                class="text-cyan-400 font-mono">#บันทึกartifactและboon</span> โดยระบุว่าเป็น <span
+                                class="text-amber-400 font-semibold">"Obojima Boon"</span></li>
+                    </ul>
+                </div>
+
+                <!-- Shards Legend -->
+                <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> 5
+                        Shards</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> 10
+                        Shards</span>
+                    <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> 15
+                        Shards</span>
+                </div>
+
+                <!-- Stats Summary -->
+                <div id="boonStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-white" id="totalBoonsCount">0</div>
+                        <div class="text-xs text-gray-400">Boons ทั้งหมด</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-green-400" id="boons5Count">0</div>
+                        <div class="text-xs text-gray-400">5 Shards</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-amber-400" id="boons10Count">0</div>
+                        <div class="text-xs text-gray-400">10 Shards</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
+                        <div class="text-2xl font-bold text-red-400" id="boons15Count">0</div>
+                        <div class="text-xs text-gray-400">15 Shards</div>
+                    </div>
+                </div>
+
+                <!-- Boons Grid -->
+                <div id="boonsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8 pb-8">
+                <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
+            </footer>
         </div>
-
-        <!-- ==================== PAGE 3: INGREDIENTS ==================== -->
-        <div id="page-ingredients" class="glass-panel rounded-2xl p-6 mb-8 hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span class="bg-green-500/20 text-green-400 p-2 rounded-lg"><i class="fas fa-leaf"></i></span>
-                    รายการวัตถุดิบทั้งหมด
-                </h2>
-                <div class="flex gap-3 w-full md:w-auto">
-                    <input type="text" id="ingredientSearch" placeholder="ค้นหาวัตถุดิบ..."
-                        class="input-primary text-sm flex-grow md:w-64" oninput="filterIngredients()">
-                    <select id="rarityFilter" class="input-primary text-sm pr-10" onchange="filterIngredients()">
-                        <option value="">ทุก Rarity</option>
-                        <option value="C">Common</option>
-                        <option value="U">Uncommon</option>
-                        <option value="R">Rare</option>
-                        <option value="VR">Very Rare</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Rarity Legend -->
-            <div class="flex flex-wrap gap-4 mb-4 text-sm">
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span>
-                    Common</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span>
-                    Uncommon</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Rare</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Very
-                    Rare</span>
-            </div>
-
-            <!-- Stats Summary -->
-            <div id="ingredientStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-white" id="totalIngredients">0</div>
-                    <div class="text-xs text-gray-400">วัตถุดิบทั้งหมด</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-gray-400" id="commonCount">0</div>
-                    <div class="text-xs text-gray-400">Common</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-green-400" id="uncommonCount">0</div>
-                    <div class="text-xs text-gray-400">Uncommon</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-blue-400" id="rareCount">0</div>
-                    <div class="text-xs text-gray-400">Rare</div>
-                </div>
-            </div>
-
-            <!-- Ingredients Grid -->
-            <div id="ingredientsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                <!-- Will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- ==================== PAGE 4: POTIONS LIST ==================== -->
-        <div id="page-potions" class="glass-panel rounded-2xl p-6 mb-8 hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg"><i
-                            class="fas fa-prescription-bottle"></i></span>
-                    รายการยาทั้งหมด
-                </h2>
-                <div class="flex gap-3 w-full md:w-auto">
-                    <input type="text" id="potionSearch" placeholder="ค้นหายา..."
-                        class="input-primary text-sm flex-grow md:w-64" oninput="filterPotions()">
-                    <select id="potionTypeFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
-                        <option value="">ทุกประเภท</option>
-                        <option value="Combat">Combat</option>
-                        <option value="Utility">Utility</option>
-                        <option value="Whimsical">Whimsical</option>
-                    </select>
-                    <select id="potionRarityFilter" class="input-primary text-sm pr-10" onchange="filterPotions()">
-                        <option value="">ทุก Rarity</option>
-                        <option value="common">Common</option>
-                        <option value="uncommon">Uncommon</option>
-                        <option value="rare">Rare</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Type Legend -->
-            <div class="flex flex-wrap gap-4 mb-4 text-sm">
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span>
-                    Combat</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                    Utility</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span>
-                    Whimsical</span>
-            </div>
-
-            <!-- Stats Summary -->
-            <div id="potionStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-white" id="totalPotionsCount">0</div>
-                    <div class="text-xs text-gray-400">ยาทั้งหมด</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-red-400" id="combatPotionsCount">0</div>
-                    <div class="text-xs text-gray-400">Combat</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-blue-400" id="utilityPotionsCount">0</div>
-                    <div class="text-xs text-gray-400">Utility</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-purple-400" id="whimsicalPotionsCount">0</div>
-                    <div class="text-xs text-gray-400">Whimsical</div>
-                </div>
-            </div>
-
-            <!-- Potions Grid -->
-            <div id="potionsGrid" class="space-y-3">
-                <!-- Will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- ==================== PAGE 5: BOONS LIST ==================== -->
-        <div id="page-boons" class="glass-panel rounded-2xl p-6 mb-8 hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span class="bg-amber-500/20 text-amber-400 p-2 rounded-lg"><i class="fas fa-gem"></i></span>
-                    รายการ Boons ทั้งหมด
-                </h2>
-                <div class="flex gap-3 w-full md:w-auto">
-                    <input type="text" id="boonSearch" placeholder="ค้นหา Boon..."
-                        class="input-primary text-sm flex-grow md:w-64" oninput="filterBoons()">
-                    <select id="boonShardFilter" class="input-primary text-sm pr-10" onchange="filterBoons()">
-                        <option value="">ทุกระดับ Shards</option>
-                        <option value="5">5 Shards</option>
-                        <option value="10">10 Shards</option>
-                        <option value="15">15 Shards</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Conditions -->
-            <div class="bg-amber-900/20 border border-amber-600/30 rounded-xl p-4 mb-6">
-                <h3 class="text-amber-400 font-semibold mb-2 flex items-center gap-2">
-                    <i class="fas fa-exclamation-triangle"></i> เงื่อนไข
-                </h3>
-                <ul class="text-gray-300 space-y-2 list-disc list-inside text-sm">
-                    <li>ตัวละครจะมี Boon ได้แค่ <span class="text-amber-400 font-semibold">1 อันเท่านั้น</span></li>
-                    <li>เมื่อมี Boon Shard เพียงพอที่จะแลก ผู้เล่นต้องลงบันทึกในช่อง <span
-                            class="text-cyan-400 font-mono">#บันทึกartifactและboon</span> โดยระบุว่าเป็น <span
-                            class="text-amber-400 font-semibold">"Obojima Boon"</span></li>
-                </ul>
-            </div>
-
-            <!-- Shards Legend -->
-            <div class="flex flex-wrap gap-4 mb-4 text-sm">
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> 5
-                    Shards</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> 10
-                    Shards</span>
-                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> 15
-                    Shards</span>
-            </div>
-
-            <!-- Stats Summary -->
-            <div id="boonStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-white" id="totalBoonsCount">0</div>
-                    <div class="text-xs text-gray-400">Boons ทั้งหมด</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-green-400" id="boons5Count">0</div>
-                    <div class="text-xs text-gray-400">5 Shards</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-amber-400" id="boons10Count">0</div>
-                    <div class="text-xs text-gray-400">10 Shards</div>
-                </div>
-                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-center">
-                    <div class="text-2xl font-bold text-red-400" id="boons15Count">0</div>
-                    <div class="text-xs text-gray-400">15 Shards</div>
-                </div>
-            </div>
-
-            <!-- Boons Grid -->
-            <div id="boonsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="mt-8 text-center text-xs text-gray-600 border-t border-gray-800 pt-8">
-            <p>&copy; 🏰 The Spire Tracking | Created by aKittyCat🐈. All rights reserved.</p>
-        </footer>
-    </div>
+    </main>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay"
@@ -1094,6 +1231,48 @@
 
     <script src="js/glass_data.js"></script>
     <script src="js/glass_arboretum.js"></script>
+    <script>
+        async function checkSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const emailElem = document.getElementById('userEmail');
+            if (emailElem) emailElem.textContent = session.user.email;
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open sidebar
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close sidebar
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // Execute checkSession on load
+        window.addEventListener('load', () => {
+            checkSession();
+        });
+    </script>
 </body>
 
 </html>
