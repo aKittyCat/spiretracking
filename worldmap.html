@@ -1137,6 +1137,12 @@
             if (item.image) { imgEl.src = item.image; imgEl.classList.remove('hidden'); }
             else { imgEl.classList.add('hidden'); }
             sidebar.classList.add('active');
+
+            if (item.title) {
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('loc', item.title);
+                window.history.replaceState({}, '', newUrl);
+            }
         }
 
         // ==========================================
@@ -1172,7 +1178,17 @@
                 }, 300);
             }
         }
-        function closeSidebar() { sidebar.classList.remove('active'); }
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+
+            // ลบ URL พารามิเตอร์ออกเมื่อปิด Sidebar
+            const newUrl = new URL(window.location);
+            if (newUrl.searchParams.has('loc') || newUrl.searchParams.has('id')) {
+                newUrl.searchParams.delete('loc');
+                newUrl.searchParams.delete('id');
+                window.history.replaceState({}, '', newUrl);
+            }
+        }
         map.on('click', () => closeSidebar());
 
         function showToast(msg) {
