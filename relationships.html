@@ -867,7 +867,7 @@
             const typeInfo = BOND_LABELS[typeKey] || BOND_LABELS['default'];
 
             const badge = document.getElementById('bondTypeBadge');
-            badge.textContent = bondData.bond_type || 'Unknown';
+            badge.textContent = typeInfo.label;
             badge.className = `inline-block px-4 py-1.5 text-xs font-bold rounded-full border tracking-wide uppercase shadow-sm ${typeInfo.style}`;
 
             document.getElementById('bondDescription').textContent = bondData.description || 'ไม่มีคำอธิบายความสัมพันธ์ระบุไว้';
