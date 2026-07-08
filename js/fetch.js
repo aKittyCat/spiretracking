@@ -32,6 +32,18 @@ async function fetchCharacterData(characterId) {
 }
 
 /**
+ * เคลียร์ Cache รูปภาพทั้งหมด
+ */
+function clearAvatarCache() {
+  const keys = Object.keys(localStorage);
+  for (let key of keys) {
+    if (key.startsWith('ddb_avatar_')) {
+      localStorage.removeItem(key);
+    }
+  }
+}
+
+/**
  * ดึง avatarUrl จาก sheet_link ของ D&D Beyond
  * @param {string} sheetLink - URL ของ character sheet
  * @returns {Promise<string|null>} - URL ของรูป avatar หรือ null
@@ -43,20 +55,32 @@ async function fetchAvatarUrl(sheetLink) {
 
     // 1. ตรวจสอบใน Cache (LocalStorage)
     const cacheKey = `ddb_avatar_${charId}`;
-    const cachedUrl = localStorage.getItem(cacheKey);
+    const cachedData = localStorage.getItem(cacheKey);
     
-    // ถ้ามี URL ใน Cache (และไม่ใช่คำว่า null) ให้ใช้จาก Cache ทันที
-    if (cachedUrl && cachedUrl !== 'null') {
-      return cachedUrl;
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        const now = new Date().getTime();
+        // ถ้าเวลาปัจจุบันยังไม่เกิน 24 ชั่วโมง (24 * 60 * 60 * 1000 = 86400000 ms)
+        if (now - parsed.timestamp < 86400000 && parsed.url !== 'null') {
+          return parsed.url;
+        }
+      } catch (e) {
+        // ถ้า parse error ให้ปล่อยผ่านไปดึงใหม่
+      }
     }
 
-    // 2. ถ้าไม่มีใน Cache ให้โหลดจาก API
+    // 2. ถ้าไม่มีใน Cache หรือหมดอายุ ให้โหลดจาก API
     const data = await fetchCharacterData(charId);
     const url = data?.decorations?.avatarUrl || null;
     
-    // 3. บันทึกลง Cache (ถ้าโหลดมาได้สำเร็จ)
+    // 3. บันทึกลง Cache พร้อมระบุเวลา (Timestamp)
     if (url) {
-      localStorage.setItem(cacheKey, url);
+      const cacheObj = {
+        url: url,
+        timestamp: new Date().getTime()
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheObj));
     }
     
     return url;

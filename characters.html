@@ -269,8 +269,8 @@
 
             <div class="mb-6 flex justify-between items-center">
                 <h3 class="text-xl font-semibold text-gray-300">รายการตัวละคร</h3>
-                <button onclick="loadCharacters(currentPage)"
-                    class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1">
+                <button onclick="clearAvatarCache(); loadCharacters(currentPage)"
+                    class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1" title="ล้างแคชรูปภาพและดึงข้อมูลใหม่">
                     🔄 Refresh
                 </button>
             </div>
