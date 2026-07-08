@@ -311,8 +311,8 @@
                         class="fas fa-sitemap text-gray-400"></i> ประเภทสายสัมพันธ์</h3>
                 <div class="flex flex-col gap-2.5 text-xs font-medium">
                     <div class="flex items-center gap-3">
-                        <div class="w-6 h-1 bg-gray-400 rounded-full shadow-[0_0_8px_rgba(156,163,175,0.6)]"></div> <span
-                            class="text-gray-300">คนแปลกหน้า/ไม่รู้จัก</span>
+                        <div class="w-6 h-1 bg-gray-400 rounded-full shadow-[0_0_8px_rgba(156,163,175,0.6)]"></div>
+                        <span class="text-gray-300">คนแปลกหน้า/ไม่รู้จัก</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-6 h-1 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div> <span
@@ -732,6 +732,37 @@
 
             network = new vis.Network(container, data, options);
 
+            // Focus on latest bond when graph finishes stabilizing
+            network.once("stabilizationIterationsDone", function () {
+                if (allBonds && allBonds.length > 0) {
+                    // Try to find the latest bond related to the current user
+                    let userBonds = [];
+                    if (currentUser && allCharacters) {
+                        const userCharIds = allCharacters.filter(c => c.user_id === currentUser.id).map(c => c.id);
+                        userBonds = allBonds.filter(b => userCharIds.includes(b.source_char_id) || userCharIds.includes(b.target_char_id));
+                    }
+
+                    // If no user bonds, just take the globally latest bond (last in array)
+                    const targetBond = userBonds.length > 0 ? userBonds[userBonds.length - 1] : allBonds[allBonds.length - 1];
+
+                    if (targetBond) {
+                        // Zoom to the two nodes in the bond
+                        network.fit({
+                            nodes: [targetBond.source_char_id, targetBond.target_char_id],
+                            animation: {
+                                duration: 1500,
+                                easingFunction: 'easeInOutQuad'
+                            }
+                        });
+
+                        // Select the edge visually
+                        network.setSelection({
+                            edges: [targetBond.id]
+                        });
+                    }
+                }
+            });
+
             network.on("click", function (params) {
                 if (params.edges.length > 0 && params.nodes.length === 0) {
                     const edgeId = params.edges[0];
@@ -791,17 +822,51 @@
         }
 
         // ================= SEARCH =================
+        function showUserCharactersInSearch() {
+            const searchInput = document.getElementById('searchNode');
+            const resultsBox = document.getElementById('searchResults');
+
+            if (!currentUser || !allCharacters) return;
+            const myChars = allCharacters.filter(c => c.user_id === currentUser.id);
+
+            if (myChars.length === 0) {
+                resultsBox.classList.add('hidden');
+                return;
+            }
+
+            resultsBox.innerHTML = '<div class="px-4 py-2 text-xs text-indigo-400 font-semibold bg-gray-900/80 border-b border-gray-700">ตัวละครของคุณ</div>';
+
+            myChars.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'px-4 py-2.5 hover:bg-gray-700 cursor-pointer text-gray-200 text-sm border-b border-gray-700/50 last:border-0 flex items-center gap-3 transition-colors';
+                const node = nodesDataset.get(m.id);
+                const imgSrc = node?.image || 'https://ui-avatars.com/api/?name=User&background=374151&color=fff';
+                div.innerHTML = `<img src="${imgSrc}" class="w-6 h-6 rounded-full border border-gray-600 object-cover"> <span>${m.name}</span>`;
+                div.onclick = () => {
+                    searchInput.value = m.name; resultsBox.classList.add('hidden'); focusOnNode(m.id);
+                };
+                resultsBox.appendChild(div);
+            });
+            resultsBox.classList.remove('hidden');
+        }
+
         function setupSearch() {
             const searchInput = document.getElementById('searchNode');
             const resultsBox = document.getElementById('searchResults');
             let timeout = null;
+
+            searchInput.addEventListener('focus', () => {
+                if (!searchInput.value.trim()) {
+                    showUserCharactersInSearch();
+                }
+            });
 
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(timeout);
                 const query = e.target.value.toLowerCase().trim();
 
                 if (!query) {
-                    resultsBox.classList.add('hidden'); return;
+                    showUserCharactersInSearch(); return;
                 }
 
                 timeout = setTimeout(() => {
@@ -810,7 +875,7 @@
                     if (matches.length > 0) {
                         matches.forEach(m => {
                             const div = document.createElement('div');
-                            div.className = 'px-4 py-3 hover:bg-gray-700 cursor-pointer text-gray-200 text-sm border-b border-gray-700/50 last:border-0 flex items-center gap-3';
+                            div.className = 'px-4 py-3 hover:bg-gray-700 cursor-pointer text-gray-200 text-sm border-b border-gray-700/50 last:border-0 flex items-center gap-3 transition-colors';
                             const node = nodesDataset.get(m.id);
                             const imgSrc = node?.image || 'https://ui-avatars.com/api/?name=User&background=374151&color=fff';
                             div.innerHTML = `<img src="${imgSrc}" class="w-8 h-8 rounded-full border border-gray-600 object-cover"> <span>${m.name}</span>`;
