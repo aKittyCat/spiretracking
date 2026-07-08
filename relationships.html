@@ -374,7 +374,7 @@
                 <div class="flex flex-col gap-2.5 text-xs font-medium">
                     <div class="flex items-center gap-3">
                         <div class="w-6 h-1 bg-gray-400 rounded-full shadow-[0_0_8px_rgba(156,163,175,0.6)]"></div>
-                        <span class="text-gray-300">คนแปลกหน้า/ไม่รู้จัก</span>
+                        <span class="text-gray-300">คนแปลกหน้า</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-6 h-1 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div> <span
@@ -382,7 +382,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-6 h-1 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div> <span
-                            class="text-gray-300">ศัตรู/คู่แข่ง</span>
+                            class="text-gray-300">ศัตรู</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="w-6 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div> <span
@@ -491,9 +491,9 @@
                                 class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">ประเภทความสัมพันธ์</label>
                             <select id="bondTypeSelect" required class="w-full md:w-1/2 input-primary">
                                 <option value="" disabled selected>เลือกประเภทสายสัมพันธ์...</option>
-                                <option value="stranger">คนแปลกหน้า/ไม่รู้จัก</option>
+                                <option value="stranger">คนแปลกหน้า</option>
                                 <option value="ally">พันธมิตร</option>
-                                <option value="rival">ศัตรู/คู่แข่ง</option>
+                                <option value="rival">ศัตรู</option>
                                 <option value="family">ครอบครัว</option>
                                 <option value="mentor">อาจารย์/ศิษย์</option>
                                 <option value="romance">คนสนิท</option>
@@ -588,7 +588,7 @@
         const BOND_LABELS = {
             'stranger': { label: 'คนแปลกหน้า', style: 'bg-gray-500/20 text-gray-400 border-gray-500/50' },
             'ally': { label: 'พันธมิตร', style: 'bg-green-500/20 text-green-400 border-green-500/50' },
-            'rival': { label: 'ศัตรู/คู่แข่ง', style: 'bg-red-500/20 text-red-400 border-red-500/50' },
+            'rival': { label: 'ศัตรู', style: 'bg-red-500/20 text-red-400 border-red-500/50' },
             'family': { label: 'ครอบครัว', style: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
             'mentor': { label: 'อาจารย์/ศิษย์', style: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
             'romance': { label: 'คนสนิท', style: 'bg-pink-500/20 text-pink-400 border-pink-500/50' },
@@ -1182,7 +1182,7 @@
                         </div>
                     </td>
                     <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase border ${styleInfo.style}">${b.bond_type}</span>
+                        <span class="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase border ${styleInfo.style}">${styleInfo.label}</span>
                     </td>
                     <td class="p-4">
                         <div class="flex items-center justify-end gap-3">
