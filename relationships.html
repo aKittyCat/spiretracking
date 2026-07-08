@@ -490,7 +490,7 @@
                             <label
                                 class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">ประเภทความสัมพันธ์</label>
                             <select id="bondTypeSelect" required class="w-full md:w-1/2 input-primary">
-                                <option value="" disabled selected>เลือกประเภทสายสัมพันธ์...</option>
+                                <option value="" disabled selected>เลือกประเภทความสัมพันธ์...</option>
                                 <option value="stranger">คนแปลกหน้า</option>
                                 <option value="ally">พันธมิตร</option>
                                 <option value="rival">ศัตรู</option>
@@ -826,45 +826,10 @@
 
         // ================= GRAPH VISUALIZATION =================
         function focusOnLatestBond() {
-            if (!network || !allBonds || allBonds.length === 0) return;
-
-            let targetBond = null;
-            const latestBondId = localStorage.getItem('latest_bond_id');
-
-            // 1. Try to find the exact bond that was added latest (saved in localStorage)
-            if (latestBondId) {
-                targetBond = allBonds.find(b => b.id === latestBondId);
-            }
-
-            // 2. If not found, fallback to zooming to the user's characters
-            if (!targetBond) {
-                if (currentUser && allCharacters) {
-                    const myChars = allCharacters.filter(c => c.user_id === currentUser.id).map(c => c.id);
-                    if (myChars.length > 0) {
-                        network.fit({
-                            nodes: myChars,
-                            animation: { duration: 1500, easingFunction: 'easeInOutQuad' }
-                        });
-                    }
-                }
-                return;
-            }
-
-            if (targetBond) {
-                // Zoom to the two nodes in the bond
-                network.fit({
-                    nodes: [targetBond.source_char_id, targetBond.target_char_id],
-                    animation: {
-                        duration: 1500,
-                        easingFunction: 'easeInOutQuad'
-                    }
-                });
-
-                // Select the edge visually
-                network.setSelection({
-                    edges: [targetBond.id]
-                });
-            }
+            if (!network) return;
+            network.fit({
+                animation: { duration: 1500, easingFunction: 'easeInOutQuad' }
+            });
         }
 
         function initNetwork() {
