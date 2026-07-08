@@ -40,9 +40,28 @@ async function fetchAvatarUrl(sheetLink) {
   try {
     const charId = extractCharacterId(sheetLink);
     if (!charId) return null;
+
+    // 1. ตรวจสอบใน Cache (LocalStorage)
+    const cacheKey = `ddb_avatar_${charId}`;
+    const cachedUrl = localStorage.getItem(cacheKey);
+    
+    // ถ้ามี URL ใน Cache (และไม่ใช่คำว่า null) ให้ใช้จาก Cache ทันที
+    if (cachedUrl && cachedUrl !== 'null') {
+      return cachedUrl;
+    }
+
+    // 2. ถ้าไม่มีใน Cache ให้โหลดจาก API
     const data = await fetchCharacterData(charId);
-    return data?.decorations?.avatarUrl || null;
-  } catch {
+    const url = data?.decorations?.avatarUrl || null;
+    
+    // 3. บันทึกลง Cache (ถ้าโหลดมาได้สำเร็จ)
+    if (url) {
+      localStorage.setItem(cacheKey, url);
+    }
+    
+    return url;
+  } catch (e) {
+    console.warn("Failed to fetch avatar:", e);
     return null;
   }
 }

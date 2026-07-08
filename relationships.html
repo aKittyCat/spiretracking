@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Spire Tracking - ผังความสัมพันธ์ตัวละคร</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="js/fetch.js"></script>
+
+    <!-- Vis.js Network -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Vis.js Canvas styling */
+        #mynetwork {
+            outline: none;
+        }
+
+        .vis-network:focus {
+            outline: none;
+        }
+
+        /* Tab styling */
+        .main-tab-btn {
+            position: relative;
+            padding: 14px 24px;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .main-tab-btn.active {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+            border-bottom: none;
+        }
+
+        .main-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .main-tab-btn:not(.active) {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid transparent;
+        }
+
+        .main-tab-btn:not(.active):hover {
+            background: rgba(31, 41, 55, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Custom Inputs */
+        .input-primary {
+            background-color: #111825;
+            border: 1px solid #4b5563;
+            color: #f9fafb;
+            border-radius: 8px;
+            padding: 10px 16px;
+            transition: all 0.3s;
+        }
+
+        .input-primary:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+            outline: none;
+        }
+
+        select.input-primary {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-950 text-gray-200 h-screen flex flex-col md:flex-row overflow-hidden selection:bg-purple-500 selection:text-white">
+
+    <!-- Mobile Header -->
+    <div
+        class="md:hidden flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-md z-40 relative shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-gray-800 rounded-lg border border-gray-700">
+                <span class="text-xl">🧙‍♂️</span>
+            </div>
+            <h1 class="text-xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span></h1>
+        </div>
+        <button onclick="toggleSidebar()"
+            class="text-gray-400 hover:text-white p-2 rounded-lg bg-gray-800/50 border border-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"
+        onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shrink-0">
+        <!-- Sidebar Header (Desktop) -->
+        <div class="p-6 border-b border-gray-800 hidden md:flex items-center gap-3">
+            <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                <span class="text-2xl">🧙‍♂️</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">The <span class="gradient-text">Spire</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="p-4 border-b border-gray-800">
+            <div
+                class="flex items-center justify-between gap-3 bg-gray-800/40 p-3 rounded-xl border border-gray-700/50">
+                <div class="flex flex-col min-w-0">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Logged in as</span>
+                    <span id="userEmail" class="text-sm font-medium text-gray-300 truncate">Loading...</span>
+                </div>
+                <button onclick="logout()"
+                    class="bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white p-2 rounded-lg transition-all duration-300 border border-rose-600/20 flex-shrink-0"
+                    title="ออกจากระบบ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
+            <button id="adminBtn" style="display:none" onclick="location.href='dashboard.html'"
+                class="w-full text-left glass-panel hover:bg-purple-600/20 text-purple-300 hover:text-purple-200 border-purple-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">⚙️</span> Admin Dashboard
+            </button>
+            <button id="homebrewBtn" style="display:none" onclick="location.href='homebrew.html'"
+                class="w-full text-left glass-panel hover:bg-sky-600/20 text-sky-300 hover:text-sky-200 border-sky-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📘</span> Homebrew (DM)
+            </button>
+
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'characters.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧙‍♂️</span> ตัวละครของฉัน
+            </button>
+            <button onclick="window.open('https://spireform.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📝</span> ฟอร์มสร้างตัวละคร
+            </button>
+            <button onclick="window.open('https://spiremk.vercel.app/', '_blank')"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🏪</span> ร้านค้า
+            </button>
+            <button onclick="window.location.href = 'glass_arboretum.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🧪</span> Glass Arboretum
+            </button>
+            <button onclick="window.location.href = 'piety_deities.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">⛪</span> Piety
+            </button>
+            <button onclick="window.location.href = 'reawaken.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🔥</span> Reawaken
+            </button>
+            <button onclick="window.location.href = 'worldmap.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🌏</span> Worldmap
+            </button>
+            <button onclick="window.location.href = 'relationships.html'"
+                class="w-full text-left glass-panel border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">🕸️</span> ผังความสัมพันธ์ตัวละคร
+            </button>
+            <button onclick="window.location.href = 'lore.html'"
+                class="w-full text-left glass-panel hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl shadow transition-all duration-200 text-sm font-medium flex items-center gap-3 hover:translate-x-1">
+                <span class="text-lg">📰</span> Lore
+            </button>
+
+            <div class="h-[1px] w-full bg-gray-800/50 my-3"></div>
+
+            <button onclick="window.location.href = 'eventan.html'"
+                class="w-full text-left glass-panel hover:bg-amber-600/20 text-amber-300 hover:text-amber-200 border-amber-500/30 px-4 py-3 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold flex items-center gap-3 group">
+                <span class="text-lg">🎉</span> Anniversary Event
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full min-h-0 flex flex-col relative min-w-0 z-0">
+        <!-- Main Area Header -->
+        <div
+            class="p-4 sm:p-6 border-b border-gray-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-950/80 backdrop-blur-md z-10 shrink-0 pb-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                    <span class="text-2xl">🕸️</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                        ผังความสัมพันธ์ <span class="gradient-text">ตัวละคร</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Character Relationship Web</p>
+                </div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="w-full md:w-auto relative" id="searchContainer">
+                <input type="text" id="searchNode" placeholder="ค้นหาชื่อในผัง..." autocomplete="off"
+                    class="w-full md:w-64 bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-2.5 pl-11 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors shadow-inner placeholder-gray-500">
+                <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+                <div id="searchResults"
+                    class="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 hidden max-h-48 overflow-y-auto">
+                    <!-- Search results will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Tab Navigation -->
+        <div
+            class="flex gap-1 mb-0 overflow-x-auto pb-0 shrink-0 px-4 sm:px-6 bg-gray-950/80 backdrop-blur-md z-10 border-b border-gray-800/50 pt-2">
+            <button id="mainTabGraph" onclick="switchMainPage('graph')"
+                class="main-tab-btn active text-indigo-400 flex items-center gap-2 shadow-lg">
+                <i class="fas fa-project-diagram"></i>
+                <span class="hidden sm:inline">ผังความสัมพันธ์</span>
+            </button>
+            <button id="mainTabManage" onclick="switchMainPage('manage')"
+                class="main-tab-btn text-gray-400 hover:text-gray-200 flex items-center gap-2">
+                <i class="fas fa-edit"></i>
+                <span class="hidden sm:inline">จัดการสายสัมพันธ์</span>
+            </button>
+        </div>
+
+        <!-- ================= PAGE 1: GRAPH ================= -->
+        <div id="page-graph" class="flex-1 w-full relative flex flex-col overflow-hidden">
+            <!-- Graph Container -->
+            <div id="mynetwork" class="flex-1 w-full relative"
+                style="background: radial-gradient(circle at center, #1f2937 0%, #030712 100%);"></div>
+
+            <!-- Legend Panel (Bottom Left) -->
+            <div
+                class="absolute bottom-6 left-6 bg-gray-900/90 backdrop-blur-md border border-gray-700 p-4 rounded-xl shadow-2xl z-20 w-48 transition-all hover:bg-gray-900 hover:border-gray-600 hidden md:block">
+                <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2"><i
+                        class="fas fa-sitemap text-gray-400"></i> ประเภทสายสัมพันธ์</h3>
+                <div class="flex flex-col gap-2.5 text-xs font-medium">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-1 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div> <span
+                            class="text-gray-300">พันธมิตร</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-1 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div> <span
+                            class="text-gray-300">ศัตรู/คู่แข่ง</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div> <span
+                            class="text-gray-300">ครอบครัว</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-1 bg-yellow-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.6)]"></div>
+                        <span class="text-gray-300">อาจารย์/ศิษย์</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-1 bg-pink-500 rounded-full shadow-[0_0_8px_rgba(236,72,153,0.6)]"></div> <span
+                            class="text-gray-300">คนสนิท</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Sidebar (Right) -->
+            <div id="detailSidebar"
+                class="absolute top-0 right-0 h-full w-80 sm:w-96 bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 transform translate-x-full transition-transform duration-300 ease-in-out z-30 shadow-2xl flex flex-col">
+                <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950/50">
+                    <h3 class="font-bold text-white text-lg"><i
+                            class="fas fa-link mr-2 text-indigo-400"></i>รายละเอียดสายสัมพันธ์</h3>
+                    <button onclick="closeDetailSidebar()"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-6 flex-1 overflow-y-auto">
+                    <div
+                        class="flex items-center justify-between mb-8 bg-gray-800/30 p-4 rounded-2xl border border-gray-700/50">
+                        <div class="text-center flex-1 flex flex-col items-center">
+                            <div
+                                class="w-16 h-16 rounded-full border-2 border-gray-600 overflow-hidden mb-2 shadow-lg bg-gray-800 flex items-center justify-center text-gray-500">
+                                <img id="sourceImage" src="" class="w-full h-full object-cover hidden">
+                                <i id="sourceIcon" class="fas fa-user text-2xl hidden"></i>
+                            </div>
+                            <div id="sourceName" class="font-semibold text-sm text-gray-200">Name 1</div>
+                        </div>
+                        <div class="px-3 text-gray-500 text-lg flex flex-col items-center">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="text-center flex-1 flex flex-col items-center">
+                            <div
+                                class="w-16 h-16 rounded-full border-2 border-gray-600 overflow-hidden mb-2 shadow-lg bg-gray-800 flex items-center justify-center text-gray-500">
+                                <img id="targetImage" src="" class="w-full h-full object-cover hidden">
+                                <i id="targetIcon" class="fas fa-user text-2xl hidden"></i>
+                            </div>
+                            <div id="targetName" class="font-semibold text-sm text-gray-200">Name 2</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <span id="bondTypeBadge"
+                            class="inline-block px-4 py-1.5 text-xs font-bold rounded-full border tracking-wide uppercase shadow-sm">
+                            Bond Type
+                        </span>
+                    </div>
+
+                    <div class="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 shadow-inner">
+                        <h4
+                            class="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold flex items-center gap-2">
+                            <i class="fas fa-quote-left text-gray-500"></i> คำอธิบายความสัมพันธ์
+                        </h4>
+                        <p id="bondDescription"
+                            class="text-sm text-gray-300 leading-relaxed min-h-[60px] whitespace-pre-wrap">Description
+                            goes here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2: MANAGE ================= -->
+        <div id="page-manage" class="flex-1 w-full p-4 sm:p-6 overflow-y-auto hidden bg-[#0a0f18]">
+            <div class="max-w-4xl mx-auto space-y-6">
+
+                <!-- Add Bond Form -->
+                <div class="glass-panel rounded-2xl p-6 border-t-4 border-t-indigo-500/50 shadow-xl">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span class="bg-indigo-500/20 text-indigo-400 p-2 rounded-lg text-sm"><i
+                                class="fas fa-plus"></i></span>
+                        เพิ่ม / แก้ไข สายสัมพันธ์
+                    </h3>
+
+                    <form id="bondForm" onsubmit="saveBond(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label
+                                    class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">ตัวละครต้นทาง
+                                    (คุณ)</label>
+                                <select id="sourceSelect" required class="w-full input-primary">
+                                    <option value="" disabled selected>โหลดข้อมูล...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">ตัวละครปลายทาง
+                                    (เป้าหมาย)</label>
+                                <select id="targetSelect" required class="w-full input-primary">
+                                    <option value="" disabled selected>โหลดข้อมูล...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">ประเภทความสัมพันธ์</label>
+                            <select id="bondTypeSelect" required class="w-full md:w-1/2 input-primary">
+                                <option value="" disabled selected>เลือกประเภทสายสัมพันธ์...</option>
+                                <option value="ally">พันธมิตร</option>
+                                <option value="rival">ศัตรู/คู่แข่ง</option>
+                                <option value="family">ครอบครัว</option>
+                                <option value="mentor">อาจารย์/ศิษย์</option>
+                                <option value="romance">คนสนิท</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">คำอธิบายความสัมพันธ์</label>
+                            <textarea id="bondDescInput" rows="3" class="w-full input-primary"
+                                placeholder="อธิบายเรื่องราวหรือความสัมพันธ์ระหว่างทั้งสองคน..."></textarea>
+                        </div>
+
+                        <div class="flex justify-end pt-2 border-t border-gray-800">
+                            <button type="submit" id="saveBondBtn"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+                                <i class="fas fa-save"></i> บันทึกสายสัมพันธ์
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Bonds List -->
+                <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span class="bg-gray-800 text-gray-400 p-2 rounded-lg text-sm"><i
+                                class="fas fa-list"></i></span>
+                        สายสัมพันธ์ที่เกี่ยวข้องกับคุณ
+                    </h3>
+
+                    <div class="mb-5">
+                        <label
+                            class="block text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">กรองตามตัวละคร</label>
+                        <select id="filterBondSelect" onchange="renderBondsList()"
+                            class="w-full md:w-1/2 input-primary">
+                            <option value="all">ดูทั้งหมด</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900/50">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr
+                                    class="bg-gray-800/80 border-b border-gray-700 text-xs text-gray-400 uppercase tracking-wider">
+                                    <th class="p-4 font-semibold w-1/3">ต้นทาง</th>
+                                    <th class="p-4 font-semibold w-1/6 text-center">ประเภท</th>
+                                    <th class="p-4 font-semibold w-1/3 text-right">ปลายทาง</th>
+                                    <th class="p-4 font-semibold text-center w-16">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bondsTableBody" class="text-sm text-gray-300 divide-y divide-gray-800/50">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingOverlay"
+            class="absolute inset-0 bg-gray-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-gray-700 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-indigo-400 font-medium animate-pulse" id="loadingText">กำลังร่ายเวทมนตร์อัญเชิญข้อมูล...</p>
+        </div>
+
+    </main>
+
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+
+        let network = null;
+        let nodesDataset = new vis.DataSet();
+        let edgesDataset = new vis.DataSet();
+
+        let allCharacters = [];
+        let allBonds = [];
+
+        // Bond Colors mapping
+        const BOND_COLORS = {
+            'ally': { color: '#22c55e', highlight: '#4ade80' },    // Green
+            'rival': { color: '#ef4444', highlight: '#f87171' },   // Red
+            'family': { color: '#3b82f6', highlight: '#60a5fa' },  // Blue
+            'mentor': { color: '#eab308', highlight: '#facc15' },  // Gold/Yellow
+            'romance': { color: '#ec4899', highlight: '#f472b6' }  // Pink
+        };
+
+        const BOND_LABELS = {
+            'ally': { label: 'Ally', style: 'bg-green-500/20 text-green-400 border-green-500/50' },
+            'rival': { label: 'Rival', style: 'bg-red-500/20 text-red-400 border-red-500/50' },
+            'family': { label: 'Family', style: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+            'mentor': { label: 'Mentor', style: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
+            'romance': { label: 'Romance', style: 'bg-pink-500/20 text-pink-400 border-pink-500/50' },
+            'default': { label: 'Unknown', style: 'bg-gray-500/20 text-gray-400 border-gray-500/50' }
+        };
+
+        async function init() {
+            if (typeof supabase === 'undefined') {
+                alert('❌ ไม่พบ Supabase Client! กรุณาตรวจสอบไฟล์ supabase-config.js');
+                return;
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
+
+            // Optional checks for admin/DM to show respective buttons
+            if (typeof window.checkAdmin === 'function') window.checkAdmin();
+            else checkAdminLocal();
+
+            if (typeof window.checkDM === 'function') window.checkDM();
+            else checkDMLocal();
+
+            await loadGraphData();
+            setupSearch();
+        }
+
+        async function checkAdminLocal() {
+            const { data } = await supabase.rpc('is_admin');
+            if (data) {
+                document.getElementById('adminBtn').style.display = 'inline-flex';
+                isAdmin = true;
+            }
+        }
+
+        async function checkDMLocal() {
+            const { data } = await supabase.rpc('is_dm');
+            if (data) document.getElementById('homebrewBtn').style.display = 'inline-flex';
+        }
+
+        // ================= UI TABS =================
+        function switchMainPage(page) {
+            const tabGraph = document.getElementById('mainTabGraph');
+            const tabManage = document.getElementById('mainTabManage');
+            const pageGraph = document.getElementById('page-graph');
+            const pageManage = document.getElementById('page-manage');
+            const searchContainer = document.getElementById('searchContainer');
+
+            if (page === 'graph') {
+                tabGraph.classList.add('active', 'text-indigo-400');
+                tabGraph.classList.remove('text-gray-400');
+                tabManage.classList.remove('active', 'text-indigo-400');
+                tabManage.classList.add('text-gray-400');
+
+                pageGraph.classList.remove('hidden');
+                pageManage.classList.add('hidden');
+                searchContainer.classList.remove('hidden');
+
+                // Refresh network layout if needed when unhidden
+                if (network) network.fit();
+            } else {
+                tabManage.classList.add('active', 'text-indigo-400');
+                tabManage.classList.remove('text-gray-400');
+                tabGraph.classList.remove('active', 'text-indigo-400');
+                tabGraph.classList.add('text-gray-400');
+
+                pageManage.classList.remove('hidden');
+                pageGraph.classList.add('hidden');
+                searchContainer.classList.add('hidden'); // Hide search on manage page
+
+                populateManageDropdowns();
+                renderBondsList();
+            }
+        }
+
+        // ================= DATA FETCHING =================
+        async function loadGraphData() {
+            try {
+                // Fetch Characters
+                const { data: chars, error: charError } = await supabase
+                    .from('characters')
+                    .select('*');
+
+                if (charError) throw charError;
+                allCharacters = chars || [];
+
+                // Transform to Vis.js nodes
+                const visNodes = [];
+                const defaultImage = 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=128';
+
+                for (const c of allCharacters) {
+                    let nodeImg = c.avatar_url || defaultImage;
+                    visNodes.push({
+                        id: c.id,
+                        label: c.name,
+                        shape: 'circularImage',
+                        image: nodeImg,
+                        font: { color: '#e5e7eb', strokeWidth: 2, strokeColor: '#111827' },
+                        borderWidth: 3,
+                        color: { border: '#4b5563', background: '#1f2937' },
+                        size: 30,
+                        shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 0, y: 5 },
+                        _data: c
+                    });
+                }
+                nodesDataset.add(visNodes);
+
+                // Async fetch real avatars
+                for (const c of allCharacters) {
+                    if (c.sheet_link && typeof fetchAvatarUrl === 'function') {
+                        fetchAvatarUrl(c.sheet_link).then(url => {
+                            if (url) {
+                                nodesDataset.update({
+                                    id: c.id,
+                                    image: url,
+                                    color: { border: '#8b5cf6' }
+                                });
+                                c.avatar_url = url; // Update character object for the table
+
+                                // Re-render table if on manage tab
+                                if (!document.getElementById('page-manage').classList.contains('hidden')) {
+                                    renderBondsList();
+                                }
+                            }
+                        }).catch(e => console.log('Avatar fetch error for ' + c.name, e));
+                    }
+                }
+
+                // Fetch Bonds
+                const { data: bonds, error: bondError } = await supabase
+                    .from('character_bonds')
+                    .select('*');
+
+                if (bondError) {
+                    console.warn('Could not fetch character_bonds. Ensure the table exists.', bondError);
+                } else if (bonds) {
+                    allBonds = bonds;
+                    const visEdges = bonds.map(b => {
+                        const styleInfo = BOND_COLORS[b.bond_type?.toLowerCase()] || { color: '#6b7280', highlight: '#9ca3af' };
+                        return {
+                            id: b.id,
+                            from: b.source_char_id,
+                            to: b.target_char_id,
+                            color: {
+                                color: styleInfo.color,
+                                highlight: styleInfo.highlight,
+                                hover: styleInfo.highlight,
+                                opacity: 0.8
+                            },
+                            width: 3,
+                            hoverWidth: 2,
+                            selectionWidth: 3,
+                            smooth: { type: 'continuous' },
+                            _data: b
+                        };
+                    });
+                    edgesDataset.add(visEdges);
+                }
+
+                if (!network) {
+                    initNetwork();
+                } else {
+                    network.setData({ nodes: nodesDataset, edges: edgesDataset });
+                }
+
+                // Also populate forms if already on manage tab
+                if (!document.getElementById('page-manage').classList.contains('hidden')) {
+                    populateManageDropdowns();
+                    renderBondsList();
+                }
+
+                // Hide loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (err) {
+                console.error("Error loading graph data:", err);
+                document.getElementById('loadingText').textContent = "เกิดข้อผิดพลาดในการดึงข้อมูล: " + (err.message || err);
+                document.getElementById('loadingText').classList.replace('text-indigo-400', 'text-red-400');
+            }
+        }
+
+        // ================= GRAPH VISUALIZATION =================
+        function initNetwork() {
+            const container = document.getElementById('mynetwork');
+            const data = { nodes: nodesDataset, edges: edgesDataset };
+
+            const options = {
+                nodes: { borderWidthSelected: 4 },
+                edges: { arrows: { to: { enabled: true, scaleFactor: 0.8, type: 'arrow' } } },
+                physics: {
+                    forceAtlas2Based: { gravitationalConstant: -100, centralGravity: 0.005, springLength: 200, springConstant: 0.05 },
+                    maxVelocity: 50,
+                    solver: 'forceAtlas2Based',
+                    timestep: 0.35,
+                    stabilization: { iterations: 150 }
+                },
+                interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true }
+            };
+
+            network = new vis.Network(container, data, options);
+
+            network.on("click", function (params) {
+                if (params.edges.length > 0 && params.nodes.length === 0) {
+                    const edgeId = params.edges[0];
+                    const edge = edgesDataset.get(edgeId);
+                    if (edge && edge._data) openDetailSidebar(edge._data);
+                } else {
+                    closeDetailSidebar();
+                }
+            });
+
+            network.on("hoverEdge", () => network.canvas.body.container.style.cursor = 'pointer');
+            network.on("blurEdge", () => network.canvas.body.container.style.cursor = 'default');
+            network.on("hoverNode", () => network.canvas.body.container.style.cursor = 'pointer');
+            network.on("blurNode", () => network.canvas.body.container.style.cursor = 'default');
+        }
+
+        function openDetailSidebar(bondData) {
+            const sidebar = document.getElementById('detailSidebar');
+            const sourceNode = nodesDataset.get(bondData.source_char_id);
+            const targetNode = nodesDataset.get(bondData.target_char_id);
+
+            if (!sourceNode || !targetNode) return;
+
+            document.getElementById('sourceName').textContent = sourceNode.label;
+            document.getElementById('targetName').textContent = targetNode.label;
+
+            const srcImg = document.getElementById('sourceImage');
+            const srcIcon = document.getElementById('sourceIcon');
+            if (sourceNode.image && !sourceNode.image.includes('ui-avatars')) {
+                srcImg.src = sourceNode.image; srcImg.classList.remove('hidden'); srcIcon.classList.add('hidden');
+            } else {
+                srcImg.classList.add('hidden'); srcIcon.classList.remove('hidden');
+            }
+
+            const tgtImg = document.getElementById('targetImage');
+            const tgtIcon = document.getElementById('targetIcon');
+            if (targetNode.image && !targetNode.image.includes('ui-avatars')) {
+                tgtImg.src = targetNode.image; tgtImg.classList.remove('hidden'); tgtIcon.classList.add('hidden');
+            } else {
+                tgtImg.classList.add('hidden'); tgtIcon.classList.remove('hidden');
+            }
+
+            const typeKey = (bondData.bond_type || '').toLowerCase();
+            const typeInfo = BOND_LABELS[typeKey] || BOND_LABELS['default'];
+
+            const badge = document.getElementById('bondTypeBadge');
+            badge.textContent = bondData.bond_type || 'Unknown';
+            badge.className = `inline-block px-4 py-1.5 text-xs font-bold rounded-full border tracking-wide uppercase shadow-sm ${typeInfo.style}`;
+
+            document.getElementById('bondDescription').textContent = bondData.description || 'ไม่มีคำอธิบายความสัมพันธ์ระบุไว้';
+            sidebar.classList.remove('translate-x-full');
+        }
+
+        function closeDetailSidebar() {
+            document.getElementById('detailSidebar').classList.add('translate-x-full');
+            if (network) network.unselectAll();
+        }
+
+        // ================= SEARCH =================
+        function setupSearch() {
+            const searchInput = document.getElementById('searchNode');
+            const resultsBox = document.getElementById('searchResults');
+            let timeout = null;
+
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                const query = e.target.value.toLowerCase().trim();
+
+                if (!query) {
+                    resultsBox.classList.add('hidden'); return;
+                }
+
+                timeout = setTimeout(() => {
+                    const matches = allCharacters.filter(c => c.name.toLowerCase().includes(query)).slice(0, 5);
+                    resultsBox.innerHTML = '';
+                    if (matches.length > 0) {
+                        matches.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-3 hover:bg-gray-700 cursor-pointer text-gray-200 text-sm border-b border-gray-700/50 last:border-0 flex items-center gap-3';
+                            const node = nodesDataset.get(m.id);
+                            const imgSrc = node?.image || 'https://ui-avatars.com/api/?name=User&background=374151&color=fff';
+                            div.innerHTML = `<img src="${imgSrc}" class="w-8 h-8 rounded-full border border-gray-600 object-cover"> <span>${m.name}</span>`;
+                            div.onclick = () => {
+                                searchInput.value = m.name; resultsBox.classList.add('hidden'); focusOnNode(m.id);
+                            };
+                            resultsBox.appendChild(div);
+                        });
+                        resultsBox.classList.remove('hidden');
+                    } else {
+                        resultsBox.innerHTML = '<div class="px-4 py-3 text-gray-500 text-sm text-center">ไม่พบตัวละคร</div>';
+                        resultsBox.classList.remove('hidden');
+                    }
+                }, 300);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                    resultsBox.classList.add('hidden');
+                }
+            });
+        }
+
+        function focusOnNode(nodeId) {
+            if (!network) return;
+            network.focus(nodeId, { scale: 1.2, animation: { duration: 1000, easingFunction: "easeInOutQuad" } });
+            network.selectNodes([nodeId]);
+            closeDetailSidebar();
+        }
+
+        // ================= MANAGE BONDS =================
+        function populateManageDropdowns() {
+            const sourceSelect = document.getElementById('sourceSelect');
+            const targetSelect = document.getElementById('targetSelect');
+            const filterSelect = document.getElementById('filterBondSelect');
+
+            const currentSource = sourceSelect.value;
+            const currentTarget = targetSelect.value;
+            const currentFilter = filterSelect.value;
+
+            sourceSelect.innerHTML = '<option value="" disabled selected>เลือกตัวละครของคุณ...</option>';
+            targetSelect.innerHTML = '<option value="" disabled selected>เลือกตัวละครเป้าหมาย...</option>';
+            filterSelect.innerHTML = '<option value="all">ดูทั้งหมด</option>';
+
+            const sortedChars = [...allCharacters].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedChars.forEach(c => {
+                // Target: All characters
+                const tOpt = document.createElement('option');
+                tOpt.value = c.id; tOpt.textContent = c.name;
+                targetSelect.appendChild(tOpt);
+
+                // Filter: All characters
+                const fOpt = document.createElement('option');
+                fOpt.value = c.id; fOpt.textContent = c.name;
+                filterSelect.appendChild(fOpt);
+
+                // Source: Owned or Admin
+                if (isAdmin || c.user_id === currentUser.id) {
+                    const sOpt = document.createElement('option');
+                    sOpt.value = c.id;
+                    sOpt.textContent = c.name + (isAdmin && c.user_id !== currentUser.id ? ' (ผู้เล่นอื่น)' : '');
+                    sourceSelect.appendChild(sOpt);
+                }
+            });
+
+            if (currentSource) sourceSelect.value = currentSource;
+            if (currentTarget) targetSelect.value = currentTarget;
+            if (currentFilter) filterSelect.value = currentFilter;
+        }
+
+        async function saveBond(e) {
+            e.preventDefault();
+            const sourceId = document.getElementById('sourceSelect').value;
+            const targetId = document.getElementById('targetSelect').value;
+            const bondType = document.getElementById('bondTypeSelect').value;
+            const desc = document.getElementById('bondDescInput').value.trim();
+
+            if (!sourceId || !targetId || !bondType) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return;
+            }
+            if (sourceId === targetId) {
+                alert('ไม่สามารถผูกสายสัมพันธ์กับตัวเองได้'); return;
+            }
+
+            const btn = document.getElementById('saveBondBtn');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            btn.disabled = true;
+
+            const { error } = await supabase.from('character_bonds').insert({
+                source_char_id: sourceId,
+                target_char_id: targetId,
+                bond_type: bondType,
+                description: desc
+            });
+
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+
+            if (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+                return;
+            }
+
+            // Success
+            document.getElementById('bondForm').reset();
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').textContent = "กำลังอัปเดตสายสัมพันธ์...";
+
+            nodesDataset.clear();
+            edgesDataset.clear();
+            await loadGraphData();
+        }
+
+        function renderBondsList() {
+            const tbody = document.getElementById('bondsTableBody');
+            const filterId = document.getElementById('filterBondSelect').value;
+
+            tbody.innerHTML = '';
+
+            // Filter by selected character (if any)
+            let filteredBonds = allBonds;
+            if (filterId !== 'all') {
+                filteredBonds = allBonds.filter(b => b.source_char_id == filterId || b.target_char_id == filterId);
+            }
+
+            // Filter by ownership (unless Admin)
+            if (!isAdmin) {
+                const userCharIds = allCharacters.filter(c => c.user_id === currentUser.id).map(c => c.id);
+                // Only show bonds where the user owns either the source OR the target
+                filteredBonds = filteredBonds.filter(b => userCharIds.includes(b.source_char_id) || userCharIds.includes(b.target_char_id));
+            }
+
+            if (filteredBonds.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">ไม่พบสายสัมพันธ์ที่เกี่ยวข้อง</td></tr>';
+                return;
+            }
+
+            filteredBonds.forEach(b => {
+                const srcNode = allCharacters.find(c => c.id == b.source_char_id);
+                const tgtNode = allCharacters.find(c => c.id == b.target_char_id);
+
+                if (!srcNode || !tgtNode) return;
+
+                // Ensure default avatars if none
+                const srcImg = srcNode.avatar_url || 'https://ui-avatars.com/api/?name=User&background=374151&color=fff';
+                const tgtImg = tgtNode.avatar_url || 'https://ui-avatars.com/api/?name=User&background=374151&color=fff';
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-800/80 transition-colors group';
+
+                const styleInfo = BOND_LABELS[b.bond_type?.toLowerCase()] || BOND_LABELS['default'];
+
+                // Allow delete if Admin OR if user owns the Source
+                const canDelete = isAdmin || srcNode.user_id === currentUser.id;
+
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${srcImg}" class="w-8 h-8 rounded-full object-cover border border-gray-600">
+                            <span class="font-medium text-gray-200">${srcNode.name}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase border ${styleInfo.style}">${b.bond_type}</span>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center justify-end gap-3">
+                            <span class="font-medium text-gray-200">${tgtNode.name}</span>
+                            <img src="${tgtImg}" class="w-8 h-8 rounded-full object-cover border border-gray-600">
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        ${canDelete ? `
+                        <button onclick="deleteBond('${b.id}')" class="text-gray-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100" title="ลบสายสัมพันธ์">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        ` : `
+                        <span class="text-gray-600 text-xs" title="เฉพาะเจ้าของหรือ Admin จึงลบได้"><i class="fas fa-lock"></i></span>
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteBond(bondId) {
+            if (!confirm('ยืนยันการลบสายสัมพันธ์นี้?')) return;
+
+            const { error } = await supabase.from('character_bonds').delete().eq('id', bondId);
+            if (error) {
+                alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+                return;
+            }
+
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').textContent = "กำลังอัปเดตสายสัมพันธ์...";
+            nodesDataset.clear();
+            edgesDataset.clear();
+            await loadGraphData();
+        }
+
+        // ================= APP LEVEL =================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
