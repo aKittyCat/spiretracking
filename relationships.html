@@ -16,7 +16,7 @@
     <!-- Vis.js Network -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Tom Select (For Searchable Dropdowns) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
@@ -68,9 +68,11 @@
             border-radius: 0.5rem !important;
             padding: 0.625rem 1rem !important;
         }
-        .ts-control > input {
+
+        .ts-control>input {
             color: #f3f4f6 !important;
         }
+
         .ts-dropdown {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
@@ -78,13 +80,17 @@
             border-radius: 0.5rem !important;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
         }
+
         .ts-dropdown .option {
             padding: 0.5rem 1rem !important;
         }
-        .ts-dropdown .option:hover, .ts-dropdown .option.active {
+
+        .ts-dropdown .option:hover,
+        .ts-dropdown .option.active {
             background-color: #374151 !important;
             color: #f3f4f6 !important;
         }
+
         .ts-wrapper.single .ts-control:after {
             border-color: #9ca3af transparent transparent transparent !important;
         }
@@ -623,7 +629,10 @@
                 searchContainer.classList.remove('hidden');
 
                 // Refresh network layout if needed when unhidden
-                if (network) network.fit();
+                if (network) {
+                    network.redraw();
+                    setTimeout(() => focusOnLatestBond(), 50);
+                }
             } else {
                 tabManage.classList.add('active', 'text-indigo-400');
                 tabManage.classList.remove('text-gray-400');
@@ -746,6 +755,48 @@
         }
 
         // ================= GRAPH VISUALIZATION =================
+        function focusOnLatestBond() {
+            if (!network || !allBonds || allBonds.length === 0) return;
+
+            let targetBond = null;
+            const latestBondId = localStorage.getItem('latest_bond_id');
+
+            // 1. Try to find the exact bond that was added latest (saved in localStorage)
+            if (latestBondId) {
+                targetBond = allBonds.find(b => b.id === latestBondId);
+            }
+
+            // 2. If not found, fallback to zooming to the user's characters
+            if (!targetBond) {
+                if (currentUser && allCharacters) {
+                    const myChars = allCharacters.filter(c => c.user_id === currentUser.id).map(c => c.id);
+                    if (myChars.length > 0) {
+                        network.fit({
+                            nodes: myChars,
+                            animation: { duration: 1500, easingFunction: 'easeInOutQuad' }
+                        });
+                    }
+                }
+                return;
+            }
+
+            if (targetBond) {
+                // Zoom to the two nodes in the bond
+                network.fit({
+                    nodes: [targetBond.source_char_id, targetBond.target_char_id],
+                    animation: {
+                        duration: 1500,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+
+                // Select the edge visually
+                network.setSelection({
+                    edges: [targetBond.id]
+                });
+            }
+        }
+
         function initNetwork() {
             const container = document.getElementById('mynetwork');
             const data = { nodes: nodesDataset, edges: edgesDataset };
@@ -767,33 +818,7 @@
 
             // Focus on latest bond when graph finishes stabilizing
             network.once("stabilizationIterationsDone", function () {
-                if (allBonds && allBonds.length > 0) {
-                    // Try to find the latest bond related to the current user
-                    let userBonds = [];
-                    if (currentUser && allCharacters) {
-                        const userCharIds = allCharacters.filter(c => c.user_id === currentUser.id).map(c => c.id);
-                        userBonds = allBonds.filter(b => userCharIds.includes(b.source_char_id) || userCharIds.includes(b.target_char_id));
-                    }
-
-                    // If no user bonds, just take the globally latest bond (last in array)
-                    const targetBond = userBonds.length > 0 ? userBonds[userBonds.length - 1] : allBonds[allBonds.length - 1];
-
-                    if (targetBond) {
-                        // Zoom to the two nodes in the bond
-                        network.fit({
-                            nodes: [targetBond.source_char_id, targetBond.target_char_id],
-                            animation: {
-                                duration: 1500,
-                                easingFunction: 'easeInOutQuad'
-                            }
-                        });
-
-                        // Select the edge visually
-                        network.setSelection({
-                            edges: [targetBond.id]
-                        });
-                    }
-                }
+                focusOnLatestBond();
             });
 
             network.on("click", function (params) {
@@ -948,7 +973,7 @@
             const currentSource = sourceSelect.value;
             const currentTarget = targetSelect.value;
             const currentFilter = filterSelect.value;
-            
+
             // Destroy TomSelect instances before modifying DOM
             if (window.sourceTomSelect) { window.sourceTomSelect.destroy(); window.sourceTomSelect = null; }
             if (window.targetTomSelect) { window.targetTomSelect.destroy(); window.targetTomSelect = null; }
@@ -982,7 +1007,7 @@
             if (currentSource) sourceSelect.value = currentSource;
             if (currentTarget) targetSelect.value = currentTarget;
             if (currentFilter) filterSelect.value = currentFilter;
-            
+
             // Re-initialize TomSelect
             window.sourceTomSelect = new TomSelect('#sourceSelect', { create: false, selectOnTab: true });
             window.targetTomSelect = new TomSelect('#targetSelect', { create: false, selectOnTab: true });
@@ -1007,12 +1032,12 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
             btn.disabled = true;
 
-            const { error } = await supabase.from('character_bonds').insert({
+            const { data, error } = await supabase.from('character_bonds').insert({
                 source_char_id: sourceId,
                 target_char_id: targetId,
                 bond_type: bondType,
                 description: desc
-            });
+            }).select();
 
             btn.innerHTML = oldText;
             btn.disabled = false;
@@ -1020,6 +1045,11 @@
             if (error) {
                 alert('เกิดข้อผิดพลาด: ' + error.message);
                 return;
+            }
+
+            // Save the new bond ID to LocalStorage so we know what to zoom to
+            if (data && data.length > 0) {
+                localStorage.setItem('latest_bond_id', data[0].id);
             }
 
             // Success
