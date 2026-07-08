@@ -476,9 +476,10 @@
                             <thead>
                                 <tr
                                     class="bg-gray-800/80 border-b border-gray-700 text-xs text-gray-400 uppercase tracking-wider">
-                                    <th class="p-4 font-semibold w-1/3">ต้นทาง</th>
+                                    <th class="p-4 font-semibold w-1/5">ต้นทาง</th>
                                     <th class="p-4 font-semibold w-1/6 text-center">ประเภท</th>
-                                    <th class="p-4 font-semibold w-1/3 text-right">ปลายทาง</th>
+                                    <th class="p-4 font-semibold w-1/5 text-right">ปลายทาง</th>
+                                    <th class="p-4 font-semibold w-1/3">คำอธิบาย</th>
                                     <th class="p-4 font-semibold text-center w-16">จัดการ</th>
                                 </tr>
                             </thead>
@@ -982,6 +983,9 @@
                             <span class="font-medium text-gray-200">${tgtNode.name}</span>
                             <img src="${tgtImg}" class="w-8 h-8 rounded-full object-cover border border-gray-600">
                         </div>
+                    </td>
+                    <td class="p-4 text-xs text-gray-400 whitespace-normal max-w-xs break-words">
+                        ${b.description || '-'}
                     </td>
                     <td class="p-4 text-center">
                         ${canDelete ? `
