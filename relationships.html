@@ -343,6 +343,29 @@
                 </div>
             </div>
 
+            <!-- Filter Box (Top Right) -->
+            <div class="absolute top-6 right-6 z-30" id="filter-panel">
+                <button id="filter-toggle" onclick="toggleFilterDropdown()"
+                    class="flex items-center gap-2 px-3 py-2 bg-black/55 backdrop-blur-md border border-white/10 rounded-xl text-gray-300 text-xs font-semibold hover:border-white/30 hover:text-white transition-all shadow-lg whitespace-nowrap">
+                    <i class="fas fa-layer-group"></i> ตัวกรอง
+                </button>
+                <div id="filter-dropdown"
+                    class="hidden absolute right-0 mt-2 bg-[#0a0a0e]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-3 min-w-[180px] shadow-2xl">
+                    <label
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none">
+                        <input type="radio" name="graphFilter" value="with_bonds" checked onchange="applyGraphFilter()"
+                            class="accent-indigo-400 w-3.5 h-3.5">
+                        👊 ความสัมพันธ์
+                    </label>
+                    <label
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none mt-1">
+                        <input type="radio" name="graphFilter" value="all" onchange="applyGraphFilter()"
+                            class="accent-indigo-400 w-3.5 h-3.5">
+                        🫂 ตัวละครทั้งหมด
+                    </label>
+                </div>
+            </div>
+
             <!-- Legend Panel (Bottom Left) -->
             <div
                 class="absolute bottom-6 left-6 bg-gray-900/90 backdrop-blur-md border border-gray-700 p-4 rounded-xl shadow-2xl z-20 w-48 transition-all hover:bg-gray-900 hover:border-gray-600 hidden md:block">
@@ -649,6 +672,86 @@
         }
 
         // ================= DATA FETCHING =================
+        function toggleFilterDropdown() {
+            document.getElementById('filter-dropdown').classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', e => {
+            const panel = document.getElementById('filter-panel');
+            if (panel && !panel.contains(e.target)) {
+                const dropdown = document.getElementById('filter-dropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        function buildGraphDatasets() {
+            const filterInput = document.querySelector('input[name="graphFilter"]:checked');
+            const filter = filterInput ? filterInput.value : 'with_bonds';
+
+            nodesDataset.clear();
+            edgesDataset.clear();
+
+            let activeCharIds = new Set();
+            if (filter === 'with_bonds' && allBonds) {
+                allBonds.forEach(b => {
+                    activeCharIds.add(b.source_char_id);
+                    activeCharIds.add(b.target_char_id);
+                });
+            }
+
+            const defaultImage = 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=128';
+            const nodesToAdd = [];
+
+            for (const c of allCharacters) {
+                // If filter is with_bonds, skip characters that have no bonds
+                if (filter === 'with_bonds' && !activeCharIds.has(c.id)) continue;
+
+                let nodeImg = c.avatar_url || defaultImage;
+                nodesToAdd.push({
+                    id: c.id,
+                    label: c.name,
+                    shape: 'circularImage',
+                    image: nodeImg,
+                    font: { color: '#e5e7eb', strokeWidth: 2, strokeColor: '#111827' },
+                    borderWidth: 3,
+                    color: { border: '#4b5563', background: '#1f2937' },
+                    size: 30,
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 0, y: 5 },
+                    _data: c
+                });
+            }
+            nodesDataset.add(nodesToAdd);
+
+            if (allBonds) {
+                const edgesToAdd = allBonds.map(b => {
+                    const styleInfo = BOND_COLORS[b.bond_type?.toLowerCase()] || { color: '#6b7280', highlight: '#9ca3af' };
+                    return {
+                        id: b.id,
+                        from: b.source_char_id,
+                        to: b.target_char_id,
+                        color: {
+                            color: styleInfo.color,
+                            highlight: styleInfo.highlight,
+                            hover: styleInfo.highlight,
+                            opacity: 0.8
+                        },
+                        width: 3,
+                        hoverWidth: 2,
+                        selectionWidth: 3,
+                        smooth: { type: 'continuous' },
+                        _data: b
+                    };
+                });
+                edgesDataset.add(edgesToAdd);
+            }
+        }
+
+        function applyGraphFilter() {
+            if (!allCharacters || !allBonds) return;
+            buildGraphDatasets();
+        }
+
         async function loadGraphData() {
             try {
                 // Fetch Characters
@@ -659,38 +762,36 @@
                 if (charError) throw charError;
                 allCharacters = chars || [];
 
-                // Transform to Vis.js nodes
-                const visNodes = [];
-                const defaultImage = 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=128';
+                // Fetch Bonds
+                const { data: bonds, error: bondError } = await supabase
+                    .from('character_bonds')
+                    .select('*');
 
-                for (const c of allCharacters) {
-                    let nodeImg = c.avatar_url || defaultImage;
-                    visNodes.push({
-                        id: c.id,
-                        label: c.name,
-                        shape: 'circularImage',
-                        image: nodeImg,
-                        font: { color: '#e5e7eb', strokeWidth: 2, strokeColor: '#111827' },
-                        borderWidth: 3,
-                        color: { border: '#4b5563', background: '#1f2937' },
-                        size: 30,
-                        shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 0, y: 5 },
-                        _data: c
-                    });
+                if (bondError) {
+                    console.warn('Could not fetch character_bonds. Ensure the table exists.', bondError);
+                    allBonds = [];
+                } else {
+                    allBonds = bonds || [];
                 }
-                nodesDataset.add(visNodes);
+
+                // Build nodes and edges based on filter
+                buildGraphDatasets();
 
                 // Async fetch real avatars
                 for (const c of allCharacters) {
                     if (c.sheet_link && typeof fetchAvatarUrl === 'function') {
                         fetchAvatarUrl(c.sheet_link).then(url => {
                             if (url) {
-                                nodesDataset.update({
-                                    id: c.id,
-                                    image: url,
-                                    color: { border: '#8b5cf6' }
-                                });
-                                c.avatar_url = url; // Update character object for the table
+                                c.avatar_url = url; // Save to object so buildGraphDatasets can use it later
+
+                                // Update node only if it is currently in the dataset
+                                if (nodesDataset.get(c.id)) {
+                                    nodesDataset.update({
+                                        id: c.id,
+                                        image: url,
+                                        color: { border: '#8b5cf6' }
+                                    });
+                                }
 
                                 // Re-render table if on manage tab
                                 if (!document.getElementById('page-manage').classList.contains('hidden')) {
@@ -699,37 +800,6 @@
                             }
                         }).catch(e => console.log('Avatar fetch error for ' + c.name, e));
                     }
-                }
-
-                // Fetch Bonds
-                const { data: bonds, error: bondError } = await supabase
-                    .from('character_bonds')
-                    .select('*');
-
-                if (bondError) {
-                    console.warn('Could not fetch character_bonds. Ensure the table exists.', bondError);
-                } else if (bonds) {
-                    allBonds = bonds;
-                    const visEdges = bonds.map(b => {
-                        const styleInfo = BOND_COLORS[b.bond_type?.toLowerCase()] || { color: '#6b7280', highlight: '#9ca3af' };
-                        return {
-                            id: b.id,
-                            from: b.source_char_id,
-                            to: b.target_char_id,
-                            color: {
-                                color: styleInfo.color,
-                                highlight: styleInfo.highlight,
-                                hover: styleInfo.highlight,
-                                opacity: 0.8
-                            },
-                            width: 3,
-                            hoverWidth: 2,
-                            selectionWidth: 3,
-                            smooth: { type: 'continuous' },
-                            _data: b
-                        };
-                    });
-                    edgesDataset.add(visEdges);
                 }
 
                 if (!network) {
