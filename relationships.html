@@ -354,13 +354,13 @@
                     <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold px-2 mb-2">แสดงผัง</p>
                     <label
                         class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none mt-1">
-                        <input type="radio" name="graphFilter" value="my_chars" onchange="applyGraphFilter()"
+                        <input type="radio" name="graphFilter" value="my_chars" checked onchange="applyGraphFilter()"
                             class="accent-indigo-400 w-3.5 h-3.5">
                         👤 ตัวละครของฉัน
                     </label>
                     <label
                         class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none">
-                        <input type="radio" name="graphFilter" value="with_bonds" checked onchange="applyGraphFilter()"
+                        <input type="radio" name="graphFilter" value="with_bonds" onchange="applyGraphFilter()"
                             class="accent-indigo-400 w-3.5 h-3.5">
                         👥 ความสัมพันธ์ทั้งหมด
                     </label>
@@ -688,7 +688,7 @@
 
         function buildGraphDatasets() {
             const filterInput = document.querySelector('input[name="graphFilter"]:checked');
-            const filter = filterInput ? filterInput.value : 'with_bonds';
+            const filter = filterInput ? filterInput.value : 'my_chars';
 
             nodesDataset.clear();
             edgesDataset.clear();
