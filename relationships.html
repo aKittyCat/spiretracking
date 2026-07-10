@@ -350,18 +350,19 @@
                     <i class="fas fa-layer-group"></i> ตัวกรอง
                 </button>
                 <div id="filter-dropdown"
-                    class="hidden absolute right-0 mt-2 bg-[#0a0a0e]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-3 min-w-[180px] shadow-2xl">
+                    class="hidden absolute right-0 mt-2 bg-[#0a0a0e]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-3 min-w-[200px] shadow-2xl">
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold px-2 mb-2">แสดงผัง</p>
+                    <label
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none mt-1">
+                        <input type="radio" name="graphFilter" value="my_chars" onchange="applyGraphFilter()"
+                            class="accent-indigo-400 w-3.5 h-3.5">
+                        👤 ตัวละครของฉัน
+                    </label>
                     <label
                         class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none">
                         <input type="radio" name="graphFilter" value="with_bonds" checked onchange="applyGraphFilter()"
                             class="accent-indigo-400 w-3.5 h-3.5">
-                        👊 ความสัมพันธ์
-                    </label>
-                    <label
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-gray-300 cursor-pointer hover:bg-white/5 transition-colors select-none mt-1">
-                        <input type="radio" name="graphFilter" value="all" onchange="applyGraphFilter()"
-                            class="accent-indigo-400 w-3.5 h-3.5">
-                        🫂 ตัวละครทั้งหมด
+                        👥 ความสัมพันธ์ทั้งหมด
                     </label>
                 </div>
             </div>
@@ -692,21 +693,41 @@
             nodesDataset.clear();
             edgesDataset.clear();
 
-            let activeCharIds = new Set();
-            if (filter === 'with_bonds' && allBonds) {
-                allBonds.forEach(b => {
-                    activeCharIds.add(b.source_char_id);
-                    activeCharIds.add(b.target_char_id);
-                });
+            // Build the set of visible character IDs based on filter
+            let visibleCharIds = new Set();
+
+            if (filter === 'with_bonds') {
+                // Show all characters that have at least one bond (source or target)
+                if (allBonds) {
+                    allBonds.forEach(b => {
+                        visibleCharIds.add(b.source_char_id);
+                        visibleCharIds.add(b.target_char_id);
+                    });
+                }
+            } else if (filter === 'my_chars') {
+                // Show only current user's characters AND anyone they have bonds with
+                const myCharIds = new Set(
+                    allCharacters.filter(c => c.user_id === currentUser?.id).map(c => c.id)
+                );
+                // Start with own characters
+                myCharIds.forEach(id => visibleCharIds.add(id));
+                // Add bond targets/sources related to my chars
+                if (allBonds) {
+                    allBonds.forEach(b => {
+                        if (myCharIds.has(b.source_char_id)) visibleCharIds.add(b.target_char_id);
+                        if (myCharIds.has(b.target_char_id)) visibleCharIds.add(b.source_char_id);
+                    });
+                }
             }
 
             const defaultImage = 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=128';
+            const isMyChar = (c) => c.user_id === currentUser?.id;
             const nodesToAdd = [];
 
             for (const c of allCharacters) {
-                // If filter is with_bonds, skip characters that have no bonds
-                if (filter === 'with_bonds' && !activeCharIds.has(c.id)) continue;
+                if (!visibleCharIds.has(c.id)) continue;
 
+                const owned = isMyChar(c);
                 let nodeImg = c.avatar_url || defaultImage;
                 nodesToAdd.push({
                     id: c.id,
@@ -714,19 +735,26 @@
                     shape: 'circularImage',
                     image: nodeImg,
                     font: { color: '#e5e7eb', strokeWidth: 2, strokeColor: '#111827' },
-                    borderWidth: 3,
-                    color: { border: '#4b5563', background: '#1f2937' },
-                    size: 30,
-                    shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 0, y: 5 },
+                    borderWidth: owned ? 4 : 3,
+                    color: {
+                        border: owned ? '#818cf8' : '#4b5563',
+                        background: '#1f2937',
+                        highlight: { border: owned ? '#a5b4fc' : '#9ca3af', background: '#1f2937' }
+                    },
+                    size: owned ? 36 : 28,
+                    shadow: { enabled: true, color: owned ? 'rgba(129,140,248,0.4)' : 'rgba(0,0,0,0.4)', size: 12, x: 0, y: 4 },
                     _data: c
                 });
             }
             nodesDataset.add(nodesToAdd);
 
             if (allBonds) {
-                const edgesToAdd = allBonds.map(b => {
+                const edgesToAdd = [];
+                allBonds.forEach(b => {
+                    // Only draw edges where both endpoints are visible
+                    if (!visibleCharIds.has(b.source_char_id) || !visibleCharIds.has(b.target_char_id)) return;
                     const styleInfo = BOND_COLORS[b.bond_type?.toLowerCase()] || { color: '#6b7280', highlight: '#9ca3af' };
-                    return {
+                    edgesToAdd.push({
                         id: b.id,
                         from: b.source_char_id,
                         to: b.target_char_id,
@@ -741,7 +769,7 @@
                         selectionWidth: 3,
                         smooth: { type: 'continuous' },
                         _data: b
-                    };
+                    });
                 });
                 edgesDataset.add(edgesToAdd);
             }
@@ -837,14 +865,21 @@
             const data = { nodes: nodesDataset, edges: edgesDataset };
 
             const options = {
-                nodes: { borderWidthSelected: 4 },
+                nodes: { borderWidthSelected: 5 },
                 edges: { arrows: { to: { enabled: true, scaleFactor: 0.8, type: 'arrow' } } },
                 physics: {
-                    forceAtlas2Based: { gravitationalConstant: -100, centralGravity: 0.005, springLength: 200, springConstant: 0.05 },
-                    maxVelocity: 50,
-                    solver: 'forceAtlas2Based',
-                    timestep: 0.35,
-                    stabilization: { iterations: 150 }
+                    barnesHut: {
+                        gravitationalConstant: -8000,
+                        centralGravity: 0.3,
+                        springLength: 180,
+                        springConstant: 0.04,
+                        damping: 0.12,
+                        avoidOverlap: 0.8
+                    },
+                    maxVelocity: 40,
+                    solver: 'barnesHut',
+                    timestep: 0.4,
+                    stabilization: { iterations: 200, updateInterval: 25 }
                 },
                 interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true }
             };
