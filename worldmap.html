@@ -621,7 +621,7 @@
         // ==========================================
         // 2. Map & UI Setup
         // ==========================================
-        const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 3, zoomControl: false });
+        const map = L.map('map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 3, zoomControl: false, attributionControl: false });
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         const bounds = [[0, 0], [1500, 2000]];
