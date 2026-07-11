@@ -270,7 +270,8 @@
             <div class="mb-6 flex justify-between items-center">
                 <h3 class="text-xl font-semibold text-gray-300">รายการตัวละคร</h3>
                 <button onclick="clearAvatarCache(); loadCharacters(currentPage)"
-                    class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1" title="ล้างแคชรูปภาพและดึงข้อมูลใหม่">
+                    class="text-xs text-gray-500 hover:text-white transition flex items-center gap-1"
+                    title="ล้างแคชรูปภาพและดึงข้อมูลใหม่">
                     🔄 Refresh
                 </button>
             </div>
@@ -385,6 +386,26 @@
                 list.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>`;
                 return;
             }
+
+            // Fetch alignment & pets
+            const charIds = (data || []).map(c => c.id);
+            let alignmentMap = {};
+            if (charIds.length > 0) {
+                const { data: charDetails } = await supabase
+                    .from('characters')
+                    .select('id, alignment, pets')
+                    .in('id', charIds);
+                if (charDetails) {
+                    charDetails.forEach(d => { alignmentMap[d.id] = d; });
+                }
+            }
+            // Merge alignment & pets into RPC results
+            (data || []).forEach(c => {
+                if (alignmentMap[c.id]) {
+                    c.alignment = alignmentMap[c.id].alignment;
+                    c.pets = alignmentMap[c.id].pets;
+                }
+            });
 
             // Sort: Name A-Z
             data.sort((a, b) => a.name.localeCompare(b.name));
