@@ -1503,7 +1503,6 @@
                 mc.appendChild(rc);
             }
 
-            // ป้องกัน Leaflet ดัก event ของ panel (สำคัญมาก: ทำให้ slider drag ได้)
             const wrapper = document.getElementById('atmo-panel-wrapper');
             if (wrapper) {
                 L.DomEvent.disableClickPropagation(wrapper);
@@ -1511,7 +1510,7 @@
             }
             const slider = document.getElementById('time-slider');
             if (slider) {
-                slider.addEventListener('mousedown',  e => e.stopPropagation());
+                slider.addEventListener('mousedown', e => e.stopPropagation());
                 slider.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
             }
         }
@@ -1655,13 +1654,13 @@
 
             // brightness ของแผนที่ตามเวลา (0=มืดสนิท, 1=กลางวัน)
             let brightness, r, g, b, a;
-            if (t < 5)       { brightness = 0.12; r=10;  g=15;  b=55;  a=0.55; }  // กลางคืน
-            else if (t < 7)  { const p=(t-5)/2;   brightness = 0.12+p*0.78; r=200; g=110; b=60;  a=0.30-p*0.25; }  // รุ่งเช้า
-            else if (t < 9)  { const p=(t-7)/2;   brightness = 0.90+p*0.10;  r=255; g=200; b=130; a=0.08; }  // เช้า
-            else if (t < 17) { brightness = 1.0;  r=255; g=255; b=255; a=0.0; }   // กลางวัน
-            else if (t < 19) { const p=(t-17)/2;  brightness = 1.0-p*0.25;  r=255; g=160; b=80;  a=p*0.12; }  // เย็น
-            else if (t < 21) { const p=(t-19)/2;  brightness = 0.75-p*0.55; r=100; g=30;  b=70;  a=0.12+p*0.35; }  // หัวค่ำ
-            else             { brightness = 0.12; r=10;  g=15;  b=55;  a=0.55; }  // กลางคืน
+            if (t < 5) { brightness = 0.12; r = 10; g = 15; b = 55; a = 0.55; }  // กลางคืน
+            else if (t < 7) { const p = (t - 5) / 2; brightness = 0.12 + p * 0.78; r = 200; g = 110; b = 60; a = 0.30 - p * 0.25; }  // รุ่งเช้า
+            else if (t < 9) { const p = (t - 7) / 2; brightness = 0.90 + p * 0.10; r = 255; g = 200; b = 130; a = 0.08; }  // เช้า
+            else if (t < 17) { brightness = 1.0; r = 255; g = 255; b = 255; a = 0.0; }   // กลางวัน
+            else if (t < 19) { const p = (t - 17) / 2; brightness = 1.0 - p * 0.25; r = 255; g = 160; b = 80; a = p * 0.12; }  // เย็น
+            else if (t < 21) { const p = (t - 19) / 2; brightness = 0.75 - p * 0.55; r = 100; g = 30; b = 70; a = 0.12 + p * 0.35; }  // หัวค่ำ
+            else { brightness = 0.12; r = 10; g = 15; b = 55; a = 0.55; }  // กลางคืน
 
             // season filter (ใช้ภาษา CSS filter สำหรับ map image pane)
             let baseFilter = `brightness(${brightness.toFixed(3)})`;

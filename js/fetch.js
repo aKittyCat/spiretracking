@@ -13,7 +13,7 @@ function extractCharacterId(url) {
 
 /**
  * ดึงข้อมูลตัวละครจาก D&D Beyond API
- * - Production (Vercel): ใช้ /api/ddb-proxy (serverless function ของเราเอง)
+ * - Production (Vercel): ใช้ /api/ddb-proxy
  * - Localhost: ใช้ corsproxy.io เป็น fallback
  * @param {string} characterId - ID ของตัวละคร
  * @returns {Promise<object|null>} - ข้อมูลตัวละคร หรือ null ถ้าล้มเหลว
@@ -61,8 +61,8 @@ async function fetchAvatarUrl(sheetLink) {
       try {
         const parsed = JSON.parse(cachedData);
         const now = new Date().getTime();
-        // ถ้าเวลาปัจจุบันยังไม่เกิน 24 ชั่วโมง (24 * 60 * 60 * 1000 = 86400000 ms)
-        if (now - parsed.timestamp < 86400000 && parsed.url !== 'null') {
+        // ถ้าเวลาปัจจุบันยังไม่เกิน 7 วัน (7 * 24 * 60 * 60 * 1000 = 604800000 ms)
+        if (now - parsed.timestamp < 604800000 && parsed.url !== 'null') {
           return parsed.url;
         }
       } catch (e) {
