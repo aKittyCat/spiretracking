@@ -734,30 +734,28 @@
                 // Build nodes and edges based on filter
                 buildGraphDatasets();
 
-                // Async fetch real avatars
-                for (const c of allCharacters) {
-                    if (c.sheet_link && typeof fetchAvatarUrl === 'function') {
-                        fetchAvatarUrl(c.sheet_link).then(url => {
-                            if (url) {
-                                c.avatar_url = url; // Save to object so buildGraphDatasets can use it later
-
-                                // Update node only if it is currently in the dataset
-                                if (nodesDataset.get(c.id)) {
-                                    nodesDataset.update({
-                                        id: c.id,
-                                        image: url,
-                                        color: { border: '#8b5cf6' }
-                                    });
-                                }
-
-                                // Re-render table if on manage tab
-                                if (!document.getElementById('page-manage').classList.contains('hidden')) {
-                                    renderBondsList();
-                                }
+                // Async fetch avatars — throttled to 3 concurrent to avoid request bursts
+                const charsWithLinks = allCharacters.filter(c => c.sheet_link && typeof fetchAvatarUrl === 'function');
+                const CONCURRENCY = 3;
+                let idx = 0;
+                async function fetchNext() {
+                    if (idx >= charsWithLinks.length) return;
+                    const c = charsWithLinks[idx++];
+                    try {
+                        const url = await fetchAvatarUrl(c.sheet_link);
+                        if (url) {
+                            c.avatar_url = url;
+                            if (nodesDataset.get(c.id)) {
+                                nodesDataset.update({ id: c.id, image: url, color: { border: '#8b5cf6' } });
                             }
-                        }).catch(e => console.log('Avatar fetch error for ' + c.name, e));
+                        }
+                    } catch (e) {
+                        console.log('Avatar fetch error for ' + c.name, e);
                     }
+                    fetchNext(); // chain next in slot
                 }
+                // Start N slots in parallel
+                for (let i = 0; i < Math.min(CONCURRENCY, charsWithLinks.length); i++) fetchNext();
 
                 if (!network) {
                     initNetwork();
@@ -813,7 +811,11 @@
 
             network = new vis.Network(container, data, options);
 
-            network.once('stabilizationIterationsDone', fitGraph);
+            network.once('stabilizationIterationsDone', () => {
+                // Disable physics after layout is done — stops the simulation loop
+                network.setOptions({ physics: false });
+                fitGraph();
+            });
 
             network.on("click", function (params) {
                 if (params.edges.length > 0 && params.nodes.length === 0) {
@@ -959,7 +961,12 @@
         }
 
         // ================= MANAGE BONDS =================
-        function populateManageDropdowns() {
+        let _dropdownsPopulated = false;
+        function populateManageDropdowns(forceRebuild = false) {
+            // Skip if already populated and data hasn't changed
+            if (_dropdownsPopulated && !forceRebuild) return;
+            _dropdownsPopulated = true;
+
             const sourceSelect = document.getElementById('sourceSelect');
             const targetSelect = document.getElementById('targetSelect');
             const filterSelect = document.getElementById('filterBondSelect');
@@ -1046,6 +1053,7 @@
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').textContent = "กำลังอัปเดตความสัมพันธ์...";
 
+            _dropdownsPopulated = false; // force rebuild after new bond
             nodesDataset.clear();
             edgesDataset.clear();
             await loadGraphData();
@@ -1137,6 +1145,7 @@
 
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').textContent = "กำลังอัปเดตความสัมพันธ์...";
+            _dropdownsPopulated = false; // force dropdown rebuild after delete
             nodesDataset.clear();
             edgesDataset.clear();
             await loadGraphData();
