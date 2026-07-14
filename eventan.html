@@ -757,10 +757,9 @@
                 const userMap = {};
                 if (usersRes.data) usersRes.data.forEach(u => userMap[u.id] = u.email);
 
-                // Build per-user data
                 const usersMap = {};
 
-                // Player sessions: group by user_id through characters
+                // Player sessions
                 sessions.forEach(s => {
                     const char = chars.find(c => c.id === s.character_id);
                     if (!char) return;
@@ -773,20 +772,21 @@
                     usersMap[uid].chars[char.id].playerSessions += evtSess;
                 });
 
-                // DM sessions: group by user_id through characters
+                // DM sessions
                 dmLogs.forEach(d => {
                     const char = chars.find(c => c.id === d.character_id);
                     if (!char) return;
                     const uid = char.user_id;
                     if (!usersMap[uid]) usersMap[uid] = { playerSessions: 0, dmSessions: 0, chars: {} };
-                    const evtSess = countEventSessions(Number(d.hours) || 0);
+                    let storedHours = Number(d.hours) || 0;
+                    if (d.double_reward) storedHours /= 2;
+                    const actualHours = storedHours / 1.5;
+                    const evtSess = countEventSessions(actualHours);
                     usersMap[uid].dmSessions += evtSess;
-                    // Track per character
                     if (!usersMap[uid].chars[char.id]) usersMap[uid].chars[char.id] = { name: char.name, cls: char.class, race: char.race, playerSessions: 0, dmSessions: 0 };
                     usersMap[uid].chars[char.id].dmSessions += evtSess;
                 });
 
-                // Render for current user
                 const myData = usersMap[currentUser.id] || { playerSessions: 0, dmSessions: 0, chars: {} };
                 const myPlayerPts = calcPlayerPoints(myData.playerSessions);
                 const myDMPts = calcDMPoints(myData.dmSessions);
@@ -795,10 +795,8 @@
                 document.getElementById('total-dm-sessions').textContent = myData.dmSessions;
                 document.getElementById('total-points').textContent = myPlayerPts + myDMPts;
 
-                // Character breakdown
                 renderCharBreakdown(myData, currentUser.id, chars);
 
-                // Admin table — per character
                 if (isAdmin) {
                     document.getElementById('admin-section').style.display = 'block';
                     allPlayersData = [];
