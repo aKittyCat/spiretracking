@@ -133,7 +133,7 @@ function initNpcMobileGrid() {
 
         // Portrait canvas — draw first frame
         const canvas = document.createElement('canvas');
-        canvas.width  = npc.pFrameW;
+        canvas.width = npc.pFrameW;
         canvas.height = npc.pFrameH;
         card.appendChild(canvas);
 
@@ -168,7 +168,7 @@ function openNpcModal(npc) {
 
     // Draw first frame of portrait only
     const pCanvas = document.getElementById('npc-portrait-canvas');
-    pCanvas.width  = npc.pFrameW;
+    pCanvas.width = npc.pFrameW;
     pCanvas.height = npc.pFrameH;
     // Let CSS control display size — don't override with inline style
 
@@ -215,17 +215,44 @@ function switchPage(page) {
     document.getElementById('page-title').innerText = titles[page] || '';
 
     if (page === 'npc') {
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        if (isMobile) {
-            stopNpcLoop();
-            setTimeout(initNpcMobileGrid, 50);
-        } else {
-            setTimeout(() => { initNpcWalkers(); startNpcLoop(); }, 50);
-        }
+        setTimeout(() => setNpcView(currentNpcView), 50);
     } else {
         stopNpcLoop();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── NPC View Toggle ───────────────────────────────────
+let currentNpcView = 'grid'; // Default to grid
+
+function setNpcView(mode) {
+    currentNpcView = mode;
+    const btnGrid = document.getElementById('btn-npc-grid');
+    const btnWalker = document.getElementById('btn-npc-walker');
+    const gridView = document.getElementById('npc-mobile-grid');
+    const walkerView = document.getElementById('npc-scene');
+
+    if (!btnGrid || !walkerView) return;
+
+    if (mode === 'grid') {
+        gridView.style.display = 'grid';
+        walkerView.style.display = 'none';
+
+        btnGrid.className = 'px-4 py-2 border border-[#c5a059] text-[#c5a059] rounded-full font-bold transition bg-[#c5a059]/10 text-sm';
+        btnWalker.className = 'px-4 py-2 border border-gray-600 text-gray-400 rounded-full font-bold transition hover:border-[#c5a059] hover:text-[#c5a059] text-sm';
+
+        stopNpcLoop();
+        initNpcMobileGrid();
+    } else {
+        gridView.style.display = 'none';
+        walkerView.style.display = 'block';
+
+        btnWalker.className = 'px-4 py-2 border border-[#c5a059] text-[#c5a059] rounded-full font-bold transition bg-[#c5a059]/10 text-sm';
+        btnGrid.className = 'px-4 py-2 border border-gray-600 text-gray-400 rounded-full font-bold transition hover:border-[#c5a059] hover:text-[#c5a059] text-sm';
+
+        initNpcWalkers();
+        startNpcLoop();
+    }
 }
 
 // ── Spire Sub-page Switcher ───────────────────────────
