@@ -5,8 +5,8 @@
 // ── NPC Walker State ──────────────────────────────────
 const walkers = [];
 let npcAnimFrame = 0;
-let npcAnimTick   = 0;
-let npcLoopId     = null;
+let npcAnimTick = 0;
+let npcLoopId = null;
 
 // ── NPC Walker: Init ──────────────────────────────────
 function initNpcWalkers() {
@@ -17,11 +17,11 @@ function initNpcWalkers() {
 
     NPC_DATA.forEach((npc, i) => {
         const canvas = document.createElement('canvas');
-        canvas.width  = npc.frameW;
+        canvas.width = npc.frameW;
         canvas.height = npc.frameH;
         canvas.style.cssText = `
             image-rendering: pixelated;
-            width:  ${npc.frameW  * 2.5}px;
+            width:  ${npc.frameW * 2.5}px;
             height: ${npc.frameH * 2.5}px;
             position: absolute;
             bottom: 0;
@@ -64,8 +64,8 @@ function initNpcWalkers() {
         img.src = npc.sprite;
 
         const startX = 80 + i * 220;
-        const dir    = (i % 2 === 0) ? 1 : -1;   // 1 = right, -1 = left
-        const speed  = 0.6 + Math.random() * 0.4;
+        const dir = (i % 2 === 0) ? 1 : -1;   // 1 = right, -1 = left
+        const speed = 0.6 + Math.random() * 0.4;
 
         walkers.push({ npc, canvas, img, wrapper, label, x: startX, dir, speed });
     });
@@ -82,11 +82,11 @@ function drawWalkers() {
         w.x += w.dir * w.speed;
         const maxX = w.npc.frameW * 2.5;
         if (w.x > sceneW - maxX) { w.x = sceneW - maxX; w.dir = -1; }
-        if (w.x < 0)             { w.x = 0;             w.dir =  1; }
+        if (w.x < 0) { w.x = 0; w.dir = 1; }
 
-        w.wrapper.style.left      = w.x + 'px';
-        w.label.style.left        = '50%';
-        w.label.style.transform   = 'translateX(-50%)';
+        w.wrapper.style.left = w.x + 'px';
+        w.label.style.left = '50%';
+        w.label.style.transform = 'translateX(-50%)';
 
         const ctx = w.canvas.getContext('2d');
         ctx.clearRect(0, 0, w.npc.frameW, w.npc.frameH);
@@ -119,24 +119,58 @@ function stopNpcLoop() {
     if (npcLoopId) { cancelAnimationFrame(npcLoopId); npcLoopId = null; }
 }
 
+// ── NPC Mobile Grid ───────────────────────────────────
+function initNpcMobileGrid() {
+    const grid = document.getElementById('npc-mobile-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    NPC_DATA.forEach(npc => {
+        // Card wrapper
+        const card = document.createElement('div');
+        card.className = 'npc-card';
+        card.addEventListener('click', () => openNpcModal(npc));
+
+        // Portrait canvas — draw first frame
+        const canvas = document.createElement('canvas');
+        canvas.width  = npc.pFrameW;
+        canvas.height = npc.pFrameH;
+        card.appendChild(canvas);
+
+        const img = new Image();
+        img.onload = () => {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, npc.pFrameW, npc.pFrameH, 0, 0, npc.pFrameW, npc.pFrameH);
+        };
+        img.src = npc.portrait;
+
+        // Name label
+        const nameEl = document.createElement('div');
+        nameEl.className = 'npc-card-name';
+        nameEl.textContent = npc.name.split(',')[0];
+        card.appendChild(nameEl);
+
+        grid.appendChild(card);
+    });
+}
+
 // ── NPC Modal ─────────────────────────────────────────
 function openNpcModal(npc) {
-    document.getElementById('npc-modal-name').textContent  = npc.name;
-    document.getElementById('npc-modal-race').textContent  = npc.race;
-    document.getElementById('npc-modal-desc').textContent  = npc.desc;
-    document.getElementById('npc-modal-bg').textContent    = npc.bg;
-    document.getElementById('npc-modal-role').textContent  = npc.role;
-    document.getElementById('npc-modal-char').textContent  = npc.char;
+    document.getElementById('npc-modal-name').textContent = npc.name;
+    document.getElementById('npc-modal-race').textContent = npc.race;
+    document.getElementById('npc-modal-desc').textContent = npc.desc;
+    document.getElementById('npc-modal-bg').textContent = npc.bg;
+    document.getElementById('npc-modal-role').textContent = npc.role;
+    document.getElementById('npc-modal-char').textContent = npc.char;
     document.getElementById('npc-modal-ideal').textContent = npc.ideal;
-    document.getElementById('npc-modal-bond').textContent  = npc.bond;
-    document.getElementById('npc-modal-flaw').textContent  = npc.flaw;
+    document.getElementById('npc-modal-bond').textContent = npc.bond;
+    document.getElementById('npc-modal-flaw').textContent = npc.flaw;
 
     // Draw first frame of portrait only
     const pCanvas = document.getElementById('npc-portrait-canvas');
     pCanvas.width  = npc.pFrameW;
     pCanvas.height = npc.pFrameH;
-    pCanvas.style.width  = '192px';
-    pCanvas.style.height = '192px';
+    // Let CSS control display size — don't override with inline style
 
     const pImg = new Image();
     pImg.onload = () => {
@@ -159,29 +193,35 @@ function closeNpcModal(e) {
 
 // ── Page Switcher ─────────────────────────────────────
 function switchPage(page) {
-    const pages  = ['lore', 'gallery', 'spire', 'npc'];
+    const pages = ['lore', 'gallery', 'spire', 'npc'];
     const titles = {
-        lore:    'The Spire Lore',
+        lore: 'The Spire Lore',
         gallery: 'Archives',
-        spire:   'Inside The Spire',
-        npc:     'Spire Residents',
+        spire: 'Inside The Spire',
+        npc: 'Spire Residents',
     };
 
     pages.forEach(p => {
-        const el  = document.getElementById('page-' + p);
+        const el = document.getElementById('page-' + p);
         const btn = document.getElementById('btn-' + p);
-        if (el)  el.style.display = 'none';
+        if (el) el.style.display = 'none';
         if (btn) { btn.classList.remove('active', 'text-white'); btn.classList.add('text-gray-400'); }
     });
 
-    const target    = document.getElementById('page-' + page);
-    const activeBtn = document.getElementById('btn-'  + page);
-    if (target)    target.style.display = 'block';
+    const target = document.getElementById('page-' + page);
+    const activeBtn = document.getElementById('btn-' + page);
+    if (target) target.style.display = 'block';
     if (activeBtn) { activeBtn.classList.add('active', 'text-white'); activeBtn.classList.remove('text-gray-400'); }
     document.getElementById('page-title').innerText = titles[page] || '';
 
     if (page === 'npc') {
-        setTimeout(() => { initNpcWalkers(); startNpcLoop(); }, 50);
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) {
+            stopNpcLoop();
+            setTimeout(initNpcMobileGrid, 50);
+        } else {
+            setTimeout(() => { initNpcWalkers(); startNpcLoop(); }, 50);
+        }
     } else {
         stopNpcLoop();
     }

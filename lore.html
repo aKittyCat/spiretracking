@@ -163,6 +163,84 @@
             border: 2px solid var(--color-gold);
             box-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
         }
+
+        /* ── NPC Responsive ────────────────────────── */
+        /* Desktop default */
+        .npc-desktop-view { display: block; }
+        .npc-mobile-view  { display: none !important; }
+
+        @media (max-width: 768px) {
+            .npc-desktop-view { display: none !important; }
+            .npc-mobile-view  { display: grid !important; }
+
+            /* Modal: stack portrait above info on mobile */
+            #npc-modal-box {
+                flex-direction: column !important;
+                max-height: 92vh;
+            }
+            /* Portrait column: full width, horizontal strip */
+            #npc-modal-box > div:first-child {
+                width: 100% !important;
+                border-right: none !important;
+                border-bottom: 1px solid #2a2a38;
+                border-radius: 16px 16px 0 0 !important;
+                flex-direction: row !important;
+                padding: 1rem !important;
+                gap: 1rem !important;
+                align-items: center !important;
+            }
+            #npc-modal-box > div:first-child canvas {
+                width: 80px !important;
+                height: 80px !important;
+                flex-shrink: 0;
+            }
+            #npc-modal-box > div:first-child p {
+                text-align: left !important;
+                font-size: 0.78rem !important;
+            }
+            /* Info grid: single column */
+            #npc-modal-box > div:last-child > div:last-child {
+                grid-template-columns: 1fr !important;
+            }
+            #npc-modal-box > div:last-child > div:last-child > div[style*="span 3"],
+            #npc-modal-box > div:last-child > div:last-child > div[style*="span 1.5"] {
+                grid-column: span 1 !important;
+            }
+        }
+
+        /* NPC portrait card */
+        .npc-card {
+            background: linear-gradient(160deg, #111115, #1a1a22);
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .npc-card:hover, .npc-card:active {
+            transform: translateY(-4px);
+            border-color: #c5a059;
+            box-shadow: 0 8px 24px rgba(197,160,89,0.25);
+        }
+        .npc-card canvas {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            image-rendering: pixelated;
+            display: block;
+        }
+        .npc-card-name {
+            padding: 0.5rem 0.75rem 0.65rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.72rem;
+            color: #c5a059;
+            text-align: center;
+            line-height: 1.4;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 
@@ -491,8 +569,9 @@
 
         <!-- PAGE 4: NPC -->
         <div id="page-npc" class="hidden-page w-full" style="position:relative;min-height:85vh;">
-            <!-- NPC Scene Background -->
-            <div id="npc-scene" style="
+
+            <!-- Desktop: Sprite walking scene (hidden on mobile) -->
+            <div id="npc-scene" class="npc-desktop-view" style="
                 position:relative;
                 width:100%;
                 min-height:80vh;
@@ -504,16 +583,17 @@
                 border:1px solid #444;
                 box-shadow:0 0 60px rgba(197,160,89,0.15);
             ">
-                <!-- Overlay gradient -->
-                <div
-                    style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,0.85) 0%,rgba(10,10,12,0.1) 60%);pointer-events:none;z-index:1;">
-                </div>
-
-
-
-                <!-- Walking NPC sprites container -->
+                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,0.85) 0%,rgba(10,10,12,0.1) 60%);pointer-events:none;z-index:1;"></div>
                 <div id="npc-walkers" style="position:absolute;bottom:60px;left:0;right:0;z-index:3;"></div>
             </div>
+
+            <!-- Mobile: Portrait card grid (hidden on desktop) -->
+            <div id="npc-mobile-grid" class="npc-mobile-view" style="
+                grid-template-columns: repeat(2, 1fr);
+                gap:1rem;
+                padding:0.5rem 0;
+            "></div>
+
         </div>
 
         <!-- Footer -->
@@ -529,91 +609,84 @@
         position:fixed;
         inset:0;
         z-index:200;
-        background:rgba(0,0,0,0.85);
+        background:rgba(0,0,0,0.88);
         align-items:center;
         justify-content:center;
         padding:1rem;
-        backdrop-filter:blur(6px);
+        backdrop-filter:blur(8px);
     ">
         <div id="npc-modal-box" onclick="event.stopPropagation()" style="
-            background:linear-gradient(135deg,#111115,#1a1a20);
+            background:linear-gradient(135deg,#0e0e12,#181820);
             border:1px solid #c5a059;
             border-radius:16px;
-            max-width:820px;
+            max-width:1100px;
             width:100%;
-            max-height:90vh;
+            max-height:92vh;
             overflow-y:auto;
-            box-shadow:0 0 60px rgba(197,160,89,0.3);
+            box-shadow:0 0 80px rgba(197,160,89,0.25);
             display:flex;
-            flex-direction:column;
-            gap:0;
+            flex-direction:row;
         ">
-            <!-- Modal Header with portrait -->
-            <div
-                style="display:flex;gap:1.5rem;padding:1.5rem;border-bottom:1px solid #333;align-items:flex-start;flex-wrap:wrap;">
-                <div style="flex-shrink:0;">
-                    <canvas id="npc-portrait-canvas" width="96" height="48"
-                        style="image-rendering:pixelated;width:192px;height:96px;border-radius:8px;border:2px solid #c5a059;"></canvas>
+            <!-- LEFT: Portrait column -->
+            <div style="
+                flex-shrink:0;
+                width:256px;
+                background:linear-gradient(180deg,#0a0a10,#111118);
+                border-right:1px solid #2a2a38;
+                border-radius:16px 0 0 16px;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                padding:1.5rem 1rem 1.5rem;
+                gap:1rem;
+            ">
+                <canvas id="npc-portrait-canvas" width="240" height="240"
+                    style="image-rendering:pixelated;width:200px;height:200px;border-radius:10px;border:2px solid #c5a059;box-shadow:0 0 20px rgba(197,160,89,0.2);"></canvas>
+                <div style="text-align:center;">
+                    <h2 id="npc-modal-name" style="font-family:'Cinzel',serif;font-size:1rem;color:#c5a059;margin:0 0 0.3rem;line-height:1.4;"></h2>
+                    <p id="npc-modal-race" style="color:#888;font-size:0.78rem;margin:0;font-style:italic;"></p>
                 </div>
-                <div style="flex:1;min-width:200px;">
-                    <h2 id="npc-modal-name"
-                        style="font-family:'Cinzel',serif;font-size:1.5rem;color:#c5a059;margin:0 0 0.25rem;"></h2>
-                    <p id="npc-modal-race" style="color:#888;font-size:0.85rem;margin:0 0 0.75rem;font-style:italic;">
-                    </p>
-                    <p id="npc-modal-desc" style="color:#ccc;font-size:0.95rem;line-height:1.7;margin:0;"></p>
-                </div>
-                <button onclick="closeNpcModal()"
-                    style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;flex-shrink:0;">&times;</button>
+                <p id="npc-modal-desc" style="color:#aaa;font-size:0.82rem;line-height:1.6;margin:0;text-align:center;"></p>
             </div>
-            <!-- Modal Body -->
-            <div style="padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#c5a059;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        BACKGROUND</div>
-                    <p id="npc-modal-bg" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
+
+            <!-- RIGHT: Info column -->
+            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+                <!-- Close button row -->
+                <div style="display:flex;justify-content:flex-end;padding:0.75rem 1rem 0;">
+                    <button onclick="closeNpcModal()" style="background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;line-height:1;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#666'">&times;</button>
                 </div>
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#c5a059;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        ROLE</div>
-                    <p id="npc-modal-role" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
-                </div>
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#c5a059;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        CHARACTERISTIC</div>
-                    <p id="npc-modal-char" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
-                </div>
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#c5a059;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        IDEAL</div>
-                    <p id="npc-modal-ideal" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
-                </div>
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#4ade80;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        BOND</div>
-                    <p id="npc-modal-bond" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
-                </div>
-                <div class="npc-info-card"
-                    style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:1rem;">
-                    <div
-                        style="color:#f87171;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:0.5rem;">
-                        FLAW</div>
-                    <p id="npc-modal-flaw" style="color:#bbb;font-size:0.9rem;line-height:1.7;margin:0;"></p>
+                <!-- Info grid -->
+                <div style="padding:0.5rem 1.5rem 1.5rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.85rem;flex:1;">
+                    <div style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:0.85rem;">
+                        <div style="color:#c5a059;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">BACKGROUND</div>
+                        <p id="npc-modal-bg" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;"></p>
+                    </div>
+                    <div style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:0.85rem;">
+                        <div style="color:#c5a059;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">ROLE</div>
+                        <p id="npc-modal-role" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;"></p>
+                    </div>
+                    <div style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:0.85rem;">
+                        <div style="color:#c5a059;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">CHARACTERISTIC</div>
+                        <p id="npc-modal-char" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;"></p>
+                    </div>
+                    <div style="background:#0a0a10;border:1px solid #2a2a35;border-radius:8px;padding:0.85rem;grid-column:span 3;">
+                        <div style="color:#c5a059;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">IDEAL</div>
+                        <p id="npc-modal-ideal" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;font-style:italic;"></p>
+                    </div>
+                    <div style="background:#0a0a10;border:1px solid #1a3a25;border-radius:8px;padding:0.85rem;grid-column:span 1.5;">
+                        <div style="color:#4ade80;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">BOND</div>
+                        <p id="npc-modal-bond" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;"></p>
+                    </div>
+                    <div style="background:#0a0a10;border:1px solid #3a1a1a;border-radius:8px;padding:0.85rem;grid-column:span 1.5;">
+                        <div style="color:#f87171;font-size:0.68rem;font-weight:700;letter-spacing:2px;margin-bottom:0.4rem;">FLAW</div>
+                        <p id="npc-modal-flaw" style="color:#bbb;font-size:0.85rem;line-height:1.65;margin:0;"></p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts: data first, then logic -->
+    <!-- Scripts -->
     <script src="js/lore-npc-data.js"></script>
     <script src="js/lore.js"></script>
 </body>
