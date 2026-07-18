@@ -108,9 +108,15 @@
         /* Tab System */
         .tab-btn {
             position: relative;
-            padding: 10px 20px;
+            padding: 8px 10px;
             cursor: pointer;
             transition: color 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .tab-btn {
+                padding: 10px 20px;
+            }
         }
 
         .tab-btn.active {
@@ -131,6 +137,15 @@
             display: none;
         }
 
+        /* Hide Scrollbar */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         /* Fixed Navigation */
         .nav-container {
             position: fixed;
@@ -138,10 +153,16 @@
             left: 0;
             right: 0;
             z-index: 50;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             background: linear-gradient(to bottom, rgba(10, 10, 12, 0.9), transparent);
             -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
+        }
+
+        @media (min-width: 768px) {
+            .nav-container {
+                padding: 1rem 1.5rem;
+            }
         }
 
         /* Lightbox Modal */
@@ -258,32 +279,32 @@
     </div>
 
     <!-- Responsive Navigation Container -->
-    <nav class="nav-container flex justify-between items-center">
+    <nav class="nav-container flex justify-between items-center gap-2 md:gap-4 w-full">
         <!-- Left Side: Page Switcher -->
-        <div class="flex space-x-4">
+        <div class="flex flex-1 space-x-1 sm:space-x-2 md:space-x-4 overflow-x-auto hide-scrollbar min-w-0">
             <button onclick="switchPage('lore')" id="btn-lore"
-                class="tab-btn active text-sm md:text-base font-bold uppercase tracking-wider">
+                class="tab-btn active text-xs sm:text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
                 Lore
             </button>
             <button onclick="switchPage('gallery')" id="btn-gallery"
-                class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+                class="tab-btn text-xs sm:text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white whitespace-nowrap flex-shrink-0">
                 Newspapers
             </button>
             <button onclick="switchPage('spire')" id="btn-spire"
-                class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+                class="tab-btn text-xs sm:text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white whitespace-nowrap flex-shrink-0">
                 Spire
             </button>
             <button onclick="switchPage('npc')" id="btn-npc"
-                class="tab-btn text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white">
+                class="tab-btn text-xs sm:text-sm md:text-base font-bold uppercase tracking-wider text-gray-400 hover:text-white whitespace-nowrap flex-shrink-0">
                 NPC
             </button>
         </div>
 
         <!-- Right Side: Home Button -->
-        <div>
+        <div class="flex-shrink-0">
             <button onclick="window.location.href = 'characters.html'"
-                class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700">
-                <i class="fa-solid fa-home mr-2"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+                class="px-3 py-2 md:px-4 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-all bg-black/40 backdrop-blur-md rounded-lg border border-gray-700 whitespace-nowrap">
+                <i class="fa-solid fa-home"></i> <span class="hidden sm:inline ml-1">กลับหน้าหลัก</span>
             </button>
         </div>
     </nav>
@@ -344,23 +365,23 @@
         <!-- PAGE 3: Spire -->
         <div id="page-spire" class="hidden-page w-full max-w-6xl">
             <!-- Secondary Navigation for Spire Areas -->
-            <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <div class="flex overflow-x-auto hide-scrollbar space-x-2 md:space-x-4 mb-12 pb-2">
                 <button onclick="switchSpireArea('grand-hall')" id="btn-area-grand-hall"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-gold text-gold font-bold transition-all">The Grand
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-gold text-gold font-bold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">The Grand
                     Hall</button>
                 <button onclick="switchSpireArea('training')" id="btn-area-training"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">สนามฝึกฝน</button>
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">สนามฝึกฝน</button>
                 <button onclick="switchSpireArea('paradise')" id="btn-area-paradise"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Spiral
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">Spiral
                     Paradise</button>
                 <button onclick="switchSpireArea('zhareth')" id="btn-area-zhareth"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Zha'reth
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">Zha'reth
                     Ulm</button>
                 <button onclick="switchSpireArea('sanctum')" id="btn-area-sanctum"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Sanctum
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">Sanctum
                     Of The Silent Star</button>
                 <button onclick="switchSpireArea('valeris')" id="btn-area-valeris"
-                    class="spire-area-btn px-6 py-2 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all">Valeris
+                    class="spire-area-btn px-4 py-2 md:px-6 border-b-2 border-transparent text-gray-400 hover:text-gold transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base">Valeris
                     Codex</button>
             </div>
 
